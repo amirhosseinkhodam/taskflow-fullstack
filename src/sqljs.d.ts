@@ -1,4 +1,4 @@
-import { ProjectModel } from './shared/models/projects/project.model';
+import { ProjectModel } from './project/project.model';
 
 declare module 'sql.js' {
   export interface DatabaseModel {

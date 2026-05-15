@@ -1,28 +1,64 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import { TaskModel } from './task.model';
+import { TaskService } from './task.service';
 
-interface TaskModel {
-  id: number;
-  title: string;
-  projectId: number;
-}
-
-@Controller('task')
+@Controller('tasks')
 export class TaskController {
-  private tasks: TaskModel[] = [];
+  constructor(private readonly taskService: TaskService) {}
 
   @Get()
-  getTasks() {
-    return this.tasks;
+  findAll(@Query('projectId') projectId?: string): Promise<TaskModel[]> {
+    return this.taskService.findAll(projectId ? Number(projectId) : undefined);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<TaskModel | null> {
+    return this.taskService.findOne(id);
   }
 
   @Post()
-  createTask(@Body() body: { title: string; projectId: number }): TaskModel {
-    const newTask: TaskModel = {
-      id: Date.now(),
-      title: body.title,
-      projectId: body.projectId,
-    };
-    this.tasks.push(newTask);
-    return newTask;
+  create(
+    @Body() body: { title: string; description: string; projectId: number },
+  ): Promise<TaskModel> {
+    return this.taskService.create(
+      body.title,
+      body.description,
+      body.projectId,
+    );
+  }
+
+  @Put(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body()
+    body: {
+      title?: string;
+      description?: string;
+      status?: string;
+      projectId?: number;
+    },
+  ): Promise<boolean> {
+    return this.taskService.update(
+      id,
+      body.title,
+      body.description,
+      body.status,
+      body.projectId,
+    );
+  }
+
+  @Delete(':id')
+  delete(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
+    return this.taskService.delete(id);
   }
 }

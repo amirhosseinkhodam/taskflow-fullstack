@@ -1,9 +1,14 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { TaskModule } from 'src/task/task.module';
+import { AppModule } from '../app.module';
+import { DatabaseModule } from '../shared/database/database.module';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
 
 @Module({
-  providers: [ProjectService],
+  imports: [forwardRef(() => AppModule), DatabaseModule, TaskModule],
   controllers: [ProjectController],
+  providers: [ProjectService],
+  exports: [ProjectService],
 })
 export class ProjectModule {}
