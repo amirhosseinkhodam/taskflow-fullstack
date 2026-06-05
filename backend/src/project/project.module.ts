@@ -1,7 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { TaskModule } from 'src/task/task.module';
 import { AppModule } from '../app.module';
 import { DatabaseModule } from '../shared/database/database.module';
+import { TaskModule } from '../task/task.module';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
 
