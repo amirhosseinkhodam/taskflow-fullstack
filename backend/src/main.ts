@@ -4,6 +4,9 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: ['http://localhost:4200'],
+  });
   const config = new DocumentBuilder()
     .setTitle('TaskFlow API')
     .setVersion('1.0')

@@ -1,0 +1,80 @@
+<main class="mx-auto max-w-4xl p-6">
+  <section class="rounded-2xl bg-white p-6 shadow">
+    <h1 class="text-3xl font-bold text-slate-900">TaskFlow Test UI</h1>
+    <p class="mt-2 text-slate-600">Create a project, add tasks, and test the Nest API.</p>
+
+    @if (message) {
+      <p class="mt-4 rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700">{{ message }}</p>
+    }
+  </section>
+
+  <section class="mt-6 grid gap-6 md:grid-cols-2">
+    <form class="rounded-2xl bg-white p-6 shadow" (ngSubmit)="createProject()">
+      <h2 class="text-xl font-semibold text-slate-900">Projects</h2>
+      <div class="mt-4 flex gap-2">
+        <input
+          class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2"
+          name="projectName"
+          placeholder="New project name"
+          [(ngModel)]="projectName"
+        />
+        <button class="rounded-lg bg-slate-900 px-4 py-2 text-white" type="submit">Add</button>
+      </div>
+
+      <select
+        class="mt-4 w-full rounded-lg border border-slate-300 px-3 py-2"
+        name="selectedProjectId"
+        [(ngModel)]="selectedProjectId"
+        (change)="loadTasks()"
+      >
+        <option [ngValue]="0">Select a project</option>
+        @for (project of projects(); track project.id) {
+          <option [ngValue]="project.id">{{ project.name }}</option>
+        }
+      </select>
+    </form>
+
+    <form class="rounded-2xl bg-white p-6 shadow" (ngSubmit)="createTask()">
+      <h2 class="text-xl font-semibold text-slate-900">New Task</h2>
+      <input
+        class="mt-4 w-full rounded-lg border border-slate-300 px-3 py-2"
+        name="taskTitle"
+        placeholder="Task title"
+        [(ngModel)]="taskTitle"
+      />
+      <textarea
+        class="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2"
+        name="taskDescription"
+        placeholder="Description"
+        rows="3"
+        [(ngModel)]="taskDescription"
+      ></textarea>
+      <button class="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white" type="submit">Add Task</button>
+    </form>
+  </section>
+
+  <section class="mt-6 rounded-2xl bg-white p-6 shadow">
+    <div class="flex items-center justify-between gap-4">
+      <h2 class="text-xl font-semibold text-slate-900">Tasks</h2>
+      <button class="rounded-lg border border-slate-300 px-3 py-2 text-sm" type="button" (click)="loadTasks()">Refresh</button>
+    </div>
+
+    <div class="mt-4 space-y-3">
+      @for (task of tasks(); track task.id) {
+        <article class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 p-4">
+          <div>
+            <h3 class="font-medium text-slate-900" [class.line-through]="task.status === 'done'">{{ task.title }}</h3>
+            <p class="text-sm text-slate-600">{{ task.description || 'No description' }}</p>
+            <p class="mt-1 text-xs uppercase tracking-wide text-slate-400">{{ task.status }}</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="rounded-lg bg-green-600 px-3 py-1 text-sm text-white" type="button" (click)="toggleTask(task)">Toggle</button>
+            <button class="rounded-lg bg-red-600 px-3 py-1 text-sm text-white" type="button" (click)="deleteTask(task)">Delete</button>
+          </div>
+        </article>
+      } @empty {
+        <p class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-500">No tasks yet.</p>
+      }
+    </div>
+  </section>
+</main>
