@@ -43,6 +43,20 @@ export class ApiService {
     return this.http.get<HealthResponse>(`${this.apiBaseUrl}/api/health`);
   }
 
+  login(email: string, password: string) {
+    return this.http.post<{
+      token: string;
+      user: { id: number; email: string; name: string };
+    }>(`${this.apiBaseUrl}/auth/login`, { email, password });
+  }
+
+  register(email: string, password: string, name: string) {
+    return this.http.post<{
+      token: string;
+      user: { id: number; email: string; name: string };
+    }>(`${this.apiBaseUrl}/auth/register`, { email, password, name });
+  }
+
   getProjects() {
     return this.http.get<Project[]>(`${this.apiBaseUrl}/projects`);
   }

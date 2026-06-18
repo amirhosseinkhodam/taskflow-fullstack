@@ -1,109 +1,54 @@
-import { provideHttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  provideHttpClient,
+  withInterceptors,
+  HttpInterceptorFn,
+} from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
-import { ApiService, Project, Task } from './app/api.service';
+import { provideRouter, Routes, CanActivateFn, Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AppComponent } from './app/app.component';
+import { AuthService } from './app/auth.service';
 
-@Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './app/app.component.html',
-})
-class AppComponent implements OnInit {
-  private readonly api = inject(ApiService);
+const authGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (auth.isLoggedIn()) return true;
+  return router.parseUrl('/login');
+};
 
-  projects = signal<Project[]>([]);
-  tasks = signal<Task[]>([]);
-  healthStatus = signal('checking');
-  projectName = '';
-  taskTitle = '';
-  taskDescription = '';
-  selectedProjectId = 0;
-  message = '';
+const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./app/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./app/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./app/dashboard.component').then((m) => m.DashboardComponent),
+    canActivate: [authGuard],
+  },
+  { path: '**', redirectTo: '/login' },
+];
 
-  ngOnInit(): void {
-    this.loadHealth();
-    this.loadAll();
-  }
-
-  loadHealth(): void {
-    this.api.getHealth().subscribe({
-      next: (health) => this.healthStatus.set(health.status),
-      error: () => this.healthStatus.set('offline'),
+const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    req = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` },
     });
   }
-
-  loadAll(): void {
-    this.api.getProjects().subscribe({
-      next: (projects) => {
-        this.projects.set(projects);
-        if (!this.selectedProjectId && projects[0]) {
-          this.selectedProjectId = projects[0].id;
-        }
-        this.loadTasks();
-      },
-      error: () =>
-        (this.message = 'Could not load projects. Is the API running?'),
-    });
-  }
-
-  loadTasks(): void {
-    this.api.getTasks(this.selectedProjectId || undefined).subscribe({
-      next: (tasks) => this.tasks.set(tasks),
-      error: () => (this.message = 'Could not load tasks.'),
-    });
-  }
-
-  createProject(): void {
-    const name = this.projectName.trim();
-    if (!name) return;
-
-    this.api.createProject(name).subscribe({
-      next: (project) => {
-        this.projectName = '';
-        this.selectedProjectId = project.id;
-        this.message = 'Project created.';
-        this.loadAll();
-      },
-      error: () => (this.message = 'Could not create project.'),
-    });
-  }
-
-  createTask(): void {
-    const title = this.taskTitle.trim();
-    if (!title || !this.selectedProjectId) return;
-
-    this.api
-      .createTask(title, this.taskDescription, this.selectedProjectId)
-      .subscribe({
-        next: () => {
-          this.taskTitle = '';
-          this.taskDescription = '';
-          this.message = 'Task created.';
-          this.loadTasks();
-        },
-        error: () => (this.message = 'Could not create task.'),
-      });
-  }
-
-  toggleTask(task: Task): void {
-    const status = task.status === 'done' ? 'pending' : 'done';
-
-    this.api.updateTaskStatus(task.id, status).subscribe({
-      next: () => this.loadTasks(),
-      error: () => (this.message = 'Could not update task.'),
-    });
-  }
-
-  deleteTask(task: Task): void {
-    this.api.deleteTask(task.id).subscribe({
-      next: () => this.loadTasks(),
-      error: () => (this.message = 'Could not delete task.'),
-    });
-  }
-}
+  return next(req);
+};
 
 bootstrapApplication(AppComponent, {
-  providers: [provideHttpClient()],
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor])),
+    provideRouter(routes),
+  ],
 }).catch((error) => console.error(error));

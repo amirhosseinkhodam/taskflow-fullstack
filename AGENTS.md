@@ -22,10 +22,12 @@ No test setup exists (no spec/e2e files found).
 
 - **Backend**: NestJS + `pg` Pool (raw SQL queries). Database provider is injected via `'DATABASE'` string token. Tables are auto-created on app startup in `database.provider.ts`.
 - **Database**: PostgreSQL. Uses `pg` Pool. Config via `DATABASE_URL` or individual `PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE` env vars.
-- **Frontend**: Angular 19 standalone (no `NgModule`). Uses `bootstrapApplication` with `provideHttpClient()`.
+- **Frontend**: Angular 19 standalone (no `NgModule`). Uses `bootstrapApplication` with `provideHttpClient()` and `provideRouter()`.
 - **Frontend API calls**: Directly target `http://localhost:3000` (hardcoded in `api.service.ts`). The proxy config (`proxy.conf.json`) only rewrites `/api` → `/`; it's not used for `/projects` or `/tasks` calls.
 - **Swagger**: Available at `http://localhost:3000/api` (auto-served by `@nestjs/swagger`).
 - **CORS**: Backend allows `http://localhost:4200` only.
+- **Auth**: JWT-based. Register at `/auth/register`, login at `/auth/login`. Protected routes (projects, tasks) require `Authorization: Bearer <token>` header.
+- **Frontend routes**: `/login` (public), `/register` (public), `/` dashboard (protected). Auth guard redirects unauthenticated users to `/login`. HTTP interceptor attaches JWT from `localStorage`.
 
 ## Setup
 
@@ -48,4 +50,4 @@ No test setup exists (no spec/e2e files found).
 
 - Single quotes, trailing commas (Prettier config).
 - Backend: `backend/src/<module>/` (controller, service, module, model, dto).
-- Frontend: `frontend/src/main.ts` has inline component + bootstrap (no separate app component files beyond the template).
+- Frontend: `frontend/src/main.ts` bootstraps with routing; components in `frontend/src/app/` (login, register, dashboard, api, auth services).

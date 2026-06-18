@@ -1,0 +1,61 @@
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
+import { Pool } from 'pg';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    @Inject('DATABASE') private readonly db: Pool,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async register(email: string, password: string, name: string) {
+    const existing = await this.db.query<{ id: number }>(
+      'SELECT id FROM users WHERE email = $1',
+      [email],
+    );
+    if (existing.rows[0]) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    const result = await this.db.query<{
+      id: number;
+      email: string;
+      name: string;
+    }>(
+      'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name',
+      [email, hashed, name],
+    );
+    const user = result.rows[0];
+    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+
+    return { token, user };
+  }
+
+  async login(email: string, password: string) {
+    const result = await this.db.query<{
+      id: number;
+      email: string;
+      name: string;
+      password: string;
+    }>('SELECT id, email, name, password FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    return {
+      token,
+      user: { id: user.id, email: user.email, name: user.name },
+    };
+  }
+}
