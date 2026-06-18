@@ -87,7 +87,7 @@ export class TaskService {
       return false;
     }
 
-    fields.push(`updatedAt = CURRENT_TIMESTAMP`);
+    fields.push(`"updatedAt" = CURRENT_TIMESTAMP`);
     params.push(id);
 
     const result = await this.db.query(

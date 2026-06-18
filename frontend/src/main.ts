@@ -43,7 +43,8 @@ class AppComponent implements OnInit {
         }
         this.loadTasks();
       },
-      error: () => (this.message = 'Could not load projects. Is the API running?'),
+      error: () =>
+        (this.message = 'Could not load projects. Is the API running?'),
     });
   }
 
@@ -73,15 +74,17 @@ class AppComponent implements OnInit {
     const title = this.taskTitle.trim();
     if (!title || !this.selectedProjectId) return;
 
-    this.api.createTask(title, this.taskDescription, this.selectedProjectId).subscribe({
-      next: () => {
-        this.taskTitle = '';
-        this.taskDescription = '';
-        this.message = 'Task created.';
-        this.loadTasks();
-      },
-      error: () => (this.message = 'Could not create task.'),
-    });
+    this.api
+      .createTask(title, this.taskDescription, this.selectedProjectId)
+      .subscribe({
+        next: () => {
+          this.taskTitle = '';
+          this.taskDescription = '';
+          this.message = 'Task created.';
+          this.loadTasks();
+        },
+        error: () => (this.message = 'Could not create task.'),
+      });
   }
 
   toggleTask(task: Task): void {

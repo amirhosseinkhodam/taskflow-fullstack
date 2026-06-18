@@ -54,7 +54,10 @@ export class ApiService {
 
   createProject(name: string) {
     const projectRequest: CreateProjectRequest = { name };
-    return this.http.post<Project>(`${this.apiBaseUrl}/projects`, projectRequest);
+    return this.http.post<Project>(
+      `${this.apiBaseUrl}/projects`,
+      projectRequest,
+    );
   }
 
   createTask(title: string, description: string, projectId: number) {
