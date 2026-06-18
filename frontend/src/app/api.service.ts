@@ -1,0 +1,73 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+
+export type TaskStatus = 'pending' | 'done';
+
+export interface HealthResponse {
+  status: string;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+}
+
+export interface Task {
+  id: number;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  projectId: number;
+}
+
+interface CreateProjectRequest {
+  name: string;
+}
+
+interface CreateTaskRequest {
+  title: string;
+  description: string;
+  projectId: number;
+}
+
+interface UpdateTaskRequest {
+  status: TaskStatus;
+}
+
+@Injectable({ providedIn: 'root' })
+export class ApiService {
+  private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl = 'http://localhost:3000';
+
+  getHealth() {
+    return this.http.get<HealthResponse>(`${this.apiBaseUrl}/api/health`);
+  }
+
+  getProjects() {
+    return this.http.get<Project[]>(`${this.apiBaseUrl}/projects`);
+  }
+
+  getTasks(projectId?: number) {
+    const query = projectId ? `?projectId=${projectId}` : '';
+    return this.http.get<Task[]>(`${this.apiBaseUrl}/tasks${query}`);
+  }
+
+  createProject(name: string) {
+    const projectRequest: CreateProjectRequest = { name };
+    return this.http.post<Project>(`${this.apiBaseUrl}/projects`, projectRequest);
+  }
+
+  createTask(title: string, description: string, projectId: number) {
+    const taskRequest: CreateTaskRequest = { title, description, projectId };
+    return this.http.post<Task>(`${this.apiBaseUrl}/tasks`, taskRequest);
+  }
+
+  updateTaskStatus(id: number, status: TaskStatus) {
+    const taskRequest: UpdateTaskRequest = { status };
+    return this.http.put<Task>(`${this.apiBaseUrl}/tasks/${id}`, taskRequest);
+  }
+
+  deleteTask(id: number) {
+    return this.http.delete<void>(`${this.apiBaseUrl}/tasks/${id}`);
+  }
+}
