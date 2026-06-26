@@ -4,6 +4,7 @@ import {
   HttpInterceptorFn,
 } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, Routes, CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { AppComponent } from './app/app.component';
@@ -48,6 +49,7 @@ const authInterceptor: HttpInterceptorFn = (req, next) => {
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideAnimationsAsync(),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter(routes),
   ],

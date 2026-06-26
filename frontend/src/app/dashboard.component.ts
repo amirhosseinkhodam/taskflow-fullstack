@@ -1,10 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ApiService } from './api.service';
 import type { Project } from '@models/project';
 import type { Task } from '@models/task';
 import { AuthService } from './auth.service';
+import { ConfirmDialogComponent } from './confirm-dialog.component';
+import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,16 +21,26 @@ export class DashboardComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly dialog = inject(MatDialog);
+  private readonly bottomSheet = inject(MatBottomSheet);
 
   projects = signal<Project[]>([]);
   tasks = signal<Task[]>([]);
   healthStatus = signal('checking');
+  isPhone = signal(false);
   projectName = '';
   taskTitle = '';
   taskDescription = '';
   selectedProjectId = 0;
   editingTaskId: number | null = null;
   message = '';
+
+  constructor() {
+    this.breakpointObserver
+      .observe(['(max-width: 767px)'])
+      .subscribe((result) => this.isPhone.set(result.matches));
+  }
 
   ngOnInit(): void {
     this.loadHealth();
@@ -132,9 +147,17 @@ export class DashboardComponent implements OnInit {
   }
 
   deleteTask(task: Task): void {
-    this.api.deleteTask(task.id).subscribe({
-      next: () => this.loadTasks(),
-      error: () => (this.message = 'Could not delete task.'),
+    const confirmed$ = this.isPhone()
+      ? this.bottomSheet.open(ConfirmBottomSheetComponent).afterDismissed()
+      : this.dialog.open(ConfirmDialogComponent).afterClosed();
+
+    confirmed$.subscribe((confirmed) => {
+      if (!confirmed) return;
+
+      this.api.deleteTask(task.id).subscribe({
+        next: () => this.loadTasks(),
+        error: () => (this.message = 'Could not delete task.'),
+      });
     });
   }
 }
