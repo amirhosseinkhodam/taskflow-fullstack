@@ -1,40 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-
-export type TaskStatus = 'pending' | 'done';
-
-export interface HealthResponse {
-  status: string;
-}
-
-export interface Project {
-  id: number;
-  name: string;
-}
-
-export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  projectId: number;
-}
-
-interface CreateProjectRequest {
-  name: string;
-}
-
-interface CreateTaskRequest {
-  title: string;
-  description: string;
-  projectId: number;
-}
-
-interface UpdateTaskRequest {
-  title?: string;
-  description?: string;
-  status?: TaskStatus;
-}
+import type { TaskStatus, Task } from '@models/task';
+import type { Project } from '@models/project';
+import type {
+  HealthResponse,
+  CreateTaskRequest,
+  UpdateTaskRequest,
+} from '@models/api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -69,10 +41,9 @@ export class ApiService {
   }
 
   createProject(name: string) {
-    const projectRequest: CreateProjectRequest = { name };
     return this.http.post<Project>(
       `${this.apiBaseUrl}/projects`,
-      projectRequest,
+      { name },
     );
   }
 

@@ -1,7 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, Project, Task } from './api.service';
+import { ApiService } from './api.service';
+import type { Project } from '@models/project';
+import type { Task } from '@models/task';
 import { AuthService } from './auth.service';
 
 @Component({
