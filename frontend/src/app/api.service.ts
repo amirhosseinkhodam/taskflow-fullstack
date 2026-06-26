@@ -31,7 +31,9 @@ interface CreateTaskRequest {
 }
 
 interface UpdateTaskRequest {
-  status: TaskStatus;
+  title?: string;
+  description?: string;
+  status?: TaskStatus;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -79,9 +81,21 @@ export class ApiService {
     return this.http.post<Task>(`${this.apiBaseUrl}/tasks`, taskRequest);
   }
 
-  updateTaskStatus(id: number, status: TaskStatus) {
-    const taskRequest: UpdateTaskRequest = { status };
+  updateTask(
+    id: number,
+    title?: string,
+    description?: string,
+    status?: TaskStatus,
+  ) {
+    const taskRequest: UpdateTaskRequest = {};
+    if (title !== undefined) taskRequest.title = title;
+    if (description !== undefined) taskRequest.description = description;
+    if (status !== undefined) taskRequest.status = status;
     return this.http.put<Task>(`${this.apiBaseUrl}/tasks/${id}`, taskRequest);
+  }
+
+  updateTaskStatus(id: number, status: TaskStatus) {
+    return this.updateTask(id, undefined, undefined, status);
   }
 
   deleteTask(id: number) {

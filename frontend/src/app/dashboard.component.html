@@ -58,8 +58,10 @@
       </select>
     </form>
 
-    <form class="rounded-2xl bg-white p-6 shadow" (ngSubmit)="createTask()">
-      <h2 class="text-xl font-semibold text-slate-900">New Task</h2>
+    <form class="rounded-2xl bg-white p-6 shadow" (ngSubmit)="saveTask()">
+      <h2 class="text-xl font-semibold text-slate-900">
+        {{ editingTaskId ? 'Edit Task' : 'New Task' }}
+      </h2>
       <input
         class="mt-4 w-full rounded-lg border border-slate-300 px-3 py-2"
         name="taskTitle"
@@ -73,12 +75,23 @@
         rows="3"
         [(ngModel)]="taskDescription"
       ></textarea>
-      <button
-        class="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-white"
-        type="submit"
-      >
-        Add Task
-      </button>
+      <div class="mt-3 flex gap-2">
+        <button
+          class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white"
+          type="submit"
+        >
+          {{ editingTaskId ? 'Save' : 'Add Task' }}
+        </button>
+        @if (editingTaskId) {
+          <button
+            class="rounded-lg border border-slate-300 px-4 py-2 text-slate-700"
+            type="button"
+            (click)="cancelEdit()"
+          >
+            Cancel
+          </button>
+        }
+      </div>
     </form>
   </section>
 
@@ -114,6 +127,23 @@
             </p>
           </div>
           <div class="flex gap-2">
+            <button
+              class="rounded-lg bg-amber-500 px-3 py-1 text-sm text-white"
+              type="button"
+              (click)="editTask(task)"
+              title="Edit task"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="inline h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                />
+              </svg>
+            </button>
             <button
               class="rounded-lg bg-green-600 px-3 py-1 text-sm text-white"
               type="button"

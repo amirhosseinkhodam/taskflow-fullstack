@@ -22,6 +22,7 @@ export class DashboardComponent implements OnInit {
   taskTitle = '';
   taskDescription = '';
   selectedProjectId = 0;
+  editingTaskId: number | null = null;
   message = '';
 
   ngOnInit(): void {
@@ -77,21 +78,46 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  createTask(): void {
+  editTask(task: Task): void {
+    this.editingTaskId = task.id;
+    this.taskTitle = task.title;
+    this.taskDescription = task.description;
+  }
+
+  cancelEdit(): void {
+    this.editingTaskId = null;
+    this.taskTitle = '';
+    this.taskDescription = '';
+  }
+
+  saveTask(): void {
     const title = this.taskTitle.trim();
     if (!title || !this.selectedProjectId) return;
 
-    this.api
-      .createTask(title, this.taskDescription, this.selectedProjectId)
-      .subscribe({
-        next: () => {
-          this.taskTitle = '';
-          this.taskDescription = '';
-          this.message = 'Task created.';
-          this.loadTasks();
-        },
-        error: () => (this.message = 'Could not create task.'),
-      });
+    if (this.editingTaskId) {
+      this.api
+        .updateTask(this.editingTaskId, title, this.taskDescription)
+        .subscribe({
+          next: () => {
+            this.cancelEdit();
+            this.message = 'Task updated.';
+            this.loadTasks();
+          },
+          error: () => (this.message = 'Could not update task.'),
+        });
+    } else {
+      this.api
+        .createTask(title, this.taskDescription, this.selectedProjectId)
+        .subscribe({
+          next: () => {
+            this.taskTitle = '';
+            this.taskDescription = '';
+            this.message = 'Task created.';
+            this.loadTasks();
+          },
+          error: () => (this.message = 'Could not create task.'),
+        });
+    }
   }
 
   toggleTask(task: Task): void {
