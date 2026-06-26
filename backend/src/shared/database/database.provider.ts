@@ -1,5 +1,8 @@
 import { Pool } from 'pg';
 
+const RETRIES = 10;
+const RETRY_DELAY_MS = 2000;
+
 async function ensureTables(pool: Pool): Promise<void> {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -31,19 +34,48 @@ async function ensureTables(pool: Pool): Promise<void> {
   `);
 }
 
+async function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export const databaseProvider = {
   provide: 'DATABASE',
   useFactory: async () => {
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      host: process.env.PGHOST,
-      port: process.env.PGPORT ? Number(process.env.PGPORT) : undefined,
-      user: process.env.PGUSER,
-      password: process.env.PGPASSWORD,
-      database: process.env.PGDATABASE,
+    const poolConfig: import('pg').PoolConfig = process.env.DATABASE_URL
+      ? { connectionString: process.env.DATABASE_URL }
+      : {
+          host: process.env.PGHOST ?? 'localhost',
+          port: process.env.PGPORT ? Number(process.env.PGPORT) : 5432,
+          user: process.env.PGUSER ?? 'postgres',
+          password: process.env.PGPASSWORD ?? 'postgres',
+          database: process.env.PGDATABASE ?? 'taskflow',
+        };
+
+    const pool = new Pool(poolConfig);
+
+    pool.on('error', (err) => {
+      console.error('Unexpected database pool error', err);
     });
 
-    await ensureTables(pool);
-    return pool;
+    let lastError: Error | null = null;
+    for (let attempt = 1; attempt <= RETRIES; attempt++) {
+      try {
+        const client = await pool.connect();
+        client.release();
+        await ensureTables(pool);
+        console.log('Database connected and tables ensured');
+        return pool;
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.error(
+          `Database connection attempt ${attempt}/${RETRIES} failed: ${lastError.message}`,
+        );
+        if (attempt < RETRIES) {
+          await wait(RETRY_DELAY_MS);
+        }
+      }
+    }
+
+    throw lastError ?? new Error('Failed to connect to database');
   },
 };
