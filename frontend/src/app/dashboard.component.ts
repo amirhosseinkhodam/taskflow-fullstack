@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { ApiService } from './api.service';
-import type { Project } from '@models/project';
-import type { Task } from '@models/task';
+import type { ProjectModel } from '@shared/types/project.model';
+import type { TaskModel } from '@shared/types/task.model';
 import { AuthService } from './auth.service';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet.component';
@@ -14,7 +15,7 @@ import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, DragDropModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -25,8 +26,8 @@ export class DashboardComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly bottomSheet = inject(MatBottomSheet);
 
-  projects = signal<Project[]>([]);
-  tasks = signal<Task[]>([]);
+  projects = signal<ProjectModel[]>([]);
+  tasks = signal<TaskModel[]>([]);
   healthStatus = signal('checking');
   isPhone = signal(false);
   projectName = '';
@@ -95,7 +96,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  editTask(task: Task): void {
+  editTask(task: TaskModel): void {
     this.editingTaskId = task.id;
     this.taskTitle = task.title;
     this.taskDescription = task.description;
@@ -137,7 +138,17 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  toggleTask(task: Task): void {
+  onDrop(event: CdkDragDrop<TaskModel[]>): void {
+    const current = this.tasks();
+    moveItemInArray(current, event.previousIndex, event.currentIndex);
+    this.tasks.set(current);
+
+    this.api
+      .reorderTasks(current.map((t) => t.id))
+      .subscribe({ error: () => this.loadTasks() });
+  }
+
+  toggleTask(task: TaskModel): void {
     const status = task.status === 'done' ? 'pending' : 'done';
 
     this.api.updateTaskStatus(task.id, status).subscribe({
@@ -146,7 +157,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  deleteTask(task: Task): void {
+  deleteTask(task: TaskModel): void {
     const confirmed$ = this.isPhone()
       ? this.bottomSheet.open(ConfirmBottomSheetComponent).afterDismissed()
       : this.dialog.open(ConfirmDialogComponent).afterClosed();

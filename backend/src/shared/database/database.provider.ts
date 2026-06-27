@@ -27,10 +27,16 @@ async function ensureTables(pool: Pool): Promise<void> {
       description TEXT,
       status TEXT DEFAULT 'pending',
       "projectId" INTEGER NOT NULL,
+      "position" INTEGER NOT NULL DEFAULT 0,
       "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY ("projectId") REFERENCES projects(id)
     )
+  `);
+
+  await pool.query(`
+    ALTER TABLE tasks
+    ADD COLUMN IF NOT EXISTS "position" INTEGER NOT NULL DEFAULT 0
   `);
 }
 

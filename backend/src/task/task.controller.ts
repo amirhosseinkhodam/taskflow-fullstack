@@ -5,13 +5,14 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { TaskModel } from './task.model';
+import { TaskModel } from '@shared/types/task.model';
 import { TaskService } from './task.service';
 
 @UseGuards(JwtAuthGuard)
@@ -58,6 +59,11 @@ export class TaskController {
       body.status,
       body.projectId,
     );
+  }
+
+  @Patch('reorder')
+  reorder(@Body() body: { taskIds: number[] }): Promise<void> {
+    return this.taskService.reorder(body.taskIds);
   }
 
   @Delete(':id')

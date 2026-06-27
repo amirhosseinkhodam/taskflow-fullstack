@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
-import { TaskModel } from './task.model';
+import { TaskModel } from '@shared/types/task.model';
 
 @Injectable()
 export class TaskService {
@@ -11,11 +11,17 @@ export class TaskService {
     description: string,
     projectId: number,
   ): Promise<TaskModel> {
+    const posResult = await this.db.query<{ max: number | null }>(
+      `SELECT MAX("position") as max FROM tasks WHERE "projectId" = $1`,
+      [projectId],
+    );
+    const nextPos = (posResult.rows[0]?.max ?? -1) + 1;
+
     const result = await this.db.query<{ id: number }>(
-      `INSERT INTO tasks (title, description, "projectId")
-       VALUES ($1, $2, $3)
+      `INSERT INTO tasks (title, description, "projectId", "position")
+       VALUES ($1, $2, $3, $4)
        RETURNING id`,
-      [title, description, projectId],
+      [title, description, projectId, nextPos],
     );
     const id = result.rows[0]?.id;
 
@@ -28,7 +34,7 @@ export class TaskService {
   }
 
   async findAll(projectId?: number): Promise<TaskModel[]> {
-    let query = `SELECT id, title, description, status, "projectId", "createdAt", "updatedAt" FROM tasks`;
+    let query = `SELECT id, title, description, status, "projectId", "position", "createdAt", "updatedAt" FROM tasks`;
     const params: (string | number)[] = [];
 
     if (projectId !== undefined) {
@@ -36,7 +42,7 @@ export class TaskService {
       params.push(projectId);
     }
 
-    query += ` ORDER BY id`;
+    query += ` ORDER BY "position" ASC, id ASC`;
 
     const result = await this.db.query<TaskModel>(query, params);
     return result.rows;
@@ -44,7 +50,7 @@ export class TaskService {
 
   async findOne(id: number): Promise<TaskModel | null> {
     const result = await this.db.query<TaskModel>(
-      `SELECT id, title, description, status, "projectId", "createdAt", "updatedAt"
+      `SELECT id, title, description, status, "projectId", "position", "createdAt", "updatedAt"
        FROM tasks
        WHERE id = $1`,
       [id],
@@ -96,6 +102,25 @@ export class TaskService {
     );
 
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async reorder(taskIds: number[]): Promise<void> {
+    const client = await this.db.connect();
+    try {
+      await client.query('BEGIN');
+      for (let i = 0; i < taskIds.length; i++) {
+        await client.query(
+          `UPDATE tasks SET "position" = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2`,
+          [i, taskIds[i]],
+        );
+      }
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
   }
 
   async delete(id: number): Promise<boolean> {

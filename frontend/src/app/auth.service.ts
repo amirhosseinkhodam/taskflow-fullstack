@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import type { AuthResponse } from '@models/auth';
+import type { AuthResponse } from '@shared/types/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

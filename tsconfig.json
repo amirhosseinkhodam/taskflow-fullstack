@@ -10,7 +10,8 @@
     "strict": true,
     "target": "ES2022",
     "paths": {
-      "@models/*": ["frontend/src/app/models/*"]
+      "@models/*": ["frontend/src/app/models/*"],
+      "@shared/*": ["shared/*"]
     }
   }
 }

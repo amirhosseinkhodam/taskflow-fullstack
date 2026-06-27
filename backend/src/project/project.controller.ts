@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
-import { ProjectModel } from './project.model';
+import { ProjectModel } from '@shared/types/project.model';
 import { ProjectService } from './project.service';
 
 @UseGuards(JwtAuthGuard)
