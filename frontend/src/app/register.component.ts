@@ -11,19 +11,19 @@ import { AuthService } from './auth.service';
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form
         (ngSubmit)="register()"
-        class="w-full rounded-2xl bg-white p-8 shadow"
+        class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
-        <h1 class="text-3xl font-bold text-slate-900">TaskFlow</h1>
-        <p class="mt-1 text-slate-600">Create a new account</p>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">TaskFlow</h1>
+        <p class="mt-1 text-slate-600 dark:text-slate-400">Create a new account</p>
 
         @if (error()) {
-          <p class="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">
+          <p class="mt-4 rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-2 text-sm text-red-700 dark:text-red-300">
             {{ error() }}
           </p>
         }
 
         <input
-          class="mt-6 w-full rounded-lg border border-slate-300 px-3 py-2"
+          class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           type="text"
           name="name"
           placeholder="Name"
@@ -32,7 +32,7 @@ import { AuthService } from './auth.service';
           required
         />
         <input
-          class="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2"
+          class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           type="email"
           name="email"
           placeholder="Email"
@@ -42,7 +42,7 @@ import { AuthService } from './auth.service';
         />
         <div class="relative mt-3">
           <input
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 pr-10"
+            class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pr-10 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
             [type]="showPassword() ? 'text' : 'password'"
             name="password"
             placeholder="Password"
@@ -52,7 +52,7 @@ import { AuthService } from './auth.service';
           />
           <button
             type="button"
-            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-slate-500"
             (click)="showPassword.set(!showPassword())"
           >
             @if (showPassword()) {
@@ -92,16 +92,16 @@ import { AuthService } from './auth.service';
         </div>
 
         <button
-          class="mt-6 w-full rounded-lg bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
+          class="mt-6 w-full rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white disabled:opacity-50"
           type="submit"
           [disabled]="loading()"
         >
           {{ loading() ? 'Creating account...' : 'Create account' }}
         </button>
 
-        <p class="mt-4 text-center text-sm text-slate-600">
+        <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
           Already have an account?
-          <a routerLink="/login" class="font-medium text-blue-600">Sign in</a>
+          <a routerLink="/login" class="font-medium text-blue-600 dark:text-blue-400">Sign in</a>
         </p>
       </form>
     </main>

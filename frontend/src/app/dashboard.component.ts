@@ -11,11 +11,12 @@ import type { TaskModel } from '@shared/types/task.model';
 import { AuthService } from './auth.service';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet.component';
+import { ThemeToggleComponent } from './theme-toggle.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule, DragDropModule],
+  imports: [FormsModule, DragDropModule, ThemeToggleComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {

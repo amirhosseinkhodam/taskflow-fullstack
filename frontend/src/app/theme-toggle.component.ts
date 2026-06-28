@@ -1,101 +1,127 @@
 import { Component, inject } from '@angular/core';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatIconModule } from '@angular/material/icon';
-import { ThemeService } from './theme.service';
 import { CommonModule } from '@angular/common';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { ThemeService } from './theme.service';
 
 @Component({
   selector: 'app-theme-toggle',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatSlideToggleModule,
-    MatIconModule,
-    MatTooltipModule,
-  ],
+  imports: [CommonModule],
   template: `
-    <div class="theme-toggle-wrapper" (click)="$event.stopPropagation()">
-      <mat-slide-toggle
-        [checked]="theme.isDark()"
-        (change)="theme.toggle()"
-        color="primary"
-        class="theme-slide-toggle"
-      >
-        <div class="toggle-icons">
-          <mat-icon class="light-icon" [class.hidden]="!theme.isDark()">light_mode</mat-icon>
-          <mat-icon class="dark-icon" [class.hidden]="theme.isDark()">dark_mode</mat-icon>
-        </div>
-        <span class="toggle-text">
-          {{ theme.isDark() ? 'Dark Mode' : 'Light Mode' }}
+    <button
+      class="theme-switch"
+      (click)="theme.toggle()"
+      [class.dark]="theme.isDark()"
+      role="switch"
+      [attr.aria-checked]="theme.isDark()"
+      aria-label="Toggle dark mode"
+    >
+      <span class="track">
+        <span class="icon sun">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M12 7a5 5 0 100 10 5 5 0 000-10zm0-3a1 1 0 001-1V1a1 1 0 00-2 0v2a1 1 0 001 1zm0 18a1 1 0 00-1 1v2a1 1 0 002 0v-2a1 1 0 00-1-1zm9-9a1 1 0 00-1-1h-2a1 1 0 000 2h2a1 1 0 001-1zM4 12a1 1 0 00-1-1H1a1 1 0 000 2h2a1 1 0 001-1zm14.07-6.36a1 1 0 00.7-.29l1.42-1.42a1 1 0 10-1.42-1.42l-1.42 1.42a1 1 0 00.72 1.71zM5.64 18.36a1 1 0 00-.7.29l-1.42 1.42a1 1 0 101.42 1.42l1.42-1.42a1 1 0 00-.72-1.71zM19.78 18.36a1 1 0 00.71-.29 1 1 0 000-1.42l-1.42-1.42a1 1 0 10-1.42 1.42l1.42 1.42a1 1 0 00.71.29zM5.64 5.64a1 1 0 00-.71-.29 1 1 0 00-.71.29l-1.42 1.42a1 1 0 101.42 1.42l1.42-1.42a1 1 0 000-1.42z"/>
+          </svg>
         </span>
-      </mat-slide-toggle>
-    </div>
+        <span class="icon moon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M21.64 13a1 1 0 00-1.05-.14 8.05 8.05 0 01-3.37.73 8.15 8.15 0 01-8.14-8.14 8.59 8.59 0 01.25-2A1 1 0 008 2.36a10.14 10.14 0 1014 11.69 1 1 0 00-.35-1.05z"/>
+          </svg>
+        </span>
+        <span class="thumb"></span>
+      </span>
+    </button>
   `,
-  styles: [
-    `
-    .theme-toggle-wrapper {
+  styles: [`
+    .theme-switch {
       display: flex;
       align-items: center;
-      justify-content: center;
+      background: none;
+      border: none;
       padding: 0;
-      margin: 0;
+      cursor: pointer;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .theme-slide-toggle {
-      height: 24px;
+    .track {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 64px;
+      height: 36px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #7dd3fc, #38bdf8);
+      transition: background 0.4s ease;
+      overflow: hidden;
     }
 
-    .toggle-icons {
+    .dark .track {
+      background: linear-gradient(135deg, #1e293b, #334155);
+    }
+
+    .icon {
+      position: absolute;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      width: 40px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
+      z-index: 1;
+      transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    mat-icon {
-      width: 18px !important;
-      height: 18px !important;
-      font-size: 18px !important;
-      transition: opacity 0.3s ease, color 0.3s ease;
-    }
-
-    .light-icon {
+    .sun {
+      top: 9px;
+      left: 7px;
       color: #fbbf24;
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
     }
 
-    .dark-icon {
-      color: #60a5fa;
-    }
-
-    .hidden {
+    .dark .sun {
       opacity: 0;
-      pointer-events: none;
+      transform: rotate(90deg) scale(0.5);
     }
 
-    :global(.dark) .light-icon {
+    .moon {
+      top: 9px;
+      right: 7px;
       color: #e2e8f0;
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.5);
     }
 
-    :global(.dark) .dark-icon {
-      color: #cbd5e1;
+    .dark .moon {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
     }
 
-    :global(.mat-mdc-slide-toggle-thumb) {
-      transition: background-color 0.3s ease;
+    .thumb {
+      position: absolute;
+      top: 6px;
+      left: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  background 0.4s ease;
     }
 
-    :global(.dark) .mat-mdc-slide-toggle-thumb {
-      background-color: var(--primary-color) !important;
+    .dark .thumb {
+      transform: translateX(32px);
+      background: #475569;
     }
 
-    :global(.dark) .mat-mdc-slide-toggle-bar {
-      background-color: var(--border-color) !important;
+    .theme-switch:hover .thumb {
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
-    `
-  ]
+
+    .theme-switch:focus-visible .track {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+  `]
 })
 export class ThemeToggleComponent {
   theme = inject(ThemeService);
