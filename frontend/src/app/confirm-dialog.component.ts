@@ -1,24 +1,30 @@
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { LanguageService } from './language.service';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
   imports: [MatDialogModule, MatButtonModule],
   template: `
-    <h2 mat-dialog-title>Delete task</h2>
+    <h2 mat-dialog-title>{{ t('confirmDeleteTask') }}</h2>
     <mat-dialog-content>
-      Are you sure you want to delete this task? This cannot be undone.
+      {{ t('confirmDeleteMessage') }}
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Cancel</button>
-      <button mat-raised-button color="warn" (click)="onConfirm()">Delete</button>
+      <button mat-button (click)="onCancel()">{{ t('cancel') }}</button>
+      <button mat-raised-button color="warn" (click)="onConfirm()">{{ t('delete') }}</button>
     </mat-dialog-actions>
   `,
 })
 export class ConfirmDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<ConfirmDialogComponent>);
+  private readonly languageService = inject(LanguageService);
+
+  t(key: string): string {
+    return this.languageService.translate(key);
+  }
 
   onConfirm(): void {
     this.dialogRef.close(true);

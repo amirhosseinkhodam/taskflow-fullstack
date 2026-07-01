@@ -4,6 +4,7 @@ import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
+import { LanguageService } from './language.service';
 
 @Component({
   selector: 'app-confirm-bottom-sheet',
@@ -11,15 +12,15 @@ import {
   imports: [MatBottomSheetModule, MatButtonModule],
   template: `
     <h3 class="mat-body-large" style="margin: 0 0 8px; font-weight: 500;">
-      Delete task
+      {{ t('confirmDeleteTask') }}
     </h3>
-    <p class="mat-body-medium" style="margin: 0 0 16px; color: #64748b;">
-      Are you sure you want to delete this task? This cannot be undone.
+    <p class="mat-body-medium text-slate-500 dark:text-slate-400" style="margin: 0 0 16px;">
+      {{ t('confirmDeleteMessage') }}
     </p>
     <div style="display: flex; gap: 8px; justify-content: flex-end;">
-      <button mat-button (click)="onCancel()">Cancel</button>
+      <button mat-button (click)="onCancel()">{{ t('cancel') }}</button>
       <button mat-raised-button color="warn" (click)="onConfirm()">
-        Delete
+        {{ t('delete') }}
       </button>
     </div>
   `,
@@ -27,6 +28,11 @@ import {
 export class ConfirmBottomSheetComponent {
   private readonly bottomSheetRef =
     inject(MatBottomSheetRef<ConfirmBottomSheetComponent>);
+  private readonly languageService = inject(LanguageService);
+
+  t(key: string): string {
+    return this.languageService.translate(key);
+  }
 
   onConfirm(): void {
     this.bottomSheetRef.dismiss(true);

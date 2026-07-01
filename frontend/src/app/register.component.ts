@@ -2,19 +2,26 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from './auth.service';
+import { LanguageService } from './language.service';
+import { LanguageToggleComponent } from './language-toggle.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, LanguageToggleComponent],
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form
         (ngSubmit)="register()"
         class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">TaskFlow</h1>
-        <p class="mt-1 text-slate-600 dark:text-slate-400">Create a new account</p>
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">TaskFlow</h1>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">{{ t('createAccount') }}</p>
+          </div>
+          <app-language-toggle></app-language-toggle>
+        </div>
 
         @if (error()) {
           <p class="mt-4 rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-2 text-sm text-red-700 dark:text-red-300">
@@ -26,7 +33,7 @@ import { AuthService } from './auth.service';
           class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           type="text"
           name="name"
-          placeholder="Name"
+          [placeholder]="t('name')"
           [(ngModel)]="name"
           autocomplete="name"
           required
@@ -35,7 +42,7 @@ import { AuthService } from './auth.service';
           class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           type="email"
           name="email"
-          placeholder="Email"
+          [placeholder]="t('email')"
           [(ngModel)]="email"
           autocomplete="email"
           required
@@ -45,7 +52,7 @@ import { AuthService } from './auth.service';
             class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pr-10 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
             [type]="showPassword() ? 'text' : 'password'"
             name="password"
-            placeholder="Password"
+            [placeholder]="t('password')"
             [(ngModel)]="password"
             autocomplete="new-password"
             required
@@ -96,12 +103,14 @@ import { AuthService } from './auth.service';
           type="submit"
           [disabled]="loading()"
         >
-          {{ loading() ? 'Creating account...' : 'Create account' }}
+          {{ loading() ? t('creatingAccount') : t('registerButton') }}
         </button>
 
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
-          Already have an account?
-          <a routerLink="/login" class="font-medium text-blue-600 dark:text-blue-400">Sign in</a>
+          {{ t('alreadyHaveAccount') }}
+          <a routerLink="/login" class="font-medium text-blue-600 dark:text-blue-400"
+            >{{ t('signIn') }}</a
+          >
         </p>
       </form>
     </main>
@@ -110,6 +119,7 @@ import { AuthService } from './auth.service';
 export class RegisterComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly languageService = inject(LanguageService);
 
   name = '';
   email = '';
@@ -117,6 +127,10 @@ export class RegisterComponent {
   showPassword = signal(false);
   error = signal('');
   loading = signal(false);
+
+  t(key: string): string {
+    return this.languageService.translate(key);
+  }
 
   register(): void {
     if (!this.name || !this.email || !this.password) return;
@@ -128,8 +142,8 @@ export class RegisterComponent {
       error: (err) => {
         this.error.set(
           err.status === 409
-            ? 'Email already registered'
-            : 'Registration failed',
+            ? this.languageService.translate('emailAlreadyRegistered')
+            : this.languageService.translate('registrationFailed'),
         );
         this.loading.set(false);
       },

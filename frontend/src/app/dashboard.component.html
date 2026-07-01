@@ -4,23 +4,24 @@
       <div>
         <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">TaskFlow</h1>
         <p class="mt-2 text-slate-600 dark:text-slate-400">
-          Create a project, add tasks, and test the Nest API.
+          {{ t('createProjectAddTasks') }}
         </p>
       </div>
       <div class="flex items-center gap-2">
         <app-theme-toggle></app-theme-toggle>
+        <app-language-toggle></app-language-toggle>
         <button
           class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-600 h-9 px-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
           type="button"
           (click)="logout()"
         >
-          Logout
+          {{ t('logout') }}
         </button>
       </div>
     </div>
 
     <p class="mt-4 rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-300">
-      API health: {{ healthStatus() }}
+      {{ t('apiHealth') }}: {{ healthStatus() }}
     </p>
 
     @if (message) {
@@ -32,19 +33,19 @@
 
   <section class="mt-6 grid gap-6 md:grid-cols-2">
     <form class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow" (ngSubmit)="createProject()">
-      <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Projects</h2>
+      <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('projects') }}</h2>
       <div class="mt-4 flex gap-2">
         <input
           class="min-w-0 flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           name="projectName"
-          placeholder="New project name"
+          [placeholder]="t('newProjectName')"
           [(ngModel)]="projectName"
         />
         <button
           class="rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white"
           type="submit"
         >
-          Add
+          {{ t('add') }}
         </button>
       </div>
 
@@ -54,7 +55,7 @@
         [(ngModel)]="selectedProjectId"
         (change)="loadTasks()"
       >
-        <option [ngValue]="0">Select a project</option>
+        <option [ngValue]="0">{{ t('selectProject') }}</option>
         @for (project of projects(); track project.id) {
           <option [ngValue]="project.id">{{ project.name }}</option>
         }
@@ -63,18 +64,18 @@
 
     <form class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow" (ngSubmit)="saveTask()">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        {{ editingTaskId ? 'Edit Task' : 'New Task' }}
+        {{ editingTaskId ? t('editTask') : t('newTask') }}
       </h2>
       <input
         class="mt-4 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
         name="taskTitle"
-        placeholder="Task title"
+        [placeholder]="t('taskTitle')"
         [(ngModel)]="taskTitle"
       />
       <textarea
         class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
         name="taskDescription"
-        placeholder="Description"
+        [placeholder]="t('description')"
         rows="3"
         [(ngModel)]="taskDescription"
       ></textarea>
@@ -83,7 +84,7 @@
           class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white"
           type="submit"
         >
-          {{ editingTaskId ? 'Save' : 'Add Task' }}
+          {{ editingTaskId ? t('save') : t('addTask') }}
         </button>
         @if (editingTaskId) {
           <button
@@ -91,7 +92,7 @@
             type="button"
             (click)="cancelEdit()"
           >
-            Cancel
+            {{ t('cancel') }}
           </button>
         }
       </div>
@@ -100,13 +101,13 @@
 
   <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
     <div class="flex items-center justify-between gap-4">
-      <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Tasks</h2>
+      <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ t('tasks') }}</h2>
       <button
         class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
         type="button"
         (click)="loadTasks()"
       >
-        Refresh
+        {{ t('refresh') }}
       </button>
     </div>
 
@@ -145,7 +146,7 @@
                 {{ task.title }}
               </h3>
               <p class="text-sm text-slate-600 dark:text-slate-400">
-                {{ task.description || 'No description' }}
+                {{ task.description || t('noDescription') }}
               </p>
               <p class="mt-1 text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 {{ task.status }}
@@ -157,7 +158,7 @@
               class="flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm text-white min-h-[44px]"
               type="button"
               (click)="editTask(task)"
-              title="Edit task"
+              [title]="t('edit')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -169,7 +170,7 @@
                   d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
                 />
               </svg>
-              <span class="hidden sm:inline">Edit</span>
+              <span class="hidden sm:inline">{{ t('edit') }}</span>
             </button>
             <button
               class="flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm text-white min-h-[44px]"
@@ -188,7 +189,7 @@
                   clip-rule="evenodd"
                 />
               </svg>
-              <span class="hidden sm:inline">Toggle</span>
+              <span class="hidden sm:inline">{{ t('toggle') }}</span>
             </button>
             <button
               class="flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm text-white min-h-[44px]"
@@ -207,7 +208,7 @@
                   clip-rule="evenodd"
                 />
               </svg>
-              <span class="hidden sm:inline">Delete</span>
+              <span class="hidden sm:inline">{{ t('delete') }}</span>
             </button>
           </div>
         </article>
@@ -215,7 +216,7 @@
         <p
           class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-6 text-center text-slate-500 dark:text-slate-400"
         >
-          No tasks yet.
+          {{ t('noTasksYet') }}
         </p>
       }
     </div>

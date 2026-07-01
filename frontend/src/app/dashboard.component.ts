@@ -12,11 +12,13 @@ import { AuthService } from './auth.service';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet.component';
 import { ThemeToggleComponent } from './theme-toggle.component';
+import { LanguageToggleComponent } from './language-toggle.component';
+import { LanguageService } from './language.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule, DragDropModule, ThemeToggleComponent],
+  imports: [FormsModule, DragDropModule, ThemeToggleComponent, LanguageToggleComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -26,6 +28,7 @@ export class DashboardComponent implements OnInit {
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly dialog = inject(MatDialog);
   private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly languageService = inject(LanguageService);
 
   projects = signal<ProjectModel[]>([]);
   tasks = signal<TaskModel[]>([]);
@@ -47,6 +50,10 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.loadHealth();
     this.loadAll();
+  }
+
+  t(key: string): string {
+    return this.languageService.translate(key);
   }
 
   logout(): void {
@@ -71,14 +78,14 @@ export class DashboardComponent implements OnInit {
         this.loadTasks();
       },
       error: () =>
-        (this.message = 'Could not load projects. Is the API running?'),
+        (this.message = this.t('couldNotLoadProjects')),
     });
   }
 
   loadTasks(): void {
     this.api.getTasks(this.selectedProjectId || undefined).subscribe({
       next: (tasks) => this.tasks.set(tasks),
-      error: () => (this.message = 'Could not load tasks.'),
+      error: () => (this.message = this.t('couldNotLoadTasks')),
     });
   }
 
@@ -90,10 +97,10 @@ export class DashboardComponent implements OnInit {
       next: (project) => {
         this.projectName = '';
         this.selectedProjectId = project.id;
-        this.message = 'Project created.';
+        this.message = this.t('projectCreated');
         this.loadAll();
       },
-      error: () => (this.message = 'Could not create project.'),
+      error: () => (this.message = this.t('couldNotCreateProject')),
     });
   }
 
@@ -119,10 +126,10 @@ export class DashboardComponent implements OnInit {
         .subscribe({
           next: () => {
             this.cancelEdit();
-            this.message = 'Task updated.';
+            this.message = this.t('taskUpdated');
             this.loadTasks();
           },
-          error: () => (this.message = 'Could not update task.'),
+          error: () => (this.message = this.t('couldNotUpdateTask')),
         });
     } else {
       this.api
@@ -131,10 +138,10 @@ export class DashboardComponent implements OnInit {
           next: () => {
             this.taskTitle = '';
             this.taskDescription = '';
-            this.message = 'Task created.';
+            this.message = this.t('taskCreated');
             this.loadTasks();
           },
-          error: () => (this.message = 'Could not create task.'),
+          error: () => (this.message = this.t('couldNotCreateTask')),
         });
     }
   }
@@ -154,7 +161,7 @@ export class DashboardComponent implements OnInit {
 
     this.api.updateTaskStatus(task.id, status).subscribe({
       next: () => this.loadTasks(),
-      error: () => (this.message = 'Could not update task.'),
+      error: () => (this.message = this.t('couldNotUpdateTask')),
     });
   }
 
@@ -168,7 +175,7 @@ export class DashboardComponent implements OnInit {
 
       this.api.deleteTask(task.id).subscribe({
         next: () => this.loadTasks(),
-        error: () => (this.message = 'Could not delete task.'),
+        error: () => (this.message = this.t('couldNotDeleteTask')),
       });
     });
   }

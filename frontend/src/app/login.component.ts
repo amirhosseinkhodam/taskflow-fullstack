@@ -2,16 +2,23 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from './auth.service';
+import { LanguageService } from './language.service';
+import { LanguageToggleComponent } from './language-toggle.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, LanguageToggleComponent],
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form (ngSubmit)="login()" class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow">
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">TaskFlow</h1>
-        <p class="mt-1 text-slate-600 dark:text-slate-400">Sign in to your account</p>
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">TaskFlow</h1>
+            <p class="mt-1 text-slate-600 dark:text-slate-400">{{ t('signInToAccount') }}</p>
+          </div>
+          <app-language-toggle></app-language-toggle>
+        </div>
 
         @if (error()) {
           <p class="mt-4 rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-2 text-sm text-red-700 dark:text-red-300">
@@ -23,7 +30,7 @@ import { AuthService } from './auth.service';
           class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           type="email"
           name="email"
-          placeholder="Email"
+          [placeholder]="t('email')"
           [(ngModel)]="email"
           autocomplete="email"
           required
@@ -33,7 +40,7 @@ import { AuthService } from './auth.service';
             class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pr-10 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
             [type]="showPassword() ? 'text' : 'password'"
             name="password"
-            placeholder="Password"
+            [placeholder]="t('password')"
             [(ngModel)]="password"
             autocomplete="current-password"
             required
@@ -84,13 +91,13 @@ import { AuthService } from './auth.service';
           type="submit"
           [disabled]="loading()"
         >
-          {{ loading() ? 'Signing in...' : 'Sign in' }}
+          {{ loading() ? t('signingIn') : t('signIn') }}
         </button>
 
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
-          Don't have an account?
+          {{ t('dontHaveAccount') }}
           <a routerLink="/register" class="font-medium text-blue-600 dark:text-blue-400"
-            >Register</a
+            >{{ t('register') }}</a
           >
         </p>
       </form>
@@ -100,12 +107,17 @@ import { AuthService } from './auth.service';
 export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly languageService = inject(LanguageService);
 
   email = '';
   password = '';
   showPassword = signal(false);
   error = signal('');
   loading = signal(false);
+
+  t(key: string): string {
+    return this.languageService.translate(key);
+  }
 
   login(): void {
     if (!this.email || !this.password) return;
@@ -115,7 +127,7 @@ export class LoginComponent {
     this.auth.login(this.email, this.password).subscribe({
       next: () => this.router.navigate(['/']),
       error: () => {
-        this.error.set('Invalid email or password');
+        this.error.set(this.languageService.translate('invalidCredentials'));
         this.loading.set(false);
       },
     });

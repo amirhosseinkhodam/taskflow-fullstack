@@ -11,3 +11,9 @@ html {
 html.dark {
   color-scheme: dark;
 }
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+  text-align: right;
+}
