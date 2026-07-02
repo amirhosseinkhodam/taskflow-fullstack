@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
@@ -18,7 +18,7 @@ import { LanguageService } from './language.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [FormsModule, DragDropModule, ThemeToggleComponent, LanguageToggleComponent],
+  imports: [FormsModule, DragDropModule, ThemeToggleComponent, LanguageToggleComponent, RouterLink],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -54,6 +54,10 @@ export class DashboardComponent implements OnInit {
 
   t(key: string): string {
     return this.languageService.translate(key);
+  }
+
+  isAdmin(): boolean {
+    return this.auth.isAdmin();
   }
 
   logout(): void {

@@ -26,8 +26,9 @@ No test setup exists (no spec/e2e files found).
 - **Frontend API calls**: Directly target `http://localhost:3000` (hardcoded in `api.service.ts`). The proxy config (`proxy.conf.json`) only rewrites `/api` → `/`; it's not used for `/projects` or `/tasks` calls.
 - **Swagger**: Available at `http://localhost:3000/api` (auto-served by `@nestjs/swagger`).
 - **CORS**: Backend allows `http://localhost:4200` only.
-- **Auth**: JWT-based. Register at `/auth/register`, login at `/auth/login`. Protected routes (projects, tasks) require `Authorization: Bearer <token>` header.
-- **Frontend routes**: `/login` (public), `/register` (public), `/` dashboard (protected). Auth guard redirects unauthenticated users to `/login`. HTTP interceptor attaches JWT from `localStorage`.
+- **Auth**: JWT-based. Register at `/auth/register`, login at `/auth/login`. Protected routes (projects, tasks) require `Authorization: Bearer <token>` header. JWT payload includes `{ sub, email, role }`.
+- **RBAC**: Role-Based Access Control with two roles: `user` (default) and `admin`. Admin-only actions: create/edit/delete projects, manage users via admin panel.
+- **Frontend routes**: `/login` (public), `/register` (public), `/` dashboard (protected), `/admin` (admin-only). Auth guard redirects unauthenticated users to `/login`. Admin guard redirects non-admins to `/`. HTTP interceptor attaches JWT from `localStorage`.
 
 ## Setup
 
@@ -51,6 +52,21 @@ No test setup exists (no spec/e2e files found).
 - Single quotes, trailing commas (Prettier config).
 - Backend: `backend/src/<module>/` (controller, service, module, model, dto).
 - Frontend: `frontend/src/main.ts` bootstraps with routing; components in `frontend/src/app/` (login, register, dashboard, api, auth services).
+
+## Role-Based Access Control (RBAC)
+
+- **Roles**: `user` (default on registration) and `admin`.
+- **Backend enforcement**: `@Roles('admin')` decorator + `RolesGuard` on protected endpoints. Only `ProjectController` POST/PUT/DELETE are admin-only; all GET endpoints are accessible to authenticated users.
+- **Admin module**: `backend/src/admin/` — `AdminController` provides:
+  - `GET /admin/users` — List all users
+  - `DELETE /admin/users/:id` — Delete user (prevents self-delete)
+  - `PATCH /admin/users/:id/role` — Change user role (prevents self-modification)
+  - `POST /admin/users/:id/change-password` — Admin can change user password
+- **Frontend guards**: `authGuard` (checks `isLoggedIn()`) and `adminGuard` (checks `isLoggedIn() && isAdmin()`) in `frontend/src/main.ts`.
+- **Admin panel**: `frontend/src/app/admin-panel/admin-panel.component.ts` — User management UI with role toggle, password change, delete confirmation.
+- **Dashboard behavior**: "Create Project" form visible only to admins. All users can view projects and create tasks.
+- **Security constraints**: Users cannot delete/promote themselves. Password changes are admin-only.
+- **Setting admin role**: New users get `role: 'user'` by default. To make a user admin, update the `role` column in the `users` table directly: `UPDATE users SET role = 'admin' WHERE email = '<email>';`
 
 ## Dark mode conventions
 

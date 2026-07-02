@@ -2,7 +2,11 @@
 /dist
 /node_modules
 /build
+
+# TypeScript build cache
 .angular/
+*.tsbuildinfo
+angular-compiler*.db*
 
 # Logs
 logs
@@ -55,3 +59,16 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Package manager
+package-lock.json
+yarn.lock
+cargo-lock.toml
+pnpm-lock.yaml
+
+# Build artifacts
+*.min.js
+dist-esbuild
+coverage/
+.nyc_output/
+*.map

@@ -29,12 +29,17 @@ export class AuthService {
       id: number;
       email: string;
       name: string;
+      role: 'user' | 'admin';
     }>(
-      'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name',
+      'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name, role',
       [email, hashed, name],
     );
     const user = result.rows[0];
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
 
     return { token, user };
   }
@@ -44,18 +49,30 @@ export class AuthService {
       id: number;
       email: string;
       name: string;
+      role: 'user' | 'admin';
       password: string;
-    }>('SELECT id, email, name, password FROM users WHERE email = $1', [email]);
+    }>('SELECT id, email, name, role, password FROM users WHERE email = $1', [
+      email,
+    ]);
     const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.jwtService.sign({ sub: user.id, email: user.email });
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
     return {
       token,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     };
   }
 }

@@ -10,6 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
 import { ProjectModel } from '@shared/types/project.model';
 import { ProjectService } from './project.service';
@@ -32,11 +34,15 @@ export class ProjectController {
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async createProject(@Body() body: CreateProjectDto): Promise<ProjectModel> {
     return this.projectService.create(body.name);
   }
 
   @Put(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async updateProject(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProjectDto,
@@ -45,6 +51,8 @@ export class ProjectController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('admin')
   async deleteProject(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
     return this.projectService.delete(id);
   }

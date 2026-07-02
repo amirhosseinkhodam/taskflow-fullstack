@@ -10,6 +10,13 @@ import type {
   UpdateTaskRequest,
 } from '@models/api';
 
+export interface UserModel {
+  id: number;
+  email: string;
+  name: string;
+  role: 'user' | 'admin' | 'superadmin';
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -80,5 +87,22 @@ export class ApiService {
 
   deleteTask(id: number) {
     return this.http.delete<void>(`${this.apiBaseUrl}/tasks/${id}`);
+  }
+
+  // Admin endpoints
+  getUsers() {
+    return this.http.get<UserModel[]>(`${this.apiBaseUrl}/admin/users`);
+  }
+
+  deleteUser(id: number) {
+    return this.http.delete<void>(`${this.apiBaseUrl}/admin/users/${id}`);
+  }
+
+  updateUserRole(id: number, role: 'user' | 'admin') {
+    return this.http.patch<UserModel>(`${this.apiBaseUrl}/admin/users/${id}/role`, { role });
+  }
+
+  changeUserPassword(id: number, password: string) {
+    return this.http.post<void>(`${this.apiBaseUrl}/admin/users/${id}/change-password`, { password });
   }
 }

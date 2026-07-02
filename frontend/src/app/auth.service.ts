@@ -13,7 +13,12 @@ export class AuthService {
   login(email: string, password: string): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.apiBaseUrl}/auth/login`, { email, password })
-      .pipe(tap((res) => localStorage.setItem('token', res.token)));
+      .pipe(
+        tap((res) => {
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('role', res.user.role);
+        }),
+      );
   }
 
   register(
@@ -27,11 +32,17 @@ export class AuthService {
         password,
         name,
       })
-      .pipe(tap((res) => localStorage.setItem('token', res.token)));
+      .pipe(
+        tap((res) => {
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('role', res.user.role);
+        }),
+      );
   }
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     this.router.navigate(['/login']);
   }
 
@@ -41,5 +52,18 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  getRole(): 'user' | 'admin' | 'superadmin' | null {
+    return localStorage.getItem('role') as 'user' | 'admin' | 'superadmin' | null;
+  }
+
+  isAdmin(): boolean {
+    const role = this.getRole();
+    return role === 'admin' || role === 'superadmin';
+  }
+
+  isSuperAdmin(): boolean {
+    return this.getRole() === 'superadmin';
   }
 }
