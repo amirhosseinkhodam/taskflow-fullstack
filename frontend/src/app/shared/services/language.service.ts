@@ -1,6 +1,6 @@
 import { Injectable, signal, effect } from '@angular/core';
-import en from './i18n/en.json';
-import fa from './i18n/fa.json';
+import en from '../../i18n/en.json';
+import fa from '../../i18n/fa.json';
 
 export type Language = 'en' | 'fa';
 
@@ -15,23 +15,23 @@ const translations: Record<Language, Record<string, string>> = { en, fa };
 
 @Injectable({ providedIn: 'root' })
 export class LanguageService {
-  private readonly STORAGE_KEY = 'app-language';
+  readonly #STORAGE_KEY = 'app-language';
 
   readonly languages: LanguageOption[] = [
     { code: 'en', name: 'English', nativeName: 'English', rtl: false },
     { code: 'fa', name: 'Persian', nativeName: 'فارسی', rtl: true },
   ];
 
-  currentLanguage = signal<Language>(this.loadLanguage());
+  currentLanguage = signal<Language>(this.#loadLanguage());
 
   constructor() {
     effect(() => {
       const lang = this.currentLanguage();
-      const option = this.languages.find(l => l.code === lang);
+      const option = this.languages.find((l) => l.code === lang);
       if (option) {
         document.documentElement.lang = lang;
         document.documentElement.dir = option.rtl ? 'rtl' : 'ltr';
-        localStorage.setItem(this.STORAGE_KEY, lang);
+        localStorage.setItem(this.#STORAGE_KEY, lang);
       }
     });
   }
@@ -43,29 +43,29 @@ export class LanguageService {
 
   toggle(): void {
     const current = this.currentLanguage();
-    const index = this.languages.findIndex(l => l.code === current);
+    const index = this.languages.findIndex((l) => l.code === current);
     const nextIndex = (index + 1) % this.languages.length;
     this.currentLanguage.set(this.languages[nextIndex].code);
   }
 
   setLanguage(code: Language): void {
-    if (this.languages.some(l => l.code === code)) {
+    if (this.languages.some((l) => l.code === code)) {
       this.currentLanguage.set(code);
     }
   }
 
   getLanguageOption(code: Language): LanguageOption | undefined {
-    return this.languages.find(l => l.code === code);
+    return this.languages.find((l) => l.code === code);
   }
 
   getCurrentLanguageOption(): LanguageOption {
     return this.getLanguageOption(this.currentLanguage()) ?? this.languages[0];
   }
 
-  private loadLanguage(): Language {
-    const saved = localStorage.getItem(this.STORAGE_KEY) as Language;
-    if (saved && this.languages.some(l => l.code === saved)) {
-      const option = this.languages.find(l => l.code === saved);
+  #loadLanguage(): Language {
+    const saved = localStorage.getItem(this.#STORAGE_KEY) as Language;
+    if (saved && this.languages.some((l) => l.code === saved)) {
+      const option = this.languages.find((l) => l.code === saved);
       if (option) {
         document.documentElement.lang = saved;
         document.documentElement.dir = option.rtl ? 'rtl' : 'ltr';

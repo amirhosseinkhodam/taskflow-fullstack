@@ -4,20 +4,23 @@ import { TaskModel } from '@shared/types/task.model';
 
 @Injectable()
 export class TaskService {
-  constructor(@Inject('DATABASE') private db: Pool) {}
+  readonly #db: Pool;
+  constructor(@Inject('DATABASE') db: Pool) {
+    this.#db = db;
+  }
 
   async create(
     title: string,
     description: string,
     projectId: number,
   ): Promise<TaskModel> {
-    const posResult = await this.db.query<{ max: number | null }>(
+    const posResult = await this.#db.query<{ max: number | null }>(
       `SELECT MAX("position") as max FROM tasks WHERE "projectId" = $1`,
       [projectId],
     );
     const nextPos = (posResult.rows[0]?.max ?? -1) + 1;
 
-    const result = await this.db.query<{ id: number }>(
+    const result = await this.#db.query<{ id: number }>(
       `INSERT INTO tasks (title, description, "projectId", "position")
        VALUES ($1, $2, $3, $4)
        RETURNING id`,
@@ -44,12 +47,12 @@ export class TaskService {
 
     query += ` ORDER BY "position" ASC, id ASC`;
 
-    const result = await this.db.query<TaskModel>(query, params);
+    const result = await this.#db.query<TaskModel>(query, params);
     return result.rows;
   }
 
   async findOne(id: number): Promise<TaskModel | null> {
-    const result = await this.db.query<TaskModel>(
+    const result = await this.#db.query<TaskModel>(
       `SELECT id, title, description, status, "projectId", "position", "createdAt", "updatedAt"
        FROM tasks
        WHERE id = $1`,
@@ -96,7 +99,7 @@ export class TaskService {
     fields.push(`"updatedAt" = CURRENT_TIMESTAMP`);
     params.push(id);
 
-    const result = await this.db.query(
+    const result = await this.#db.query(
       `UPDATE tasks SET ${fields.join(', ')} WHERE id = $${params.length}`,
       params,
     );
@@ -105,7 +108,7 @@ export class TaskService {
   }
 
   async reorder(taskIds: number[]): Promise<void> {
-    const client = await this.db.connect();
+    const client = await this.#db.connect();
     try {
       await client.query('BEGIN');
       for (let i = 0; i < taskIds.length; i++) {
@@ -124,12 +127,14 @@ export class TaskService {
   }
 
   async delete(id: number): Promise<boolean> {
-    const result = await this.db.query(`DELETE FROM tasks WHERE id = $1`, [id]);
+    const result = await this.#db.query(`DELETE FROM tasks WHERE id = $1`, [
+      id,
+    ]);
     return (result.rowCount ?? 0) > 0;
   }
 
   async deleteByProject(projectId: number): Promise<void> {
-    await this.db.query(`DELETE FROM tasks WHERE "projectId" = $1`, [
+    await this.#db.query(`DELETE FROM tasks WHERE "projectId" = $1`, [
       projectId,
     ]);
   }

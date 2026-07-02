@@ -21,11 +21,14 @@ import { AdminService } from './admin.service';
 @Roles('admin')
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  readonly #adminService: AdminService;
+  constructor(adminService: AdminService) {
+    this.#adminService = adminService;
+  }
 
   @Get('users')
   getUsers() {
-    return this.adminService.findAllUsers();
+    return this.#adminService.findAllUsers();
   }
 
   @Delete('users/:id')
@@ -33,7 +36,7 @@ export class AdminController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: Request & { user: { id: number } },
   ) {
-    return this.adminService.deleteUser(id, req.user.id);
+    return this.#adminService.deleteUser(id, req.user.id);
   }
 
   @Patch('users/:id/role')
@@ -42,7 +45,7 @@ export class AdminController {
     @Body('role') role: 'user' | 'admin',
     @Req() req: Request & { user: { id: number } },
   ) {
-    return this.adminService.updateUserRole(id, role, req.user.id);
+    return this.#adminService.updateUserRole(id, role, req.user.id);
   }
 
   @Post('users/:id/change-password')
@@ -51,6 +54,6 @@ export class AdminController {
     @Body('password') password: string,
     @Req() req: Request & { user: { id: number } },
   ) {
-    return this.adminService.updateUserPassword(id, password, req.user.id);
+    return this.#adminService.updateUserPassword(id, password, req.user.id);
   }
 }

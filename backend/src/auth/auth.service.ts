@@ -10,13 +10,15 @@ import { Pool } from 'pg';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @Inject('DATABASE') private readonly db: Pool,
-    private readonly jwtService: JwtService,
-  ) {}
+  readonly #db: Pool;
+  readonly #jwtService: JwtService;
+  constructor(@Inject('DATABASE') db: Pool, jwtService: JwtService) {
+    this.#db = db;
+    this.#jwtService = jwtService;
+  }
 
   async register(email: string, password: string, name: string) {
-    const existing = await this.db.query<{ id: number }>(
+    const existing = await this.#db.query<{ id: number }>(
       'SELECT id FROM users WHERE email = $1',
       [email],
     );
@@ -25,7 +27,7 @@ export class AuthService {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const result = await this.db.query<{
+    const result = await this.#db.query<{
       id: number;
       email: string;
       name: string;
@@ -35,7 +37,7 @@ export class AuthService {
       [email, hashed, name],
     );
     const user = result.rows[0];
-    const token = this.jwtService.sign({
+    const token = this.#jwtService.sign({
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -45,7 +47,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
-    const result = await this.db.query<{
+    const result = await this.#db.query<{
       id: number;
       email: string;
       name: string;
@@ -60,7 +62,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.jwtService.sign({
+    const token = this.#jwtService.sign({
       sub: user.id,
       email: user.email,
       role: user.role,

@@ -3,15 +3,18 @@ import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  readonly #appService: AppService;
+  constructor(appService: AppService) {
+    this.#appService = appService;
+  }
 
   @Get('api/health')
   getHealth(): { status: string } {
-    return this.appService.getHealth();
+    return this.#appService.getHealth();
   }
 
   @Get()
   getHello(): string {
-    return this.appService.getHello();
+    return this.#appService.getHello();
   }
 }

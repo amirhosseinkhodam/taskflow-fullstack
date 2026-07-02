@@ -2,8 +2,8 @@ import { Injectable, signal, effect } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly STORAGE_KEY = 'app-theme';
-  isDark = signal(this.loadTheme());
+  readonly #STORAGE_KEY = 'app-theme';
+  isDark = signal(this.#loadTheme());
 
   constructor() {
     effect(() => {
@@ -19,13 +19,13 @@ export class ThemeService {
   toggle(): void {
     this.isDark.update((dark) => {
       const next = !dark;
-      localStorage.setItem(this.STORAGE_KEY, next ? 'dark' : 'light');
+      localStorage.setItem(this.#STORAGE_KEY, next ? 'dark' : 'light');
       return next;
     });
   }
 
-  private loadTheme(): boolean {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
+  #loadTheme(): boolean {
+    const saved = localStorage.getItem(this.#STORAGE_KEY);
     if (saved) {
       const isDark = saved === 'dark';
       if (isDark) document.documentElement.classList.add('dark');

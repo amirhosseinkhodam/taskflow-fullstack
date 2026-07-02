@@ -5,20 +5,22 @@ import { ProjectModel } from '@shared/types/project.model';
 
 @Injectable()
 export class ProjectService {
-  constructor(
-    @Inject('DATABASE') private readonly db: Pool,
-    private readonly taskService: TaskService,
-  ) {}
+  readonly #db: Pool;
+  readonly #taskService: TaskService;
+  constructor(@Inject('DATABASE') db: Pool, taskService: TaskService) {
+    this.#db = db;
+    this.#taskService = taskService;
+  }
 
   async findAll(): Promise<ProjectModel[]> {
-    const result = await this.db.query<ProjectModel>(
+    const result = await this.#db.query<ProjectModel>(
       'SELECT id, name FROM projects ORDER BY id',
     );
     return result.rows;
   }
 
   async findOne(id: number): Promise<ProjectModel | null> {
-    const result = await this.db.query<ProjectModel>(
+    const result = await this.#db.query<ProjectModel>(
       'SELECT id, name FROM projects WHERE id = $1',
       [id],
     );
@@ -27,7 +29,7 @@ export class ProjectService {
   }
 
   async create(name: string): Promise<ProjectModel> {
-    const result = await this.db.query<ProjectModel>(
+    const result = await this.#db.query<ProjectModel>(
       'INSERT INTO projects (name) VALUES ($1) RETURNING id, name',
       [name],
     );
@@ -40,7 +42,7 @@ export class ProjectService {
       return false;
     }
 
-    const result = await this.db.query(
+    const result = await this.#db.query(
       'UPDATE projects SET name = $1 WHERE id = $2',
       [name, id],
     );
@@ -49,8 +51,8 @@ export class ProjectService {
   }
 
   async delete(id: number): Promise<boolean> {
-    await this.taskService.deleteByProject(id);
-    const result = await this.db.query('DELETE FROM projects WHERE id = $1', [
+    await this.#taskService.deleteByProject(id);
+    const result = await this.#db.query('DELETE FROM projects WHERE id = $1', [
       id,
     ]);
 

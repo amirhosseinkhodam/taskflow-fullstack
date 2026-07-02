@@ -4,7 +4,7 @@ import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
-import { LanguageService } from './language.service';
+import { LanguageService } from '../services/language.service';
 
 @Component({
   selector: 'app-confirm-bottom-sheet',
@@ -14,7 +14,10 @@ import { LanguageService } from './language.service';
     <h3 class="mat-body-large" style="margin: 0 0 8px; font-weight: 500;">
       {{ t('confirmDeleteTask') }}
     </h3>
-    <p class="mat-body-medium text-slate-500 dark:text-slate-400" style="margin: 0 0 16px;">
+    <p
+      class="mat-body-medium text-slate-500 dark:text-slate-400"
+      style="margin: 0 0 16px;"
+    >
       {{ t('confirmDeleteMessage') }}
     </p>
     <div style="display: flex; gap: 8px; justify-content: flex-end;">
@@ -26,19 +29,20 @@ import { LanguageService } from './language.service';
   `,
 })
 export class ConfirmBottomSheetComponent {
-  private readonly bottomSheetRef =
-    inject(MatBottomSheetRef<ConfirmBottomSheetComponent>);
-  private readonly languageService = inject(LanguageService);
+  readonly #bottomSheetRef = inject(
+    MatBottomSheetRef<ConfirmBottomSheetComponent>,
+  );
+  readonly #languageService = inject(LanguageService);
 
   t(key: string): string {
-    return this.languageService.translate(key);
+    return this.#languageService.translate(key);
   }
 
   onConfirm(): void {
-    this.bottomSheetRef.dismiss(true);
+    this.#bottomSheetRef.dismiss(true);
   }
 
   onCancel(): void {
-    this.bottomSheetRef.dismiss(false);
+    this.#bottomSheetRef.dismiss(false);
   }
 }

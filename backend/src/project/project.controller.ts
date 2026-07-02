@@ -19,25 +19,28 @@ import { ProjectService } from './project.service';
 @UseGuards(JwtAuthGuard)
 @Controller('projects')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  readonly #projectService: ProjectService;
+  constructor(projectService: ProjectService) {
+    this.#projectService = projectService;
+  }
 
   @Get()
   async getProjects(): Promise<ProjectModel[]> {
-    return this.projectService.findAll();
+    return this.#projectService.findAll();
   }
 
   @Get(':id')
   async findOneProject(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ProjectModel | null> {
-    return this.projectService.findOne(id);
+    return this.#projectService.findOne(id);
   }
 
   @Post()
   @UseGuards(RolesGuard)
   @Roles('admin')
   async createProject(@Body() body: CreateProjectDto): Promise<ProjectModel> {
-    return this.projectService.create(body.name);
+    return this.#projectService.create(body.name);
   }
 
   @Put(':id')
@@ -47,13 +50,13 @@ export class ProjectController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProjectDto,
   ): Promise<boolean> {
-    return this.projectService.update(id, body.name);
+    return this.#projectService.update(id, body.name);
   }
 
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles('admin')
   async deleteProject(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
-    return this.projectService.delete(id);
+    return this.#projectService.delete(id);
   }
 }

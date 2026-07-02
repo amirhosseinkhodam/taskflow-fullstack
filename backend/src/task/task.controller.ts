@@ -18,23 +18,26 @@ import { TaskService } from './task.service';
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  readonly #taskService: TaskService;
+  constructor(taskService: TaskService) {
+    this.#taskService = taskService;
+  }
 
   @Get()
   findAll(@Query('projectId') projectId?: string): Promise<TaskModel[]> {
-    return this.taskService.findAll(projectId ? Number(projectId) : undefined);
+    return this.#taskService.findAll(projectId ? Number(projectId) : undefined);
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): Promise<TaskModel | null> {
-    return this.taskService.findOne(id);
+    return this.#taskService.findOne(id);
   }
 
   @Post()
   create(
     @Body() body: { title: string; description: string; projectId: number },
   ): Promise<TaskModel> {
-    return this.taskService.create(
+    return this.#taskService.create(
       body.title,
       body.description,
       body.projectId,
@@ -52,7 +55,7 @@ export class TaskController {
       projectId?: number;
     },
   ): Promise<boolean> {
-    return this.taskService.update(
+    return this.#taskService.update(
       id,
       body.title,
       body.description,
@@ -63,11 +66,11 @@ export class TaskController {
 
   @Patch('reorder')
   reorder(@Body() body: { taskIds: number[] }): Promise<void> {
-    return this.taskService.reorder(body.taskIds);
+    return this.#taskService.reorder(body.taskIds);
   }
 
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
-    return this.taskService.delete(id);
+    return this.#taskService.delete(id);
   }
 }

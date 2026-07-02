@@ -9,10 +9,13 @@ import { Pool } from 'pg';
 
 @Injectable()
 export class AdminService {
-  constructor(@Inject('DATABASE') private readonly db: Pool) {}
+  readonly #db: Pool;
+  constructor(@Inject('DATABASE') db: Pool) {
+    this.#db = db;
+  }
 
   async findAllUsers() {
-    const result = await this.db.query<{
+    const result = await this.#db.query<{
       id: number;
       email: string;
       name: string;
@@ -26,7 +29,7 @@ export class AdminService {
       throw new BadRequestException('Cannot delete yourself');
     }
 
-    const target = await this.db.query<{ role: string }>(
+    const target = await this.#db.query<{ role: string }>(
       'SELECT role FROM users WHERE id = $1',
       [id],
     );
@@ -37,7 +40,9 @@ export class AdminService {
       throw new BadRequestException('Cannot delete superadmin');
     }
 
-    const result = await this.db.query('DELETE FROM users WHERE id = $1', [id]);
+    const result = await this.#db.query('DELETE FROM users WHERE id = $1', [
+      id,
+    ]);
     if (result.rowCount === 0) {
       throw new NotFoundException('User not found');
     }
@@ -57,7 +62,7 @@ export class AdminService {
       throw new BadRequestException('Role must be "user" or "admin"');
     }
 
-    const target = await this.db.query<{ role: string }>(
+    const target = await this.#db.query<{ role: string }>(
       'SELECT role FROM users WHERE id = $1',
       [id],
     );
@@ -68,7 +73,7 @@ export class AdminService {
       throw new BadRequestException('Cannot modify superadmin');
     }
 
-    const result = await this.db.query<{
+    const result = await this.#db.query<{
       id: number;
       email: string;
       name: string;
@@ -96,7 +101,7 @@ export class AdminService {
       throw new BadRequestException('Password must be at least 6 characters');
     }
 
-    const target = await this.db.query<{ role: string }>(
+    const target = await this.#db.query<{ role: string }>(
       'SELECT role FROM users WHERE id = $1',
       [id],
     );
@@ -108,7 +113,7 @@ export class AdminService {
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);
-    const result = await this.db.query(
+    const result = await this.#db.query(
       'UPDATE users SET password = $1 WHERE id = $2',
       [hashed, id],
     );

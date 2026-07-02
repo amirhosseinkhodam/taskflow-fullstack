@@ -1,65 +1,45 @@
-import {
-  provideHttpClient,
-  withInterceptors,
-  HttpInterceptorFn,
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter, Routes, CanActivateFn, Router } from '@angular/router';
-import { inject } from '@angular/core';
+import { provideRouter, Routes } from '@angular/router';
 import { AppComponent } from './app/app.component';
-import { AuthService } from './app/auth.service';
-import { ThemeService } from './app/theme.service';
-
-const authGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-  if (auth.isLoggedIn()) return true;
-  return router.parseUrl('/login');
-};
-
-const adminGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
-  const router = inject(Router);
-  if (auth.isLoggedIn() && auth.isAdmin()) return true;
-  return router.parseUrl('/');
-};
+import { authGuard, adminGuard } from './app/core/guards/auth.guard';
+import { authInterceptor } from './app/core/interceptors/auth.interceptor';
+import { ThemeService } from './app/shared/services/theme.service';
 
 const routes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
-      import('./app/login.component').then((m) => m.LoginComponent),
+      import('./app/features/auth/pages/login.component').then(
+        (m) => m.LoginComponent,
+      ),
   },
   {
     path: 'register',
     loadComponent: () =>
-      import('./app/register.component').then((m) => m.RegisterComponent),
+      import('./app/features/auth/pages/register.component').then(
+        (m) => m.RegisterComponent,
+      ),
   },
   {
     path: '',
     loadComponent: () =>
-      import('./app/dashboard.component').then((m) => m.DashboardComponent),
+      import('./app/features/dashboard/pages/dashboard.component').then(
+        (m) => m.DashboardComponent,
+      ),
     canActivate: [authGuard],
   },
   {
     path: 'admin',
     loadComponent: () =>
-      import('./app/admin-panel/admin-panel.component').then((m) => m.AdminPanelComponent),
+      import('./app/features/admin/pages/admin-panel.component').then(
+        (m) => m.AdminPanelComponent,
+      ),
     canActivate: [authGuard, adminGuard],
   },
   { path: '**', redirectTo: '/login' },
 ];
-
-const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    req = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` },
-    });
-  }
-  return next(req);
-};
 
 bootstrapApplication(AppComponent, {
   providers: [
