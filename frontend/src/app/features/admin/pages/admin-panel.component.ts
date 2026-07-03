@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import {
@@ -8,17 +8,14 @@ import {
   MatBottomSheet,
 } from '@angular/material/bottom-sheet';
 import { AdminStore } from '../store/admin.store';
+import { AdminFormService } from '../services/admin-form.service';
 import { AuthStore } from '../../auth/store/auth.store';
 import { LanguageService } from '../../../shared/services/language.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
 import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet.component';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle.component';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle.component';
-import {
-  createPasswordForm,
-  PASSWORD_FORM_DEFAULTS,
-} from '../forms/password.form';
-import type { UserModel } from '../../../core/services/api.service';
+import type { UserModel } from '../services/admin.service';
 
 @Component({
   selector: 'app-admin-panel',
@@ -192,10 +189,10 @@ import type { UserModel } from '../../../core/services/api.service';
                         {{ t('deleteUser') }}
                       </button>
                     </div>
-                    @if (passwordChangeUserId() === user.id) {
+                    @if (store.passwordChangeUserId() === user.id) {
                       <form
-                        [formGroup]="passwordForm"
-                        (ngSubmit)="submitPasswordChange(user.id)"
+                        [formGroup]="adminForm.passwordForm"
+                        (ngSubmit)="submitPasswordChange()"
                         class="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
                       >
                         <input
@@ -211,8 +208,9 @@ import type { UserModel } from '../../../core/services/api.service';
                           [placeholder]="t('confirmPassword')"
                         />
                         @if (
-                          passwordForm.hasError('passwordsMismatch') &&
-                          passwordForm.touched
+                          adminForm.passwordForm.hasError(
+                            'passwordsMismatch'
+                          ) && adminForm.passwordForm.touched
                         ) {
                           <p
                             class="mt-1 text-xs text-red-600 dark:text-red-400"
@@ -221,10 +219,10 @@ import type { UserModel } from '../../../core/services/api.service';
                           </p>
                         }
                         @if (
-                          passwordForm
+                          adminForm.passwordForm
                             .get('newPassword')
                             ?.hasError('minLength') &&
-                          passwordForm.get('newPassword')?.touched
+                          adminForm.passwordForm.get('newPassword')?.touched
                         ) {
                           <p
                             class="mt-1 text-xs text-red-600 dark:text-red-400"
@@ -236,7 +234,7 @@ import type { UserModel } from '../../../core/services/api.service';
                           <button
                             class="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
                             type="submit"
-                            [disabled]="passwordForm.invalid"
+                            [disabled]="adminForm.passwordForm.invalid"
                           >
                             {{ t('save') }}
                           </button>
@@ -285,15 +283,13 @@ import type { UserModel } from '../../../core/services/api.service';
 })
 export class AdminPanelComponent implements OnInit {
   readonly store = inject(AdminStore);
+  readonly adminForm = inject(AdminFormService);
   readonly auth = inject(AuthStore);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
-  readonly #fb = inject(FormBuilder);
 
-  readonly passwordChangeUserId = signal<number | null>(null);
-  readonly passwordForm = createPasswordForm(this.#fb);
   readonly currentUserId = computed(() => this.auth.user()?.id ?? null);
   isPhone = signal(false);
 
@@ -346,20 +342,14 @@ export class AdminPanelComponent implements OnInit {
   }
 
   startPasswordChange(user: UserModel): void {
-    this.passwordChangeUserId.set(user.id);
-    this.passwordForm.reset(PASSWORD_FORM_DEFAULTS);
+    this.store.startPasswordChange(user.id);
   }
 
   cancelPasswordChange(): void {
-    this.passwordChangeUserId.set(null);
-    this.passwordForm.reset(PASSWORD_FORM_DEFAULTS);
+    this.store.cancelPasswordChange();
   }
 
-  submitPasswordChange(userId: number): void {
-    if (this.passwordForm.invalid) return;
-    const { newPassword } = this.passwordForm.value;
-    if (!newPassword) return;
-    this.store.changeUserPassword({ id: userId, password: newPassword });
-    this.cancelPasswordChange();
+  submitPasswordChange(): void {
+    this.store.changePassword();
   }
 }

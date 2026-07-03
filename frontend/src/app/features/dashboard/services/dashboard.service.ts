@@ -1,44 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { TaskStatus } from '../../shared/models/task';
+import type { TaskStatus } from '../../../shared/models/task';
 import type { TaskModel } from '@shared/types/task.model';
 import type { ProjectModel } from '@shared/types/project.model';
-import type { AuthResponse, UserRole } from '@shared/types/auth.model';
 import type {
   HealthResponse,
   CreateTaskRequest,
   UpdateTaskRequest,
-} from '../../shared/models/api';
-
-export interface UserModel {
-  id: number;
-  email: string;
-  name: string;
-  role: UserRole;
-}
+} from '../../../shared/models/api';
 
 @Injectable({ providedIn: 'root' })
-export class ApiService {
+export class DashboardService {
   readonly #http = inject(HttpClient);
   readonly #apiBaseUrl = 'http://localhost:3000';
 
   getHealth() {
     return this.#http.get<HealthResponse>(`${this.#apiBaseUrl}/api/health`);
-  }
-
-  login(email: string, password: string) {
-    return this.#http.post<AuthResponse>(`${this.#apiBaseUrl}/auth/login`, {
-      email,
-      password,
-    });
-  }
-
-  register(email: string, password: string, name: string) {
-    return this.#http.post<AuthResponse>(`${this.#apiBaseUrl}/auth/register`, {
-      email,
-      password,
-      name,
-    });
   }
 
   getProjects() {
@@ -89,28 +66,5 @@ export class ApiService {
 
   deleteTask(id: number) {
     return this.#http.delete<void>(`${this.#apiBaseUrl}/tasks/${id}`);
-  }
-
-  // Admin endpoints
-  getUsers() {
-    return this.#http.get<UserModel[]>(`${this.#apiBaseUrl}/admin/users`);
-  }
-
-  deleteUser(id: number) {
-    return this.#http.delete<void>(`${this.#apiBaseUrl}/admin/users/${id}`);
-  }
-
-  updateUserRole(id: number, role: UserRole) {
-    return this.#http.patch<UserModel>(
-      `${this.#apiBaseUrl}/admin/users/${id}/role`,
-      { role },
-    );
-  }
-
-  changeUserPassword(id: number, password: string) {
-    return this.#http.post<void>(
-      `${this.#apiBaseUrl}/admin/users/${id}/change-password`,
-      { password },
-    );
   }
 }

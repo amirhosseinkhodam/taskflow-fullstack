@@ -12,7 +12,8 @@ import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../services/auth.service';
+import { AuthFormService } from '../services/auth-form.service';
 import type { AuthResponse, UserRole } from '@shared/types/auth.model';
 
 interface AuthUser {
@@ -61,12 +62,19 @@ export const AuthStore = signalStore(
     ),
   })),
   withMethods(
-    (store, apiService = inject(ApiService), router = inject(Router)) => {
-      const login = rxMethod<{ email: string; password: string }>(
+    (
+      store,
+      authService = inject(AuthService),
+      router = inject(Router),
+      authForm = inject(AuthFormService),
+    ) => {
+      const login = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { isLoading: true, error: null })),
-          switchMap(({ email, password }) =>
-            apiService.login(email, password).pipe(
+          switchMap(() => {
+            if (authForm.loginForm.invalid) return [];
+            const { email, password } = authForm.loginForm.value;
+            return authService.login(email!, password!).pipe(
               tapResponse({
                 next: (response: AuthResponse) => {
                   localStorage.setItem('token', response.token);
@@ -88,20 +96,18 @@ export const AuthStore = signalStore(
                   });
                 },
               }),
-            ),
-          ),
+            );
+          }),
         ),
       );
 
-      const register = rxMethod<{
-        email: string;
-        password: string;
-        name: string;
-      }>(
+      const register = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { isLoading: true, error: null })),
-          switchMap(({ email, password, name }) =>
-            apiService.register(email, password, name).pipe(
+          switchMap(() => {
+            if (authForm.registerForm.invalid) return [];
+            const { name, email, password } = authForm.registerForm.value;
+            return authService.register(email!, password!, name!).pipe(
               tapResponse({
                 next: (response: AuthResponse) => {
                   localStorage.setItem('token', response.token);
@@ -123,8 +129,8 @@ export const AuthStore = signalStore(
                   });
                 },
               }),
-            ),
-          ),
+            );
+          }),
         ),
       );
 

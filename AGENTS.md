@@ -203,6 +203,13 @@ frontend/src/app/
 - Components inject `FormBuilder` and call the factory: `readonly #fb = inject(FormBuilder); readonly form = createLoginForm(this.#fb);`.
 - Keeps form configuration (fields, validators, defaults) separate from component logic.
 
+### Form services in stores
+
+- **Forms are created and managed in the store, not the component.** Instead of passing form values from component to store via method parameters, inject the form service (or `FormBuilder`) directly into the store and build the form there.
+- This eliminates data-passing boilerplate between components and stores — the store owns the form state and can read values directly when needed (e.g., `this.form.value.title`).
+- **Pattern**: The store defines a `form` property (via `withState` or `withComputed`), creates it using an injected form factory, and template-bound methods (`saveTask`, `login`, etc.) read values straight from `this.form`.
+- **Why**: Form services are `providedIn: 'root'`, so injecting them in the store is just as natural as injecting `HttpClient` or `ApiService`. The store becomes the single source of truth for both domain state and form state, removing the need to shuttle data through component method calls.
+
 ### Component decomposition (SOLID/DRY)
 
 - **Page components** (in `pages/`) act as orchestrators — they inject stores, compose layout from sub-components, and wire events.

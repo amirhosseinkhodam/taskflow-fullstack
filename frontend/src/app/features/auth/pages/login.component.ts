@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthStore } from '../store/auth.store';
+import { AuthFormService } from '../services/auth-form.service';
 import { LanguageService } from '../../../shared/services/language.service';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle.component';
 import { PasswordInputComponent } from '../components/password-input.component';
-import { createLoginForm } from '../forms/login.form';
 
 @Component({
   selector: 'app-login',
@@ -19,8 +19,8 @@ import { createLoginForm } from '../forms/login.form';
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form
-        [formGroup]="form"
-        (ngSubmit)="login()"
+        [formGroup]="authForm.loginForm"
+        (ngSubmit)="auth.login()"
         class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
         <div class="flex items-center justify-between mb-6">
@@ -79,17 +79,10 @@ import { createLoginForm } from '../forms/login.form';
 })
 export class LoginComponent {
   readonly auth = inject(AuthStore);
+  readonly authForm = inject(AuthFormService);
   readonly #languageService = inject(LanguageService);
-  readonly #fb = inject(FormBuilder);
-  readonly form = createLoginForm(this.#fb);
 
   t(key: string): string {
     return this.#languageService.translate(key);
-  }
-
-  login(): void {
-    if (this.form.invalid) return;
-    const { email, password } = this.form.value;
-    this.auth.login({ email: email!, password: password! });
   }
 }

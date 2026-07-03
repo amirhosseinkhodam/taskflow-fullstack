@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -6,6 +6,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { DashboardStore } from '../store/dashboard.store';
+import { DashboardFormService } from '../services/dashboard-form.service';
 import { AuthStore } from '../../auth/store/auth.store';
 import { TaskFormComponent } from '../components/task-form.component';
 import { TaskListComponent } from '../components/task-list.component';
@@ -108,10 +109,10 @@ import type { TaskModel } from '@shared/types/task.model';
           <section class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
             <app-task-form
               [projects]="store.projects()"
-              [editingTask]="editingTask()"
-              (submitTask)="onSubmitTask($event)"
-              (cancelEdit)="onCancelEdit()"
-              (projectChange)="onProjectChange($event)"
+              [form]="dashboardForm.taskForm"
+              (submitForm)="store.saveTask()"
+              (cancelEdit)="store.cancelEdit()"
+              (projectChange)="store.setSelectedProjectId($event)"
             />
           </section>
         </section>
@@ -119,10 +120,10 @@ import type { TaskModel } from '@shared/types/task.model';
         <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
           <app-task-form
             [projects]="store.projects()"
-            [editingTask]="editingTask()"
-            (submitTask)="onSubmitTask($event)"
-            (cancelEdit)="onCancelEdit()"
-            (projectChange)="onProjectChange($event)"
+            [form]="dashboardForm.taskForm"
+            (submitForm)="store.saveTask()"
+            (cancelEdit)="store.cancelEdit()"
+            (projectChange)="store.setSelectedProjectId($event)"
           />
         </section>
       }
@@ -131,7 +132,7 @@ import type { TaskModel } from '@shared/types/task.model';
         <app-task-list
           [tasks]="store.tasks()"
           (reorder)="onReorder($event)"
-          (editTask)="onStartEdit($event)"
+          (editTask)="store.startEdit($event)"
           (toggleTask)="store.toggleTask($event)"
           (deleteTask)="confirmDelete($event)"
           (refresh)="store.loadTasks()"
@@ -142,18 +143,13 @@ import type { TaskModel } from '@shared/types/task.model';
 })
 export class DashboardComponent implements OnInit {
   readonly store = inject(DashboardStore);
+  readonly dashboardForm = inject(DashboardFormService);
   readonly auth = inject(AuthStore);
   readonly #router = inject(Router);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
-
-  readonly editingTask = computed(() => {
-    const id = this.store.editingTaskId();
-    if (!id) return null;
-    return this.store.tasks().find((t) => t.id === id) ?? null;
-  });
 
   projectName = signal('');
   isPhone = signal(false);
@@ -203,29 +199,5 @@ export class DashboardComponent implements OnInit {
       if (!confirmed) return;
       this.store.deleteTask(task);
     });
-  }
-
-  onStartEdit(task: TaskModel): void {
-    this.store.startEdit(task);
-  }
-
-  onCancelEdit(): void {
-    this.store.cancelEdit();
-  }
-
-  onSubmitTask(values: {
-    title: string;
-    description: string;
-    projectId: number;
-  }): void {
-    if (!values.title?.trim()) return;
-    this.store.setTaskTitle(values.title);
-    this.store.setTaskDescription(values.description ?? '');
-    if (values.projectId) this.store.setSelectedProjectId(values.projectId);
-    this.store.saveTask();
-  }
-
-  onProjectChange(projectId: number): void {
-    this.store.setSelectedProjectId(projectId);
   }
 }

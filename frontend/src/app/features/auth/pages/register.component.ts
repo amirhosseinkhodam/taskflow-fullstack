@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthStore } from '../store/auth.store';
+import { AuthFormService } from '../services/auth-form.service';
 import { LanguageService } from '../../../shared/services/language.service';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle.component';
 import { PasswordInputComponent } from '../components/password-input.component';
-import { createRegisterForm } from '../forms/register.form';
 
 @Component({
   selector: 'app-register',
@@ -19,8 +19,8 @@ import { createRegisterForm } from '../forms/register.form';
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form
-        [formGroup]="form"
-        (ngSubmit)="register()"
+        [formGroup]="authForm.registerForm"
+        (ngSubmit)="auth.register()"
         class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
         <div class="flex items-center justify-between mb-6">
@@ -86,17 +86,10 @@ import { createRegisterForm } from '../forms/register.form';
 })
 export class RegisterComponent {
   readonly auth = inject(AuthStore);
+  readonly authForm = inject(AuthFormService);
   readonly #languageService = inject(LanguageService);
-  readonly #fb = inject(FormBuilder);
-  readonly form = createRegisterForm(this.#fb);
 
   t(key: string): string {
     return this.#languageService.translate(key);
-  }
-
-  register(): void {
-    if (this.form.invalid) return;
-    const { name, email, password } = this.form.value;
-    this.auth.register({ email: email!, password: password!, name: name! });
   }
 }
