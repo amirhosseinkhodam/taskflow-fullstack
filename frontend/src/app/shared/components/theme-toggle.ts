@@ -1,11 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ThemeService } from '../services/theme';
 
 @Component({
   selector: 'app-theme-toggle',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <button
       class="theme-switch"
@@ -145,5 +144,5 @@ import { ThemeService } from '../services/theme';
   ],
 })
 export class ThemeToggleComponent {
-  theme = inject(ThemeService);
+  readonly theme = inject(ThemeService);
 }

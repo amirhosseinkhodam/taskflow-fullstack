@@ -1,12 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { LanguageService, LanguageOptionModel } from '../services/language';
 import { ThemeService } from '../services/theme';
 
 @Component({
   selector: 'app-language-toggle',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <button
       class="language-switch"

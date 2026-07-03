@@ -1,21 +1,21 @@
 import type { TaskStatus } from './task';
 
 export interface HealthResponseModel {
-  status: string;
+  readonly status: string;
 }
 
 export interface CreateProjectRequestModel {
-  name: string;
+  readonly name: string;
 }
 
 export interface CreateTaskRequestModel {
-  title: string;
-  description: string;
-  projectId: number;
+  readonly title: string;
+  readonly description: string;
+  readonly projectId: number;
 }
 
 export interface UpdateTaskRequestModel {
-  title?: string;
-  description?: string;
-  status?: TaskStatus;
+  readonly title?: string;
+  readonly description?: string;
+  readonly status?: TaskStatus;
 }

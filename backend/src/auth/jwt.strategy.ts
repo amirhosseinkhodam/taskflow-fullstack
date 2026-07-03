@@ -18,13 +18,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: {
     sub: number;
     email: string;
-    role: 'user' | 'admin';
+    role: 'user' | 'admin' | 'superAdmin';
   }) {
     const result = await this.#db.query<{
       id: number;
       email: string;
       name: string;
-      role: 'user' | 'admin';
+      role: 'user' | 'admin' | 'superAdmin';
     }>('SELECT id, email, name, role FROM users WHERE id = $1', [payload.sub]);
     const user = result.rows[0];
     if (!user) throw new UnauthorizedException();

@@ -1,6 +1,11 @@
 export type UserRole = 'user' | 'admin' | 'superAdmin';
 
 export interface AuthResponseModel {
-  token: string;
-  user: { id: number; email: string; name: string; role: UserRole };
+  readonly token: string;
+  readonly user: {
+    readonly id: number;
+    readonly email: string;
+    readonly name: string;
+    readonly role: UserRole;
+  };
 }

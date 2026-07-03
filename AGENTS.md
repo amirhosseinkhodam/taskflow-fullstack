@@ -300,6 +300,12 @@ Rules:
   }
   ```
 
+### TypeScript hygiene rules
+
+- **Use `interface` instead of `type`** for object shapes. Union types (`type X = 'a' | 'b'`) are the only acceptable use of `type`.
+- **`readonly` on all immutable properties**: Add `readonly` to every interface and class property that is assigned once and never mutated. This includes DTOs, model interfaces, and injected singleton services exposed to templates. Module-level `const` variables are already immutable by the `const` binding — `readonly` applies to properties, not local bindings.
+- **Remove dead code**: Always remove unused imports, unused variables, unused `const` declarations, and anything else that isn't referenced. No dead code should survive review.
+
 ### Component decomposition (SOLID/DRY)
 
 - **Page components** (in `pages/`) act as orchestrators — they inject stores, compose layout from sub-components, and wire events.

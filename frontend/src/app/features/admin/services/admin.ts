@@ -3,8 +3,6 @@ import { Injectable, inject } from '@angular/core';
 import type { UserRole } from '@shared/types/auth';
 import type { UserModel } from '../models/admin';
 
-export type { UserModel };
-
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   readonly #http = inject(HttpClient);

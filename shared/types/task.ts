@@ -1,10 +1,10 @@
 export interface TaskModel {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  projectId: number;
-  position: number;
-  createdAt: string;
-  updatedAt: string;
+  readonly id: number;
+  readonly title: string;
+  readonly description: string;
+  readonly status: string;
+  readonly projectId: number;
+  readonly position: number;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 }

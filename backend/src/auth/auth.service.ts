@@ -31,7 +31,7 @@ export class AuthService {
       id: number;
       email: string;
       name: string;
-      role: 'user' | 'admin';
+      role: 'user' | 'admin' | 'superAdmin';
     }>(
       'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name, role',
       [email, hashed, name],
@@ -51,7 +51,7 @@ export class AuthService {
       id: number;
       email: string;
       name: string;
-      role: 'user' | 'admin';
+      role: 'user' | 'admin' | 'superAdmin';
       password: string;
     }>('SELECT id, email, name, role, password FROM users WHERE email = $1', [
       email,
