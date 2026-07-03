@@ -1,14 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { AuthStore } from '../store/auth.store';
-import { AuthFormService } from '../services/auth-form.service';
-import { LanguageService } from '../../../shared/services/language.service';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle.component';
-import { PasswordInputComponent } from '../components/password-input.component';
+import { AuthStore } from '../store/auth';
+import { LoginFormService } from '../forms/login';
+import { LanguageService } from '../../../shared/services/language';
+import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
+import { PasswordInputComponent } from '../components/password-input';
 
 @Component({
-  selector: 'app-register',
+  selector: 'app-login',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -19,8 +19,8 @@ import { PasswordInputComponent } from '../components/password-input.component';
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form
-        [formGroup]="authForm.registerForm"
-        (ngSubmit)="auth.register()"
+        [formGroup]="loginForm.form"
+        (ngSubmit)="auth.login()"
         class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
         <div class="flex items-center justify-between mb-6">
@@ -29,7 +29,7 @@ import { PasswordInputComponent } from '../components/password-input.component';
               TaskFlow
             </h1>
             <p class="mt-1 text-slate-600 dark:text-slate-400">
-              {{ t('createAccount') }}
+              {{ t('signInToAccount') }}
             </p>
           </div>
           <app-language-toggle></app-language-toggle>
@@ -45,13 +45,6 @@ import { PasswordInputComponent } from '../components/password-input.component';
 
         <input
           class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
-          type="text"
-          formControlName="name"
-          [placeholder]="t('name')"
-          autocomplete="name"
-        />
-        <input
-          class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
@@ -61,7 +54,7 @@ import { PasswordInputComponent } from '../components/password-input.component';
         <app-password-input
           controlName="password"
           [placeholderValue]="t('password')"
-          autocompleteValue="new-password"
+          autocompleteValue="current-password"
         />
 
         <button
@@ -69,24 +62,24 @@ import { PasswordInputComponent } from '../components/password-input.component';
           type="submit"
           [disabled]="auth.isLoading()"
         >
-          {{ auth.isLoading() ? t('creatingAccount') : t('registerButton') }}
+          {{ auth.isLoading() ? t('signingIn') : t('signIn') }}
         </button>
 
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
-          {{ t('alreadyHaveAccount') }}
+          {{ t('dontHaveAccount') }}
           <a
-            routerLink="/login"
+            routerLink="/register"
             class="font-medium text-blue-600 dark:text-blue-400"
-            >{{ t('signIn') }}</a
+            >{{ t('register') }}</a
           >
         </p>
       </form>
     </main>
   `,
 })
-export class RegisterComponent {
+export class LoginComponent {
   readonly auth = inject(AuthStore);
-  readonly authForm = inject(AuthFormService);
+  readonly loginForm = inject(LoginFormService);
   readonly #languageService = inject(LanguageService);
 
   t(key: string): string {

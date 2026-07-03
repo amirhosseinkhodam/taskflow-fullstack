@@ -4,7 +4,7 @@ import fa from '../../i18n/fa.json';
 
 export type Language = 'en' | 'fa';
 
-export interface LanguageOption {
+export interface LanguageOptionModel {
   code: Language;
   name: string;
   nativeName: string;
@@ -17,7 +17,7 @@ const translations: Record<Language, Record<string, string>> = { en, fa };
 export class LanguageService {
   readonly #STORAGE_KEY = 'app-language';
 
-  readonly languages: LanguageOption[] = [
+  readonly languages: LanguageOptionModel[] = [
     { code: 'en', name: 'English', nativeName: 'English', rtl: false },
     { code: 'fa', name: 'Persian', nativeName: 'فارسی', rtl: true },
   ];
@@ -54,11 +54,11 @@ export class LanguageService {
     }
   }
 
-  getLanguageOption(code: Language): LanguageOption | undefined {
+  getLanguageOption(code: Language): LanguageOptionModel | undefined {
     return this.languages.find((l) => l.code === code);
   }
 
-  getCurrentLanguageOption(): LanguageOption {
+  getCurrentLanguageOption(): LanguageOptionModel {
     return this.getLanguageOption(this.currentLanguage()) ?? this.languages[0];
   }
 

@@ -10,10 +10,10 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
-import { DashboardService } from '../services/dashboard.service';
-import { DashboardFormService } from '../services/dashboard-form.service';
-import type { ProjectModel } from '@shared/types/project.model';
-import type { TaskModel } from '@shared/types/task.model';
+import { DashboardService } from '../services/dashboard';
+import { TaskFormService } from '../forms/task';
+import type { ProjectModel } from '@shared/types/project';
+import type { TaskModel } from '@shared/types/task';
 
 interface DashboardStateModel {
   projects: ProjectModel[];
@@ -45,7 +45,7 @@ export const DashboardStore = signalStore(
     (
       store,
       dashboardService = inject(DashboardService),
-      dashboardForm = inject(DashboardFormService),
+      taskForm = inject(TaskFormService),
     ) => {
       const loadHealth = rxMethod<void>(
         pipe(
@@ -70,9 +70,7 @@ export const DashboardStore = signalStore(
                 next: (projects) => {
                   const selectedProjectId =
                     store.selectedProjectId() || (projects[0]?.id ?? 0);
-                  dashboardForm.taskForm.patchValue({
-                    projectId: selectedProjectId,
-                  });
+                  taskForm.patchProjectId(selectedProjectId);
                   patchState(store, {
                     projects,
                     selectedProjectId,
@@ -112,9 +110,7 @@ export const DashboardStore = signalStore(
                 next: (projects) => {
                   const selectedProjectId =
                     store.selectedProjectId() || (projects[0]?.id ?? 0);
-                  dashboardForm.taskForm.patchValue({
-                    projectId: selectedProjectId,
-                  });
+                  taskForm.patchProjectId(selectedProjectId);
                   patchState(store, { projects, selectedProjectId });
                   dashboardService
                     .getTasks(selectedProjectId || undefined)
@@ -138,7 +134,7 @@ export const DashboardStore = signalStore(
             dashboardService.createProject(name).pipe(
               tapResponse({
                 next: (project) => {
-                  dashboardForm.taskForm.patchValue({ projectId: project.id });
+                  taskForm.patchProjectId(project.id);
                   patchState(store, {
                     projects: [...store.projects(), project],
                     selectedProjectId: project.id,
@@ -158,7 +154,7 @@ export const DashboardStore = signalStore(
       );
 
       const setSelectedProjectId = (id: number) => {
-        dashboardForm.taskForm.patchValue({ projectId: id });
+        taskForm.patchProjectId(id);
         patchState(store, { selectedProjectId: id });
         dashboardService.getTasks(id || undefined).subscribe({
           next: (tasks) => patchState(store, { tasks }),
@@ -167,18 +163,13 @@ export const DashboardStore = signalStore(
       };
 
       const startEdit = (task: TaskModel) => {
-        dashboardForm.taskForm.patchValue({
-          title: task.title,
-          projectId: task.projectId,
-          description: task.description,
-        });
+        taskForm.patchForEdit(task.title, task.projectId, task.description);
         patchState(store, { editingTaskId: task.id });
       };
 
       const cancelEdit = () => {
-        dashboardForm.reset();
         const projectId = store.selectedProjectId();
-        dashboardForm.taskForm.patchValue({ projectId });
+        taskForm.resetForm(projectId);
         patchState(store, { editingTaskId: null });
       };
 
@@ -187,19 +178,21 @@ export const DashboardStore = signalStore(
           tap(() => patchState(store, { isLoading: true })),
           switchMap(() => {
             const { title, projectId, description } =
-              dashboardForm.taskForm.value;
+              taskForm.form.getRawValue();
             if (!title?.trim() || !projectId) {
               return [];
             }
             if (store.editingTaskId()) {
               return dashboardService
-                .updateTask(store.editingTaskId()!, title, description)
+                .updateTask(store.editingTaskId()!, {
+                  title,
+                  description,
+                })
                 .pipe(
                   tapResponse({
                     next: () => {
-                      dashboardForm.reset();
                       const pid = store.selectedProjectId();
-                      dashboardForm.taskForm.patchValue({ projectId: pid });
+                      taskForm.resetForm(pid);
                       patchState(store, {
                         editingTaskId: null,
                         isLoading: false,
@@ -220,13 +213,12 @@ export const DashboardStore = signalStore(
                 );
             }
             return dashboardService
-              .createTask(title, description ?? '', projectId)
+              .createTask({ title, description: description ?? '', projectId })
               .pipe(
                 tapResponse({
                   next: () => {
-                    dashboardForm.reset();
                     const pid = store.selectedProjectId();
-                    dashboardForm.taskForm.patchValue({ projectId: pid });
+                    taskForm.resetForm(pid);
                     patchState(store, {
                       isLoading: false,
                       message: 'taskCreated',

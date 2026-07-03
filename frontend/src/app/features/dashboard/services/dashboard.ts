@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { TaskStatus } from '../../../shared/models/task';
-import type { TaskModel } from '@shared/types/task.model';
-import type { ProjectModel } from '@shared/types/project.model';
+import type { TaskModel } from '@shared/types/task';
+import type { ProjectModel } from '@shared/types/project';
 import type {
-  HealthResponse,
-  CreateTaskRequest,
-  UpdateTaskRequest,
+  HealthResponseModel,
+  CreateTaskRequestModel,
+  UpdateTaskRequestModel,
 } from '../../../shared/models/api';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +15,9 @@ export class DashboardService {
   readonly #apiBaseUrl = 'http://localhost:3000';
 
   getHealth() {
-    return this.#http.get<HealthResponse>(`${this.#apiBaseUrl}/api/health`);
+    return this.#http.get<HealthResponseModel>(
+      `${this.#apiBaseUrl}/api/health`,
+    );
   }
 
   getProjects() {
@@ -33,29 +35,16 @@ export class DashboardService {
     });
   }
 
-  createTask(title: string, description: string, projectId: number) {
-    const taskRequest: CreateTaskRequest = { title, description, projectId };
-    return this.#http.post<TaskModel>(`${this.#apiBaseUrl}/tasks`, taskRequest);
+  createTask(value: CreateTaskRequestModel) {
+    return this.#http.post<TaskModel>(`${this.#apiBaseUrl}/tasks`, value);
   }
 
-  updateTask(
-    id: number,
-    title?: string,
-    description?: string,
-    status?: TaskStatus,
-  ) {
-    const taskRequest: UpdateTaskRequest = {};
-    if (title !== undefined) taskRequest.title = title;
-    if (description !== undefined) taskRequest.description = description;
-    if (status !== undefined) taskRequest.status = status;
-    return this.#http.put<TaskModel>(
-      `${this.#apiBaseUrl}/tasks/${id}`,
-      taskRequest,
-    );
+  updateTask(id: number, value: UpdateTaskRequestModel) {
+    return this.#http.put<TaskModel>(`${this.#apiBaseUrl}/tasks/${id}`, value);
   }
 
   updateTaskStatus(id: number, status: TaskStatus) {
-    return this.updateTask(id, undefined, undefined, status);
+    return this.updateTask(id, { status });
   }
 
   reorderTasks(taskIds: number[]) {

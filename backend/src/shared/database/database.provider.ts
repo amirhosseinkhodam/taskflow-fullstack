@@ -10,13 +10,13 @@ async function ensureTables(pool: Pool): Promise<void> {
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       name TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'superadmin'))
+      role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'superAdmin'))
     )
   `);
 
   await pool.query(`
     ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'superadmin'))
+    ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'superAdmin'))
   `);
 
   await pool.query(`

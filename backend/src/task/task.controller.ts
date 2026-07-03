@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { TaskModel } from '@shared/types/task.model';
+import { TaskModel } from '@shared/types/task';
 import { TaskService } from './task.service';
 
 @UseGuards(JwtAuthGuard)

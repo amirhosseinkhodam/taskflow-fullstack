@@ -19,7 +19,7 @@ export class AdminService {
       id: number;
       email: string;
       name: string;
-      role: 'user' | 'admin' | 'superadmin';
+      role: 'user' | 'admin' | 'superAdmin';
     }>('SELECT id, email, name, role FROM users ORDER BY id');
     return result.rows;
   }
@@ -36,8 +36,8 @@ export class AdminService {
     if (target.rows.length === 0) {
       throw new NotFoundException('User not found');
     }
-    if (target.rows[0].role === 'superadmin') {
-      throw new BadRequestException('Cannot delete superadmin');
+    if (target.rows[0].role === 'superAdmin') {
+      throw new BadRequestException('Cannot delete superAdmin');
     }
 
     const result = await this.#db.query('DELETE FROM users WHERE id = $1', [
@@ -51,7 +51,7 @@ export class AdminService {
 
   async updateUserRole(
     id: number,
-    role: 'user' | 'admin' | 'superadmin',
+    role: 'user' | 'admin' | 'superAdmin',
     requesterId: number,
   ) {
     if (id === requesterId) {
@@ -69,15 +69,15 @@ export class AdminService {
     if (target.rows.length === 0) {
       throw new NotFoundException('User not found');
     }
-    if (target.rows[0].role === 'superadmin') {
-      throw new BadRequestException('Cannot modify superadmin');
+    if (target.rows[0].role === 'superAdmin') {
+      throw new BadRequestException('Cannot modify superAdmin');
     }
 
     const result = await this.#db.query<{
       id: number;
       email: string;
       name: string;
-      role: 'user' | 'admin' | 'superadmin';
+      role: 'user' | 'admin' | 'superAdmin';
     }>(
       'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, email, name, role',
       [role, id],
@@ -108,8 +108,8 @@ export class AdminService {
     if (target.rows.length === 0) {
       throw new NotFoundException('User not found');
     }
-    if (target.rows[0].role === 'superadmin') {
-      throw new BadRequestException('Cannot change superadmin password');
+    if (target.rows[0].role === 'superAdmin') {
+      throw new BadRequestException('Cannot change superAdmin password');
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);

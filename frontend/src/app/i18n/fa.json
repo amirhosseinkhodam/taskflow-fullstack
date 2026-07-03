@@ -50,7 +50,7 @@
   "users": "کاربران",
   "role": "نقش",
   "admin": "ادمین",
-  "superadmin": "سوپر ادمین",
+  "superAdmin": "سوپر ادمین",
   "user": "کاربر",
   "promoteToAdmin": "ارتقا به ادمین",
   "demoteToUser": "تنزل به کاربر",

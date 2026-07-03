@@ -10,8 +10,9 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
-import { AdminService, type UserModel } from '../services/admin.service';
-import { AdminFormService } from '../services/admin-form.service';
+import { AdminService } from '../services/admin';
+import { PasswordFormService } from '../forms/password';
+import type { UserModel } from '../models/admin';
 
 interface AdminStateModel {
   users: UserModel[];
@@ -36,7 +37,7 @@ export const AdminStore = signalStore(
     (
       store,
       adminService = inject(AdminService),
-      adminForm = inject(AdminFormService),
+      passwordForm = inject(PasswordFormService),
     ) => {
       const loadUsers = rxMethod<void>(
         pipe(
@@ -97,12 +98,12 @@ export const AdminStore = signalStore(
       );
 
       const startPasswordChange = (userId: number) => {
-        adminForm.reset();
+        passwordForm.resetForm();
         patchState(store, { passwordChangeUserId: userId });
       };
 
       const cancelPasswordChange = () => {
-        adminForm.reset();
+        passwordForm.resetForm();
         patchState(store, { passwordChangeUserId: null });
       };
 
@@ -110,12 +111,12 @@ export const AdminStore = signalStore(
         pipe(
           switchMap(() => {
             const userId = store.passwordChangeUserId();
-            if (!userId || adminForm.passwordForm.invalid) return [];
-            const { newPassword } = adminForm.passwordForm.value;
-            return adminService.changeUserPassword(userId, newPassword!).pipe(
+            if (!userId || passwordForm.form.invalid) return [];
+            const { newPassword } = passwordForm.form.getRawValue();
+            return adminService.changeUserPassword(userId, newPassword).pipe(
               tapResponse({
                 next: () => {
-                  adminForm.reset();
+                  passwordForm.resetForm();
                   patchState(store, {
                     message: 'passwordChanged',
                     passwordChangeUserId: null,

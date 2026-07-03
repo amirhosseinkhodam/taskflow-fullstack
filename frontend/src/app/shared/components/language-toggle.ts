@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LanguageService, LanguageOption } from '../services/language.service';
-import { ThemeService } from '../services/theme.service';
+import { LanguageService, LanguageOptionModel } from '../services/language';
+import { ThemeService } from '../services/theme';
 
 @Component({
   selector: 'app-language-toggle',
@@ -106,7 +106,7 @@ export class LanguageToggleComponent {
   readonly #languageService = inject(LanguageService);
   readonly theme = inject(ThemeService);
 
-  get currentLanguage(): LanguageOption {
+  get currentLanguage(): LanguageOptionModel {
     return this.#languageService.getCurrentLanguageOption();
   }
 

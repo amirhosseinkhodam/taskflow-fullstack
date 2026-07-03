@@ -55,6 +55,31 @@ No test setup exists (no spec/e2e files found).
 - Backend: `backend/src/<module>/` (controller, service, module, model, dto).
 - Frontend: `frontend/src/main.ts` bootstraps with routing; components in `frontend/src/app/features/<name>/pages/`.
 
+### Naming conventions
+
+- **String literals / enum values**: Use camelCase — e.g. `'superAdmin'`, `'taskCreated'`, `'couldNotLoadTasks'`.
+- **Interfaces / types**: Always append `Model` suffix — e.g. `AuthPayloadModel`, `TaskModel`, `UserModel`, `HealthResponseModel`, `CreateTaskRequestModel`.
+- **Classes / services / components / pipes / guards / interceptors**: PascalCase — e.g. `DashboardStore`, `TaskFormService`, `AuthInterceptor`.
+- **Files**: Match the primary export — `auth.service.ts` exports `AuthService`, `task.model.ts` exports `TaskModel`, `auth.store.ts` exports `AuthStore`.
+- **Translation keys**: camelCase — e.g. `superAdmin`, `signInToAccount`, `couldNotLoadTasks`.
+
+### File naming (drop directory-redundant suffixes)
+
+Files inside a feature subdirectory (`models/`, `services/`, `store/`, `forms/`, `pages/`, `components/`, `pipes/`) do **not** repeat the directory name as a suffix. The directory provides the context.
+
+| Directory | Before | After |
+|---|---|---|
+| `models/` | `auth.model.ts` | `auth.ts` |
+| `services/` | `auth.service.ts` | `auth.ts` |
+| `store/` | `auth.store.ts` | `auth.ts` |
+| `forms/` | `login.form.service.ts` | `login.ts` |
+| `pages/` | `login.component.ts` | `login.ts` |
+| `components/` | `password-input.component.ts` | `password-input.ts` |
+| `pipes/` | `translate.pipe.ts` | `translate.ts` |
+| `shared/types/` | `auth.model.ts` | `auth.ts` |
+
+**Exception**: Files in `core/guards/` and `core/interceptors/` keep their suffixes (`auth.guard.ts`, `auth.interceptor.ts`) because the directory alone doesn't imply the type.
+
 ### No `private` keyword — use `#` prefix (and know when NOT to use it)
 
 - Never use TypeScript's `private` keyword. Use the native ECMAScript `#` prefix for truly private fields and methods instead.
@@ -145,7 +170,7 @@ frontend/src/app/
 │   │   ├── components/     # Sub-components used within the feature
 │   │   ├── services/       # Feature-specific services
 │   │   ├── models/         # Feature-specific models/interfaces
-│   │   ├── forms/          # Form services or reactive form configurations
+│   │   ├── forms/          # Form services (inline definitions, no factory functions)
 │   │   ├── const/          # Constants and enums
 │   │   └── index.ts        # Barrel export (public API)
 ├── shared/                  # Shared across features
@@ -195,20 +220,85 @@ frontend/src/app/
   export class ExampleComponent { }
   ```
 
-### Forms directory (`forms/`)
+### Form services (canonical pattern)
 
-- Each feature with reactive forms gets a `forms/` directory containing factory functions that create `FormGroup` instances.
-- Naming: `create<Name>Form(fb: FormBuilder): FormGroup`.
-- Export default values alongside for reset: `export const <NAME>_FORM_DEFAULTS = { ... }`.
-- Components inject `FormBuilder` and call the factory: `readonly #fb = inject(FormBuilder); readonly form = createLoginForm(this.#fb);`.
-- Keeps form configuration (fields, validators, defaults) separate from component logic.
+Each reactive form gets its own `@Injectable({ providedIn: 'root' })` service class in the `forms/` directory. The form is exposed via a `get form()` getter, and helper methods encapsulate mutations.
+
+```ts
+// features/auth/forms/login.form.service.ts
+import { inject, Injectable } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
+
+@Injectable({ providedIn: 'root' })
+export class LoginFormService {
+  readonly #fb = inject(FormBuilder);
+  readonly #form = this.#fb.nonNullable.group({
+    email: ['', Validators.required],
+    password: ['', Validators.required],
+  });
+
+  resetForm() {
+    this.#form.reset();
+  }
+
+  get form() {
+    return this.#form;
+  }
+}
+```
+
+Rules:
+- Import order: `inject` before `Injectable` from `@angular/core`; `FormBuilder` (and `Validators` if needed) from `@angular/forms`.
+- `#fb` and `#form` are always `readonly #` private fields.
+- The `FormGroup` type is **not** declared inline on the class field — TypeScript infers it from `this.#fb.nonNullable.group(...)`.
+- Expose the form via a `get form()` getter (never a public field).
+- Encapsulate patch/reset/any mutation logic in named methods (`patchIds`, `resetForm`, etc.) — callers use `service.patchIds(...)` not `service.form.patchValue(...)`.
+- **One form per service file** — never combine multiple forms in a single service. If a feature needs login and register forms, create `login.form.service.ts` and `register.form.service.ts` separately.
+- Name the service `<FormName>FormService`, e.g. `LoginFormService`, `RegisterFormService`, `AddTodoFormService`.
+- Place in `frontend/src/app/features/<feature>/forms/<form-name>.form.service.ts`.
+- **API service methods** accept model types instead of inline object literals:
+  ```ts
+  // ✅ correct — use a model type
+  login(value: AuthPayloadModel) {
+    return this.#http.post<AuthResponse>('/auth/login', value);
+  }
+
+  // ❌ wrong — inline object type
+  login(value: { email: string; password: string }) {
+    return this.#http.post<AuthResponse>('/auth/login', value);
+  }
+  ```
+- Create models in `features/<feature>/models/<feature>.model.ts`.
 
 ### Form services in stores
 
-- **Forms are created and managed in the store, not the component.** Instead of passing form values from component to store via method parameters, inject the form service (or `FormBuilder`) directly into the store and build the form there.
-- This eliminates data-passing boilerplate between components and stores — the store owns the form state and can read values directly when needed (e.g., `this.form.value.title`).
-- **Pattern**: The store defines a `form` property (via `withState` or `withComputed`), creates it using an injected form factory, and template-bound methods (`saveTask`, `login`, etc.) read values straight from `this.form`.
-- **Why**: Form services are `providedIn: 'root'`, so injecting them in the store is just as natural as injecting `HttpClient` or `ApiService`. The store becomes the single source of truth for both domain state and form state, removing the need to shuttle data through component method calls.
+- **Forms are created and managed in the form service, not the store.** The store injects the form service to drive form state.
+- The store does **not** own the form definition — it delegates to the form service's `get form()` and calls its mutation methods.
+- **Pattern**: The store injects the service (`readonly #addTodoForm = inject(AddTodoFormService)`) and template-bound methods read values from `this.#addTodoForm.form.value.title` or call `this.#addTodoForm.patchIds(...)`.
+- **Passing form values to API services**: The store passes `formService.form.getRawValue()` directly to the API service — **never destructure form values in the store**. The API service method should accept the form value object as a single parameter. Use `getRawValue()` instead of `.value` because `.value` returns `Partial<T>` (disabled controls excluded), while `getRawValue()` returns the full non-partial type.
+  ```ts
+  // ✅ correct — pass form value directly via getRawValue()
+  return authService.login(loginForm.form.getRawValue()).pipe(...);
+
+  // ❌ wrong — do not destructure
+  const { email, password } = loginForm.form.value;
+  return authService.login(email!, password!).pipe(...);
+
+  // ❌ wrong — .value returns Partial<T>, causes TS errors
+  return authService.login(loginForm.form.value).pipe(...);
+  ```
+- API service methods should accept model types instead of individual params:
+  ```ts
+  // ✅ correct — use a model type
+  login(value: AuthPayloadModel) {
+    return this.#http.post<AuthResponse>('/auth/login', value);
+  }
+
+  // ❌ wrong — do not use individual params for form data
+  login(email: string, password: string) {
+    return this.#http.post<AuthResponse>('/auth/login', { email, password });
+  }
+  ```
 
 ### Component decomposition (SOLID/DRY)
 

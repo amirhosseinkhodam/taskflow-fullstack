@@ -4,7 +4,7 @@ import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
-import { LanguageService } from '../services/language.service';
+import { LanguageService } from '../services/language';
 
 @Component({
   selector: 'app-confirm-bottom-sheet',

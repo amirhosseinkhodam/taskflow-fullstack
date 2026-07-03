@@ -6,7 +6,7 @@ import {
   effect,
   DestroyRef,
 } from '@angular/core';
-import { LanguageService } from './language.service';
+import { LanguageService } from './language';
 
 @Pipe({ name: 'translate', standalone: true, pure: false })
 export class TranslatePipe implements PipeTransform {

@@ -1,25 +1,26 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import {
-  MatBottomSheetModule,
   MatBottomSheet,
+  MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
-import { AdminStore } from '../store/admin.store';
-import { AdminFormService } from '../services/admin-form.service';
-import { AuthStore } from '../../auth/store/auth.store';
-import { LanguageService } from '../../../shared/services/language.service';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
-import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet.component';
-import { ThemeToggleComponent } from '../../../shared/components/theme-toggle.component';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle.component';
-import type { UserModel } from '../services/admin.service';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
+import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
+import { LanguageService } from '../../../shared/services/language';
+import { AuthStore } from '../../auth/store/auth';
+import { PasswordFormService } from '../forms/password';
+import type { UserModel } from '../models/admin';
+import { AdminStore } from '../store/admin';
 
 @Component({
   selector: 'app-admin-panel',
   standalone: true,
+  providers: [AdminStore],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -53,7 +54,7 @@ import type { UserModel } from '../services/admin.service';
                 {{ t('role') }}:
                 {{
                   t(
-                    isSuperAdmin() ? 'superadmin' : isAdmin() ? 'admin' : 'user'
+                    isSuperAdmin() ? 'superAdmin' : isAdmin() ? 'admin' : 'user'
                   )
                 }}
               </span>
@@ -128,7 +129,7 @@ import type { UserModel } from '../services/admin.service';
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                       [ngClass]="{
                         'bg-amber-200 text-amber-900 dark:bg-amber-800/40 dark:text-amber-200':
-                          user.role === 'superadmin',
+                          user.role === 'superAdmin',
                         'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300':
                           user.role === 'admin',
                         'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300':
@@ -191,7 +192,7 @@ import type { UserModel } from '../services/admin.service';
                     </div>
                     @if (store.passwordChangeUserId() === user.id) {
                       <form
-                        [formGroup]="adminForm.passwordForm"
+                        [formGroup]="passwordForm.form"
                         (ngSubmit)="submitPasswordChange()"
                         class="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
                       >
@@ -208,9 +209,8 @@ import type { UserModel } from '../services/admin.service';
                           [placeholder]="t('confirmPassword')"
                         />
                         @if (
-                          adminForm.passwordForm.hasError(
-                            'passwordsMismatch'
-                          ) && adminForm.passwordForm.touched
+                          passwordForm.form.hasError('passwordsMismatch') &&
+                          passwordForm.form.touched
                         ) {
                           <p
                             class="mt-1 text-xs text-red-600 dark:text-red-400"
@@ -219,10 +219,10 @@ import type { UserModel } from '../services/admin.service';
                           </p>
                         }
                         @if (
-                          adminForm.passwordForm
+                          passwordForm.form
                             .get('newPassword')
                             ?.hasError('minLength') &&
-                          adminForm.passwordForm.get('newPassword')?.touched
+                          passwordForm.form.get('newPassword')?.touched
                         ) {
                           <p
                             class="mt-1 text-xs text-red-600 dark:text-red-400"
@@ -234,7 +234,7 @@ import type { UserModel } from '../services/admin.service';
                           <button
                             class="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
                             type="submit"
-                            [disabled]="adminForm.passwordForm.invalid"
+                            [disabled]="passwordForm.form.invalid"
                           >
                             {{ t('save') }}
                           </button>
@@ -283,7 +283,7 @@ import type { UserModel } from '../services/admin.service';
 })
 export class AdminPanelComponent implements OnInit {
   readonly store = inject(AdminStore);
-  readonly adminForm = inject(AdminFormService);
+  readonly passwordForm = inject(PasswordFormService);
   readonly auth = inject(AuthStore);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #dialog = inject(MatDialog);
@@ -312,11 +312,11 @@ export class AdminPanelComponent implements OnInit {
   }
 
   isSuperAdmin(): boolean {
-    return this.auth.user()?.role === 'superadmin';
+    return this.auth.user()?.role === 'superAdmin';
   }
 
   isSuperAdminUser(user: UserModel): boolean {
-    return user.role === 'superadmin';
+    return user.role === 'superAdmin';
   }
 
   logout(): void {

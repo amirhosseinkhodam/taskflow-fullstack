@@ -12,11 +12,12 @@ import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
-import { AuthFormService } from '../services/auth-form.service';
-import type { AuthResponse, UserRole } from '@shared/types/auth.model';
+import { AuthService } from '../services/auth';
+import { LoginFormService } from '../forms/login';
+import { RegisterFormService } from '../forms/register';
+import type { AuthResponseModel, UserRole } from '@shared/types/auth';
 
-interface AuthUser {
+interface AuthUserModel {
   id: number;
   email: string;
   name: string;
@@ -25,7 +26,7 @@ interface AuthUser {
 
 interface AuthStateModel {
   token: string | null;
-  user: AuthUser | null;
+  user: AuthUserModel | null;
   error: string | null;
   isLoading: boolean;
 }
@@ -37,7 +38,7 @@ const initialState: AuthStateModel = {
   isLoading: false,
 };
 
-function decodeToken(token: string): AuthUser | null {
+function decodeToken(token: string): AuthUserModel | null {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
     return {
@@ -58,7 +59,7 @@ export const AuthStore = signalStore(
     isLoggedIn: computed(() => store.token() !== null),
     isAdmin: computed(
       () =>
-        store.user()?.role === 'admin' || store.user()?.role === 'superadmin',
+        store.user()?.role === 'admin' || store.user()?.role === 'superAdmin',
     ),
   })),
   withMethods(
@@ -66,17 +67,17 @@ export const AuthStore = signalStore(
       store,
       authService = inject(AuthService),
       router = inject(Router),
-      authForm = inject(AuthFormService),
+      loginForm = inject(LoginFormService),
+      registerForm = inject(RegisterFormService),
     ) => {
       const login = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { isLoading: true, error: null })),
           switchMap(() => {
-            if (authForm.loginForm.invalid) return [];
-            const { email, password } = authForm.loginForm.value;
-            return authService.login(email!, password!).pipe(
+            if (loginForm.form.invalid) return [];
+            return authService.login(loginForm.form.getRawValue()).pipe(
               tapResponse({
-                next: (response: AuthResponse) => {
+                next: (response: AuthResponseModel) => {
                   localStorage.setItem('token', response.token);
                   patchState(store, {
                     token: response.token,
@@ -105,11 +106,10 @@ export const AuthStore = signalStore(
         pipe(
           tap(() => patchState(store, { isLoading: true, error: null })),
           switchMap(() => {
-            if (authForm.registerForm.invalid) return [];
-            const { name, email, password } = authForm.registerForm.value;
-            return authService.register(email!, password!, name!).pipe(
+            if (registerForm.form.invalid) return [];
+            return authService.register(registerForm.form.getRawValue()).pipe(
               tapResponse({
-                next: (response: AuthResponse) => {
+                next: (response: AuthResponseModel) => {
                   localStorage.setItem('token', response.token);
                   patchState(store, {
                     token: response.token,

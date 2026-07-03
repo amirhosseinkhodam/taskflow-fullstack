@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
-import { TaskModel } from '@shared/types/task.model';
+import { TaskModel } from '@shared/types/task';
 
 @Injectable()
 export class TaskService {

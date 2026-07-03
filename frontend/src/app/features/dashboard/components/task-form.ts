@@ -1,7 +1,7 @@
 import { Component, inject, input, output } from '@angular/core';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { LanguageService } from '../../../shared/services/language.service';
-import type { ProjectModel } from '@shared/types/project.model';
+import { LanguageService } from '../../../shared/services/language';
+import type { ProjectModel } from '@shared/types/project';
 
 @Component({
   selector: 'app-task-form',

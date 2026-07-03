@@ -1,7 +1,7 @@
 import { Component, inject, input, output } from '@angular/core';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { LanguageService } from '../../../shared/services/language.service';
-import type { TaskModel } from '@shared/types/task.model';
+import { LanguageService } from '../../../shared/services/language';
+import type { TaskModel } from '@shared/types/task';
 
 @Component({
   selector: 'app-task-list',

@@ -1,20 +1,20 @@
 import type { TaskStatus } from './task';
 
-export interface HealthResponse {
+export interface HealthResponseModel {
   status: string;
 }
 
-export interface CreateProjectRequest {
+export interface CreateProjectRequestModel {
   name: string;
 }
 
-export interface CreateTaskRequest {
+export interface CreateTaskRequestModel {
   title: string;
   description: string;
   projectId: number;
 }
 
-export interface UpdateTaskRequest {
+export interface UpdateTaskRequestModel {
   title?: string;
   description?: string;
   status?: TaskStatus;

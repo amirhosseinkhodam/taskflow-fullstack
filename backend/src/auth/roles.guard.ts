@@ -24,7 +24,7 @@ export class RolesGuard implements CanActivate {
     if (!user?.role) return false;
 
     // Superadmin has access to all admin-only routes
-    if (user.role === 'superadmin') return true;
+    if (user.role === 'superAdmin') return true;
 
     return requiredRoles.includes(user.role);
   }

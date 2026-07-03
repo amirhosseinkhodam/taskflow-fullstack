@@ -5,21 +5,22 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { DashboardStore } from '../store/dashboard.store';
-import { DashboardFormService } from '../services/dashboard-form.service';
-import { AuthStore } from '../../auth/store/auth.store';
-import { TaskFormComponent } from '../components/task-form.component';
-import { TaskListComponent } from '../components/task-list.component';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
-import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet.component';
-import { ThemeToggleComponent } from '../../../shared/components/theme-toggle.component';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle.component';
-import { LanguageService } from '../../../shared/services/language.service';
-import type { TaskModel } from '@shared/types/task.model';
+import { DashboardStore } from '../store/dashboard';
+import { TaskFormService } from '../forms/task';
+import { AuthStore } from '../../auth/store/auth';
+import { TaskFormComponent } from '../components/task-form';
+import { TaskListComponent } from '../components/task-list';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
+import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
+import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
+import { LanguageService } from '../../../shared/services/language';
+import type { TaskModel } from '@shared/types/task';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  providers: [DashboardStore],
   imports: [
     FormsModule,
     ThemeToggleComponent,
@@ -109,7 +110,7 @@ import type { TaskModel } from '@shared/types/task.model';
           <section class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
             <app-task-form
               [projects]="store.projects()"
-              [form]="dashboardForm.taskForm"
+              [form]="taskForm.form"
               (submitForm)="store.saveTask()"
               (cancelEdit)="store.cancelEdit()"
               (projectChange)="store.setSelectedProjectId($event)"
@@ -120,7 +121,7 @@ import type { TaskModel } from '@shared/types/task.model';
         <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
           <app-task-form
             [projects]="store.projects()"
-            [form]="dashboardForm.taskForm"
+            [form]="taskForm.form"
             (submitForm)="store.saveTask()"
             (cancelEdit)="store.cancelEdit()"
             (projectChange)="store.setSelectedProjectId($event)"
@@ -143,7 +144,7 @@ import type { TaskModel } from '@shared/types/task.model';
 })
 export class DashboardComponent implements OnInit {
   readonly store = inject(DashboardStore);
-  readonly dashboardForm = inject(DashboardFormService);
+  readonly taskForm = inject(TaskFormService);
   readonly auth = inject(AuthStore);
   readonly #router = inject(Router);
   readonly #breakpointObserver = inject(BreakpointObserver);

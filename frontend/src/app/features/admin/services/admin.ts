@@ -1,13 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { UserRole } from '@shared/types/auth.model';
+import type { UserRole } from '@shared/types/auth';
+import type { UserModel } from '../models/admin';
 
-export interface UserModel {
-  id: number;
-  email: string;
-  name: string;
-  role: UserRole;
-}
+export type { UserModel };
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {

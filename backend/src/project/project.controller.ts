@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { CreateProjectDto, UpdateProjectDto } from './project.dto';
-import { ProjectModel } from '@shared/types/project.model';
+import { ProjectModel } from '@shared/types/project';
 import { ProjectService } from './project.service';
 
 @UseGuards(JwtAuthGuard)
