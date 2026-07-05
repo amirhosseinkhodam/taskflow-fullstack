@@ -14,6 +14,10 @@ export interface CreateTaskRequestModel {
   readonly projectId: number;
 }
 
+export interface UpdateProjectRequestModel {
+  readonly name: string;
+}
+
 export interface UpdateTaskRequestModel {
   readonly title?: string;
   readonly description?: string;

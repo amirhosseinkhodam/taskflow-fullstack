@@ -47,6 +47,19 @@ No test setup exists (no spec/e2e files found).
 - `database.sqlite` in repo root is stale (leftover from sql.js experiment).
 - All camelCase columns in SQL (`"projectId"`, `"createdAt"`, `"updatedAt"`) are quote-escaped in CREATE TABLE and must also be quoted in query references — unquoted `updatedAt` folds to `updatedat` and raises `42703`. Always quote camelCase identifiers.
 
+## Third-party library preference
+
+- **Always prefer well-maintained third-party libraries over hand-rolling utility code** for common tasks like date handling, crypto, validation, etc.
+- Currently installed: `date-fns-jalali` for Jalali/Persian date formatting (use `formatDate` from `date-fns-jalali`).
+- **Never write custom calendar converters, date parsers, or formatting utilities** when a library already exists. If you need date manipulation, use `date-fns` / `date-fns-jalali`. If you need something else (e.g. UUID generation, deep cloning), install a dedicated library instead of reimplementing it.
+- When adding a new third-party utility library, install it at root `package.json` and document it in this section.
+- **Use existing libraries first.** Before creating any utility, check if a well-maintained library already does it. Search npm, check GitHub stars, last publish date. Only build custom if nothing suitable exists.
+
+## Workflow rules
+
+- **Plan mode for multi-file changes**: When a task requires editing more than 1–2 files, present a plan first and ask for approval before implementing. The user often forgets to switch to plan mode, so the assistant must proactively propose one.
+- **Auto-delete plan files**: When a plan `.md` file is created during planning, delete it after implementation is complete.
+
 ## Conventions
 
 ### File style

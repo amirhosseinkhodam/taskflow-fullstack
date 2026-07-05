@@ -14,14 +14,14 @@ export class ProjectService {
 
   async findAll(): Promise<ProjectModel[]> {
     const result = await this.#db.query<ProjectModel>(
-      'SELECT id, name FROM projects ORDER BY id',
+      'SELECT id, name, "createdAt", "updatedAt" FROM projects ORDER BY id',
     );
     return result.rows;
   }
 
   async findOne(id: number): Promise<ProjectModel | null> {
     const result = await this.#db.query<ProjectModel>(
-      'SELECT id, name FROM projects WHERE id = $1',
+      'SELECT id, name, "createdAt", "updatedAt" FROM projects WHERE id = $1',
       [id],
     );
 
@@ -30,24 +30,24 @@ export class ProjectService {
 
   async create(name: string): Promise<ProjectModel> {
     const result = await this.#db.query<ProjectModel>(
-      'INSERT INTO projects (name) VALUES ($1) RETURNING id, name',
+      'INSERT INTO projects (name) VALUES ($1) RETURNING id, name, "createdAt", "updatedAt"',
       [name],
     );
 
     return result.rows[0];
   }
 
-  async update(id: number, name?: string): Promise<boolean> {
+  async update(id: number, name?: string): Promise<ProjectModel | null> {
     if (name === undefined) {
-      return false;
+      return null;
     }
 
-    const result = await this.#db.query(
-      'UPDATE projects SET name = $1 WHERE id = $2',
+    const result = await this.#db.query<ProjectModel>(
+      'UPDATE projects SET name = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, "createdAt", "updatedAt"',
       [name, id],
     );
 
-    return (result.rowCount ?? 0) > 0;
+    return result.rows[0] ?? null;
   }
 
   async delete(id: number): Promise<boolean> {

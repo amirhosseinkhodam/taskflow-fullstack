@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -10,12 +10,17 @@ import { TaskFormService } from '../forms/task';
 import { AuthStore } from '../../auth/store/auth';
 import { TaskFormComponent } from '../components/task-form';
 import { TaskListComponent } from '../components/task-list';
+import { ProjectEditDialogComponent } from '../components/project-edit-dialog';
+import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
 import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { LanguageService } from '../../../shared/services/language';
+import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
+import { DashboardService } from '../services/dashboard';
 import type { TaskModel } from '@shared/types/task';
+import type { ProjectModel } from '@shared/types/project';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,6 +33,7 @@ import type { TaskModel } from '@shared/types/task';
     TaskFormComponent,
     TaskListComponent,
     RouterLink,
+    JalaliDatePipe,
   ],
   template: `
     <main class="mx-auto max-w-4xl p-6">
@@ -82,16 +88,13 @@ import type { TaskModel } from '@shared/types/task';
         <section
           class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 items-stretch"
         >
-          <form
-            class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow"
-            (ngSubmit)="createProject()"
-          >
+          <div class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
             <h2
               class="text-xl font-semibold text-slate-900 dark:text-slate-100"
             >
               {{ t('projects') }}
             </h2>
-            <div class="mt-4 flex gap-2">
+            <form class="mt-4 flex gap-2" (ngSubmit)="createProject()">
               <input
                 class="min-w-0 flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                 name="projectName"
@@ -104,8 +107,82 @@ import type { TaskModel } from '@shared/types/task';
               >
                 {{ t('add') }}
               </button>
-            </div>
-          </form>
+            </form>
+
+            <ul class="mt-4 divide-y divide-slate-200 dark:divide-slate-700">
+              @for (project of store.projects(); track project.id) {
+                <li
+                  class="flex items-center justify-between py-2 first:pt-0 last:pb-0"
+                >
+                  <div class="min-w-0">
+                    <span
+                      class="text-sm text-slate-700 dark:text-slate-300 truncate block"
+                    >
+                      {{ project.name }}
+                    </span>
+                    <div
+                      class="flex flex-wrap gap-x-3 text-xs text-slate-400 dark:text-slate-500 mt-0.5"
+                    >
+                      <span
+                        >{{ t('created') }}:
+                        {{ project.createdAt | jalaliDate }}</span
+                      >
+                      @if (project.updatedAt !== project.createdAt) {
+                        <span
+                          >{{ t('modified') }}:
+                          {{ project.updatedAt | jalaliDate }}</span
+                        >
+                      }
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0 ms-2">
+                    <button
+                      class="rounded p-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors"
+                      type="button"
+                      [attr.aria-label]="t('edit')"
+                      (click)="openEditProject(project)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        class="w-4 h-4"
+                      >
+                        <path
+                          d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                      type="button"
+                      [attr.aria-label]="t('delete')"
+                      (click)="confirmDeleteProject(project)"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        class="w-4 h-4"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+              } @empty {
+                <li
+                  class="py-4 text-center text-sm text-slate-500 dark:text-slate-400"
+                >
+                  {{ t('noProjectsYet') }}
+                </li>
+              }
+            </ul>
+          </div>
 
           <section class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
             <app-task-form
@@ -132,6 +209,7 @@ import type { TaskModel } from '@shared/types/task';
       <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
         <app-task-list
           [tasks]="store.tasks()"
+          [projects]="store.projects()"
           (reorder)="onReorder($event)"
           (editTask)="store.startEdit($event)"
           (toggleTask)="store.toggleTask($event)"
@@ -142,7 +220,7 @@ import type { TaskModel } from '@shared/types/task';
     </main>
   `,
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent {
   readonly store = inject(DashboardStore);
   readonly taskForm = inject(TaskFormService);
   readonly auth = inject(AuthStore);
@@ -151,6 +229,7 @@ export class DashboardComponent implements OnInit {
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
+  readonly #dashboardService = inject(DashboardService);
 
   projectName = signal('');
   isPhone = signal(false);
@@ -159,10 +238,6 @@ export class DashboardComponent implements OnInit {
     this.#breakpointObserver
       .observe(['(max-width: 767px)'])
       .subscribe((result) => this.isPhone.set(result.matches));
-  }
-
-  ngOnInit(): void {
-    this.store.loadAll();
   }
 
   t(key: string): string {
@@ -199,6 +274,38 @@ export class DashboardComponent implements OnInit {
     confirmed$.subscribe((confirmed) => {
       if (!confirmed) return;
       this.store.deleteTask(task);
+    });
+  }
+
+  openEditProject(project: ProjectModel): void {
+    this.store.startEditProject(project);
+    const dialogRef = this.#dialog.open(ProjectEditDialogComponent, {
+      data: { name: project.name },
+      width: '400px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) {
+        this.store.cancelEditProject();
+        return;
+      }
+      this.store.updateProject(result);
+    });
+  }
+
+  confirmDeleteProject(project: ProjectModel): void {
+    this.#dashboardService.getTasks(project.id).subscribe((tasks) => {
+      const undoneCount = tasks.filter((t) => t.status !== 'done').length;
+
+      const dialogRef = this.#dialog.open(ProjectDeleteConfirmComponent, {
+        data: { undoneCount },
+        width: '400px',
+      });
+
+      dialogRef.afterClosed().subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.store.deleteProject(project);
+      });
     });
   }
 }

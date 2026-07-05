@@ -73,5 +73,17 @@
   "actions": "Actions",
   "couldNotLoadUsers": "Could not load users",
   "userDeleted": "User deleted successfully",
-  "couldNotDeleteUser": "Could not delete user"
+  "couldNotDeleteUser": "Could not delete user",
+  "editProject": "Edit Project",
+  "editProjectName": "Project name",
+  "confirmDeleteProject": "Delete project",
+  "confirmDeleteProjectMessage": "Are you sure you want to delete this project? All its tasks will also be deleted.",
+  "projectHasUndoneTasks": "This project has undone tasks",
+  "projectUpdated": "Project updated.",
+  "projectDeleted": "Project deleted.",
+  "couldNotUpdateProject": "Could not update project.",
+  "couldNotDeleteProject": "Could not delete project.",
+  "noProjectsYet": "No projects yet.",
+  "created": "Created",
+  "modified": "Modified"
 }

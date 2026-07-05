@@ -1,12 +1,14 @@
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { Component, inject, input, output } from '@angular/core';
-import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
-import { LanguageService } from '../../../shared/services/language';
+import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
+import { LanguageService } from '../../../shared/services/language';
+import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [DragDropModule],
+  imports: [DragDropModule, JalaliDatePipe],
   template: `
     <div class="flex items-center justify-between gap-4">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
@@ -31,7 +33,7 @@ import type { TaskModel } from '@shared/types/task';
           cdkDrag
           class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-700 p-4"
         >
-          <div class="flex items-start gap-3">
+          <div class="flex items-start w-full gap-3">
             <span
               cdkDragHandle
               class="mt-0.5 cursor-grab text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400"
@@ -47,13 +49,20 @@ import type { TaskModel } from '@shared/types/task';
                 />
               </svg>
             </span>
-            <div>
-              <h3
-                class="font-medium text-slate-900 dark:text-slate-100"
-                [class.line-through]="task.status === 'done'"
-              >
-                {{ task.title }}
-              </h3>
+            <div class="w-full">
+              <div class="flex justify-between gap-2 items-center">
+                <h3
+                  class="font-medium text-slate-900 dark:text-slate-100"
+                  [class.line-through]="task.status === 'done'"
+                >
+                  {{ task.title }}
+                </h3>
+                <span
+                  class="mt-1 inline-block rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-xs text-slate-600 dark:text-slate-400"
+                >
+                  {{ getProjectName(task.projectId) }}
+                </span>
+              </div>
               <p class="text-sm text-slate-600 dark:text-slate-400">
                 {{ task.description || t('noDescription') }}
               </p>
@@ -62,6 +71,19 @@ import type { TaskModel } from '@shared/types/task';
               >
                 {{ task.status }}
               </p>
+              <div
+                class="mt-1 flex flex-wrap gap-x-3 text-xs text-slate-400 dark:text-slate-500"
+              >
+                <span
+                  >{{ t('created') }}: {{ task.createdAt | jalaliDate }}</span
+                >
+                @if (task.updatedAt !== task.createdAt) {
+                  <span
+                    >{{ t('modified') }}:
+                    {{ task.updatedAt | jalaliDate }}</span
+                  >
+                }
+              </div>
             </div>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
@@ -135,6 +157,7 @@ import type { TaskModel } from '@shared/types/task';
 })
 export class TaskListComponent {
   readonly tasks = input.required<TaskModel[]>();
+  readonly projects = input.required<ProjectModel[]>();
   readonly reorder = output<{ previousIndex: number; currentIndex: number }>();
   readonly editTask = output<TaskModel>();
   readonly toggleTask = output<TaskModel>();
@@ -145,6 +168,10 @@ export class TaskListComponent {
 
   t(key: string): string {
     return this.#languageService.translate(key);
+  }
+
+  getProjectName(projectId: number): string {
+    return this.projects().find((p) => p.id === projectId)?.name ?? '';
   }
 
   onDrop(event: CdkDragDrop<TaskModel[]>): void {

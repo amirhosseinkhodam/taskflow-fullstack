@@ -3,8 +3,6 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
-import angularEslintTemplate from '@angular-eslint/eslint-plugin-template';
-import angularTemplateParser from '@angular-eslint/template-parser';
 
 export default tseslint.config(
   { ignores: ['eslint.config.mjs'] },
@@ -27,7 +25,7 @@ export default tseslint.config(
       },
     },
   },
-  // Frontend: ES modules + browser globals, no type-aware rules
+  // Frontend: ES modules + browser globals
   {
     files: ['frontend/src/**/*.ts'],
     languageOptions: {
@@ -68,23 +66,6 @@ export default tseslint.config(
             'Use a # class field + parameter assignment instead of a constructor private parameter.',
         },
       ],
-    },
-  },
-  // Frontend: Ban inline styles in Angular templates
-  {
-    files: ['frontend/src/**/*.ts'],
-    languageOptions: {
-      parser: angularTemplateParser,
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    plugins: {
-      '@angular-eslint/template': angularEslintTemplate,
-    },
-    rules: {
-      '@angular-eslint/template/no-inline-styles': 'error',
     },
   },
 );

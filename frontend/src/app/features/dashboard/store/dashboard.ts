@@ -14,12 +14,14 @@ import { DashboardService } from '../services/dashboard';
 import { TaskFormService } from '../forms/task';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
+import type { UpdateProjectRequestModel } from '../../../shared/models/api';
 
 interface DashboardStateModel {
   projects: ProjectModel[];
   tasks: TaskModel[];
   selectedProjectId: number;
   editingTaskId: number | null;
+  editingProjectId: number | null;
   message: string;
   isLoading: boolean;
   healthStatus: string;
@@ -30,6 +32,7 @@ const initialState: DashboardStateModel = {
   tasks: [],
   selectedProjectId: 0,
   editingTaskId: null,
+  editingProjectId: null,
   message: '',
   isLoading: false,
   healthStatus: 'checking',
@@ -307,12 +310,92 @@ export const DashboardStore = signalStore(
         ),
       );
 
+      const startEditProject = (project: ProjectModel) => {
+        patchState(store, { editingProjectId: project.id });
+      };
+
+      const cancelEditProject = () => {
+        patchState(store, { editingProjectId: null });
+      };
+
+      const updateProject = rxMethod<UpdateProjectRequestModel>(
+        pipe(
+          tap(() => patchState(store, { isLoading: true })),
+          switchMap((value) => {
+            const projectId = store.editingProjectId();
+            if (!projectId) {
+              return [];
+            }
+            return dashboardService.updateProject(projectId, value).pipe(
+              tapResponse({
+                next: (updatedProject) => {
+                  const updated = store
+                    .projects()
+                    .map((p) => (p.id === projectId ? updatedProject : p));
+                  patchState(store, {
+                    projects: updated,
+                    editingProjectId: null,
+                    isLoading: false,
+                    message: 'projectUpdated',
+                  });
+                },
+                error: () =>
+                  patchState(store, {
+                    isLoading: false,
+                    message: 'couldNotUpdateProject',
+                  }),
+              }),
+            );
+          }),
+        ),
+      );
+
+      const deleteProject = rxMethod<ProjectModel>(
+        pipe(
+          switchMap((project) =>
+            dashboardService.deleteProject(project.id).pipe(
+              tapResponse({
+                next: () => {
+                  const remaining = store
+                    .projects()
+                    .filter((p) => p.id !== project.id);
+                  const selectedProjectId =
+                    store.selectedProjectId() === project.id
+                      ? (remaining[0]?.id ?? 0)
+                      : store.selectedProjectId();
+                  taskForm.patchProjectId(selectedProjectId);
+                  patchState(store, {
+                    projects: remaining,
+                    selectedProjectId,
+                    editingProjectId: null,
+                    message: 'projectDeleted',
+                  });
+                  dashboardService
+                    .getTasks(selectedProjectId || undefined)
+                    .subscribe({
+                      next: (tasks) => patchState(store, { tasks }),
+                      error: () =>
+                        patchState(store, { message: 'couldNotLoadTasks' }),
+                    });
+                },
+                error: () =>
+                  patchState(store, { message: 'couldNotDeleteProject' }),
+              }),
+            ),
+          ),
+        ),
+      );
+
       return {
         loadHealth,
         loadProjects,
         loadTasks,
         loadAll,
         createProject,
+        startEditProject,
+        cancelEditProject,
+        updateProject,
+        deleteProject,
         setSelectedProjectId,
         startEdit,
         cancelEdit,

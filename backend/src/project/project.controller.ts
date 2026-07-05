@@ -49,7 +49,7 @@ export class ProjectController {
   async updateProject(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProjectDto,
-  ): Promise<boolean> {
+  ): Promise<ProjectModel | null> {
     return this.#projectService.update(id, body.name);
   }
 

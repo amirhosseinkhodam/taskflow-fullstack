@@ -73,5 +73,17 @@
   "actions": "عملیات",
   "couldNotLoadUsers": "نمی‌توان کاربران را بارگذاری کرد",
   "userDeleted": "کاربر با موفقیت حذف شد",
-  "couldNotDeleteUser": "نمی‌توان کاربر را حذف کرد"
+  "couldNotDeleteUser": "نمی‌توان کاربر را حذف کرد",
+  "editProject": "ویرایش پروژه",
+  "editProjectName": "نام پروژه",
+  "confirmDeleteProject": "حذف این پروژه؟",
+  "confirmDeleteProjectMessage": "آیا از حذف این پروژه اطمینان دارید؟ تمام تسک‌های آن نیز حذف خواهند شد.",
+  "projectHasUndoneTasks": "این پروژه تسک‌های انجام‌نشده دارد",
+  "projectUpdated": "پروژه به‌روزرسانی شد.",
+  "projectDeleted": "پروژه حذف شد.",
+  "couldNotUpdateProject": "نمی‌توان پروژه را به‌روزرسانی کرد.",
+  "couldNotDeleteProject": "نمی‌توان پروژه را حذف کرد.",
+  "noProjectsYet": "هنوز پروژه‌ای وجود ندارد.",
+  "created": "ایجاد شده",
+  "modified": "ویرایش شده"
 }

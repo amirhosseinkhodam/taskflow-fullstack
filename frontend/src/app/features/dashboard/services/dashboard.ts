@@ -6,6 +6,7 @@ import type { ProjectModel } from '@shared/types/project';
 import type {
   HealthResponseModel,
   CreateTaskRequestModel,
+  UpdateProjectRequestModel,
   UpdateTaskRequestModel,
 } from '../../../shared/models/api';
 
@@ -33,6 +34,17 @@ export class DashboardService {
     return this.#http.post<ProjectModel>(`${this.#apiBaseUrl}/projects`, {
       name,
     });
+  }
+
+  updateProject(id: number, value: UpdateProjectRequestModel) {
+    return this.#http.put<ProjectModel>(
+      `${this.#apiBaseUrl}/projects/${id}`,
+      value,
+    );
+  }
+
+  deleteProject(id: number) {
+    return this.#http.delete<boolean>(`${this.#apiBaseUrl}/projects/${id}`);
   }
 
   createTask(value: CreateTaskRequestModel) {
