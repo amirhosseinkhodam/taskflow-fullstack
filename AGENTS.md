@@ -332,3 +332,10 @@ Rules:
 - **No form state in stores** — form state (field values, validation) lives in the component's `FormGroup`, not in the SignalStore. The store holds only application state (entities, loading, errors).
 - **DRY**: If the same template appears twice, extract it into a shared sub-component with `input()`/`output()`.
 - Sub-components that need i18n inject `LanguageService` and implement their own `t()` helper.
+
+### Tailwind-only styling (no CSS/SCSS)
+
+- **Remove CSS and SCSS as much as possible — use only Tailwind utility classes.** Never write custom CSS in `styles:` arrays, `styleUrls`, or `.css`/`.scss` files. The only exception is `frontend/src/styles.css`, which is kept minimal for Tailwind directives (`@tailwind`), Angular Material theme import, and global `color-scheme` / RTL text-align rules that cannot be expressed as Tailwind utilities.
+- Component-level `styles:` blocks must be eliminated entirely. All styling must use Tailwind classes directly in templates.
+- If a design requires CSS that can be expressed with Tailwind utilities (including arbitrary values like `w-[18px]`, `top-[9px]`), use those instead of writing custom CSS.
+- This is enforced by convention — code review should reject any new `styles:`, `styleUrl`, or `styleUrls` in component metadata.

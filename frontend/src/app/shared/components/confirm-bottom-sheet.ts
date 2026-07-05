@@ -10,23 +10,20 @@ import { LanguageService } from '../services/language';
   selector: 'app-confirm-bottom-sheet',
   standalone: true,
   imports: [MatBottomSheetModule, MatButtonModule],
-  template: `
-    <h3 class="mat-body-large" style="margin: 0 0 8px; font-weight: 500;">
+  template: `{{ '{' }}    <h3 class=\"mat-body-large mb-2 font-bold\">
       {{ t('confirmDeleteTask') }}
     </h3>
     <p
-      class="mat-body-medium text-slate-500 dark:text-slate-400"
-      style="margin: 0 0 16px;"
+      class=\"mat-body-medium text-slate-500 dark:text-slate-400 mb-4\"
     >
       {{ t('confirmDeleteMessage') }}
     </p>
-    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-      <button mat-button (click)="onCancel()">{{ t('cancel') }}</button>
-      <button mat-raised-button color="warn" (click)="onConfirm()">
+    <div class=\"flex gap-2 justify-end\">
+      <button mat-button (click)=\"onCancel()\">{{ t('cancel') }}</button>
+      <button mat-raised-button color=\"warn\" (click)=\"onConfirm()\">
         {{ t('delete') }}
       </button>
-    </div>
-  `,
+    </div>\n  `, {{ '}' }}}
 })
 export class ConfirmBottomSheetComponent {
   readonly #bottomSheetRef = inject(

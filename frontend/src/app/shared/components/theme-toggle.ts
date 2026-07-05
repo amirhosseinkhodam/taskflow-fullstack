@@ -7,15 +7,19 @@ import { ThemeService } from '../services/theme';
   imports: [],
   template: `
     <button
-      class="theme-switch"
+      class="flex items-center bg-transparent border-0 p-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
       (click)="theme.toggle()"
       [class.dark]="theme.isDark()"
       role="switch"
       [attr.aria-checked]="theme.isDark()"
       aria-label="Toggle dark mode"
     >
-      <span class="track">
-        <span class="icon sun">
+      <span
+        class="relative flex items-center w-16 h-9 rounded-full bg-gradient-to-br from-sky-300 to-sky-400 dark:from-slate-800 dark:to-slate-700 transition-colors duration-300 ease-in-out overflow-hidden"
+      >
+        <span
+          class="absolute flex items-center justify-center w-[18px] h-[18px] z-10 transition-all duration-300 ease-in-out top-[9px] left-[7px] text-amber-400 opacity-100 rotate-0 scale-100 dark:opacity-0 dark:rotate-90 dark:scale-50"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -28,7 +32,9 @@ import { ThemeService } from '../services/theme';
             />
           </svg>
         </span>
-        <span class="icon moon">
+        <span
+          class="absolute flex items-center justify-center w-[18px] h-[18px] z-10 transition-all duration-300 ease-in-out top-[9px] right-[7px] text-slate-200 opacity-0 -rotate-90 scale-50 dark:opacity-100 dark:rotate-0 dark:scale-100"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -41,107 +47,12 @@ import { ThemeService } from '../services/theme';
             />
           </svg>
         </span>
-        <span class="thumb"></span>
+        <span
+          class="absolute top-[6px] left-[4px] w-6 h-6 rounded-full bg-white shadow-sm transition-all duration-300 ease-in-out dark:translate-x-8 dark:bg-slate-600 hover:shadow-md"
+        ></span>
       </span>
     </button>
   `,
-  styles: [
-    `
-      .theme-switch {
-        display: flex;
-        align-items: center;
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        outline: none;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .track {
-        position: relative;
-        display: flex;
-        align-items: center;
-        width: 64px;
-        height: 36px;
-        border-radius: 9999px;
-        background: linear-gradient(135deg, #7dd3fc, #38bdf8);
-        transition: background 0.4s ease;
-        overflow: hidden;
-      }
-
-      .dark .track {
-        background: linear-gradient(135deg, #1e293b, #334155);
-      }
-
-      .icon {
-        position: absolute;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 18px;
-        height: 18px;
-        z-index: 1;
-        transition:
-          opacity 0.3s ease,
-          transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .sun {
-        top: 9px;
-        left: 7px;
-        color: #fbbf24;
-        opacity: 1;
-        transform: rotate(0deg) scale(1);
-      }
-
-      .dark .sun {
-        opacity: 0;
-        transform: rotate(90deg) scale(0.5);
-      }
-
-      .moon {
-        top: 9px;
-        right: 7px;
-        color: #e2e8f0;
-        opacity: 0;
-        transform: rotate(-90deg) scale(0.5);
-      }
-
-      .dark .moon {
-        opacity: 1;
-        transform: rotate(0deg) scale(1);
-      }
-
-      .thumb {
-        position: absolute;
-        top: 6px;
-        left: 4px;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: #ffffff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        transition:
-          transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-          background 0.4s ease;
-      }
-
-      .dark .thumb {
-        transform: translateX(32px);
-        background: #475569;
-      }
-
-      .theme-switch:hover .thumb {
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      }
-
-      .theme-switch:focus-visible .track {
-        outline: 2px solid #3b82f6;
-        outline-offset: 2px;
-      }
-    `,
-  ],
 })
 export class ThemeToggleComponent {
   readonly theme = inject(ThemeService);

@@ -8,14 +8,17 @@ import { ThemeService } from '../services/theme';
   imports: [],
   template: `
     <button
-      class="language-switch"
+      class="inline-flex items-center gap-2 px-3 py-2 sm:px-3 sm:py-2 p-2 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium cursor-pointer whitespace-nowrap transition-all duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 hover:bg-slate-200 dark:hover:bg-slate-700 group"
       (click)="toggle()"
       [class.dark]="theme.isDark()"
       [attr.aria-label]="'Switch language (' + currentLanguage.nativeName + ')'"
       type="button"
     >
-      <span class="language-text">{{ currentLanguage.nativeName }}</span>
-      <span class="language-icon" aria-hidden="true">
+      <span class="hidden sm:inline">{{ currentLanguage.nativeName }}</span>
+      <span
+        class="flex items-center justify-center text-slate-500 dark:text-slate-400 transition-transform duration-300 ease-in-out group-hover:rotate-180"
+        aria-hidden="true"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -32,74 +35,6 @@ import { ThemeService } from '../services/theme';
       </span>
     </button>
   `,
-  styles: [
-    `
-      .language-switch {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border-radius: 9999px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        color: #334155;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        outline: none;
-        transition:
-          background 0.2s ease,
-          border-color 0.2s ease,
-          color 0.2s ease;
-        -webkit-tap-highlight-color: transparent;
-        white-space: nowrap;
-      }
-
-      .language-switch.dark {
-        background: #1e293b;
-        border-color: #334155;
-        color: #e2e8f0;
-      }
-
-      .language-switch:hover {
-        background: #e2e8f0;
-      }
-
-      .language-switch.dark:hover {
-        background: #334155;
-      }
-
-      .language-switch:focus-visible {
-        outline: 2px solid #3b82f6;
-        outline-offset: 2px;
-      }
-
-      .language-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #64748b;
-        transition: transform 0.3s ease;
-      }
-
-      .language-switch.dark .language-icon {
-        color: #94a3b8;
-      }
-
-      .language-switch:hover .language-icon {
-        transform: rotate(180deg);
-      }
-
-      @media (max-width: 640px) {
-        .language-text {
-          display: none;
-        }
-        .language-switch {
-          padding: 8px;
-        }
-      }
-    `,
-  ],
 })
 export class LanguageToggleComponent {
   readonly #languageService = inject(LanguageService);
