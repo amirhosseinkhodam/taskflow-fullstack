@@ -7,4 +7,6 @@ export interface TaskModel {
   readonly position: number;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly userId: number;
+  readonly creatorName?: string;
 }

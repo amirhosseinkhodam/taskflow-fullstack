@@ -85,5 +85,11 @@
   "couldNotDeleteProject": "Could not delete project.",
   "noProjectsYet": "No projects yet.",
   "created": "Created",
-  "modified": "Modified"
+  "modified": "Modified",
+  "taskDetails": "Task Details",
+  "status": "Status",
+  "backToDashboard": "Back to Dashboard",
+  "loading": "Loading...",
+  "taskNotFound": "Task not found",
+  "detail": "Detail"
 }

@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -36,11 +37,13 @@ export class TaskController {
   @Post()
   create(
     @Body() body: { title: string; description: string; projectId: number },
+    @Req() req: Request & { user: { id: number } },
   ): Promise<TaskModel> {
     return this.#taskService.create(
       body.title,
       body.description,
       body.projectId,
+      req.user.id,
     );
   }
 

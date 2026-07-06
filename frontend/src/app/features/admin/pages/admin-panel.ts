@@ -2,6 +2,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   MatBottomSheet,
   MatBottomSheetModule,
@@ -28,6 +29,7 @@ import { AdminStore } from '../store/admin';
     MatBottomSheetModule,
     ThemeToggleComponent,
     LanguageToggleComponent,
+    RouterLink,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -37,6 +39,13 @@ import { AdminStore } from '../store/admin';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center gap-4">
+              <button
+                class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                type="button"
+                routerLink="/"
+              >
+                {{ t('backToDashboard') }}
+              </button>
               <h1 class="text-xl font-semibold text-slate-900 dark:text-white">
                 {{ t('adminPanel') }}
               </h1>

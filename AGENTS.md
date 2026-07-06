@@ -268,7 +268,8 @@ Rules:
 - Encapsulate patch/reset/any mutation logic in named methods (`patchIds`, `resetForm`, etc.) — callers use `service.patchIds(...)` not `service.form.patchValue(...)`.
 - **One form per service file** — never combine multiple forms in a single service. If a feature needs login and register forms, create `login.form.service.ts` and `register.form.service.ts` separately.
 - Name the service `<FormName>FormService`, e.g. `LoginFormService`, `RegisterFormService`, `AddTodoFormService`.
-- Place in `frontend/src/app/features/<feature>/forms/<form-name>.form.service.ts`.
+- Place feature-specific services in `frontend/src/app/features/<feature>/forms/<form-name>.form.service.ts`.
+- Place shared form services (used by multiple features) in `frontend/src/app/shared/forms/<name>.ts`.
 - **API service methods** accept model types instead of inline object literals:
   ```ts
   // ✅ correct — use a model type
@@ -312,12 +313,39 @@ Rules:
     return this.#http.post<AuthResponse>('/auth/login', { email, password });
   }
   ```
+- **Shared form components**: When a shared form component (e.g. `TaskFormComponent`) is used, the store does **not** inject the form service at all. Form values arrive via the component's `output()` events. The store receives typed payloads and updates state accordingly — it never calls `patchValue`, `resetForm`, or `getRawValue` on any form.
 
 ### TypeScript hygiene rules
 
 - **Use `interface` instead of `type`** for object shapes. Union types (`type X = 'a' | 'b'`) are the only acceptable use of `type`.
 - **`readonly` on all immutable properties**: Add `readonly` to every interface and class property that is assigned once and never mutated. This includes DTOs, model interfaces, and injected singleton services exposed to templates. Module-level `const` variables are already immutable by the `const` binding — `readonly` applies to properties, not local bindings.
 - **Remove dead code**: Always remove unused imports, unused variables, unused `const` declarations, and anything else that isn't referenced. No dead code should survive review.
+
+### Shared form components (own their form, never receive FormGroup as input)
+
+- **A shared form component owns its form internally** by injecting its own `FormService`. Consumers never pass a `FormGroup` as input.
+- **Pattern**: The component takes model/primitive inputs (`editingTask`, `projects`, `showProjectSelect`) and emits typed output events (`submitTask`, `cancelEdit`, `projectChange`). It uses `effect()` to react to input changes (pre-fill for editing, reset after save).
+- **Form service location**: Shared form services (used by multiple features) go in `shared/forms/<name>.ts`. Feature-specific form services stay in `features/<feature>/forms/`.
+- **Store never touches form state**: The store receives form values via component output events. It does not inject form services or interact with form state directly.
+- **Example** (`TaskFormComponent`):
+  ```ts
+  // ✅ correct
+  readonly projects = input.required<ProjectModel[]>();
+  readonly editingTask = input<TaskModel | null>(null);
+  readonly submitTask = output<{ title: string; description: string; projectId: number }>();
+
+  readonly #taskForm = inject(TaskFormService);
+
+  constructor() {
+    effect(() => {
+      const task = this.editingTask();
+      if (task) this.#taskForm.patchForEdit(task.title, task.projectId, task.description);
+    });
+  }
+
+  // ❌ wrong — never accept FormGroup as input
+  readonly form = input.required<FormGroup>();
+  ```
 
 ### Component decomposition (SOLID/DRY)
 
@@ -345,6 +373,8 @@ Rules:
 - **No form state in stores** — form state (field values, validation) lives in the component's `FormGroup`, not in the SignalStore. The store holds only application state (entities, loading, errors).
 - **DRY**: If the same template appears twice, extract it into a shared sub-component with `input()`/`output()`.
 - Sub-components that need i18n inject `LanguageService` and implement their own `t()` helper.
+- **Shared task actions**: When task toggle/delete logic (confirm dialog + API calls) is needed in multiple places (task list, task detail page), extract it into a shared component (e.g. `TaskItemComponent` in `shared/components/`). The component owns the confirm dialog + API calls internally and emits `toggled`/`deleted` events so parents can react (refresh list, navigate away). This keeps toggle/delete logic in one place instead of duplicating it across features.
+- **Design audit after refactors**: Always inspect layout/spacing after extracting or restructuring components. Verify that items aren't stuck to container edges, flex layouts match the original design, buttons sit alongside descriptions (not below them), and vertical spacing between elements is consistent. Do not assume the parent container handles all spacing — each component is responsible for its own internal layout.
 
 ### Tailwind-only styling (no CSS/SCSS)
 

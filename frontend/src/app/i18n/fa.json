@@ -85,5 +85,11 @@
   "couldNotDeleteProject": "نمی‌توان پروژه را حذف کرد.",
   "noProjectsYet": "هنوز پروژه‌ای وجود ندارد.",
   "created": "ایجاد شده",
-  "modified": "ویرایش شده"
+  "modified": "ویرایش شده",
+  "taskDetails": "جزئیات تسک",
+  "status": "وضعیت",
+  "backToDashboard": "بازگشت به داشبورد",
+  "loading": "در حال بارگذاری...",
+  "taskNotFound": "تسک یافت نشد",
+  "detail": "جزئیات"
 }

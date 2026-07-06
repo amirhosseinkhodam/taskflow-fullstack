@@ -56,6 +56,11 @@ async function ensureTables(pool: Pool): Promise<void> {
     ALTER TABLE tasks
     ADD COLUMN IF NOT EXISTS "position" INTEGER NOT NULL DEFAULT 0
   `);
+
+  await pool.query(`
+    ALTER TABLE tasks
+    ADD COLUMN IF NOT EXISTS "userId" INTEGER
+  `);
 }
 
 async function wait(ms: number): Promise<void> {

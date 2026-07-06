@@ -9,10 +9,13 @@ export class TaskService {
     this.#db = db;
   }
 
+  readonly #taskColumns = `t.id, t.title, t.description, t.status, t."projectId", t."position", t."createdAt", t."updatedAt", t."userId", u.name as "creatorName"`;
+
   async create(
     title: string,
     description: string,
     projectId: number,
+    userId: number,
   ): Promise<TaskModel> {
     const posResult = await this.#db.query<{ max: number | null }>(
       `SELECT MAX("position") as max FROM tasks WHERE "projectId" = $1`,
@@ -21,10 +24,10 @@ export class TaskService {
     const nextPos = (posResult.rows[0]?.max ?? -1) + 1;
 
     const result = await this.#db.query<{ id: number }>(
-      `INSERT INTO tasks (title, description, "projectId", "position")
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO tasks (title, description, "projectId", "position", "userId")
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
-      [title, description, projectId, nextPos],
+      [title, description, projectId, nextPos, userId],
     );
     const id = result.rows[0]?.id;
 
@@ -37,15 +40,15 @@ export class TaskService {
   }
 
   async findAll(projectId?: number): Promise<TaskModel[]> {
-    let query = `SELECT id, title, description, status, "projectId", "position", "createdAt", "updatedAt" FROM tasks`;
+    let query = `SELECT ${this.#taskColumns} FROM tasks t LEFT JOIN users u ON t."userId" = u.id`;
     const params: (string | number)[] = [];
 
     if (projectId !== undefined) {
-      query += ` WHERE "projectId" = $1`;
+      query += ` WHERE t."projectId" = $1`;
       params.push(projectId);
     }
 
-    query += ` ORDER BY "position" ASC, id ASC`;
+    query += ` ORDER BY t."position" ASC, t.id ASC`;
 
     const result = await this.#db.query<TaskModel>(query, params);
     return result.rows;
@@ -53,9 +56,10 @@ export class TaskService {
 
   async findOne(id: number): Promise<TaskModel | null> {
     const result = await this.#db.query<TaskModel>(
-      `SELECT id, title, description, status, "projectId", "position", "createdAt", "updatedAt"
-       FROM tasks
-       WHERE id = $1`,
+      `SELECT ${this.#taskColumns}
+       FROM tasks t
+       LEFT JOIN users u ON t."userId" = u.id
+       WHERE t.id = $1`,
       [id],
     );
 

@@ -21,6 +21,10 @@ export class DashboardService {
     );
   }
 
+  getTask(id: number) {
+    return this.#http.get<TaskModel>(`${this.#apiBaseUrl}/tasks/${id}`);
+  }
+
   getProjects() {
     return this.#http.get<ProjectModel[]>(`${this.#apiBaseUrl}/projects`);
   }
