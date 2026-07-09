@@ -396,4 +396,4 @@ This project proves that sometimes the simplest approach (raw SQL, standalone co
 
 ---
 
-*Last updated: $(date +%Y-%m-%d)*
+*Last updated: 2026-07-09*
