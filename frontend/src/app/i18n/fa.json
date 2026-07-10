@@ -91,5 +91,11 @@
   "backToDashboard": "بازگشت به داشبورد",
   "loading": "در حال بارگذاری...",
   "taskNotFound": "تسک یافت نشد",
-  "detail": "جزئیات"
+  "detail": "جزئیات",
+  "all": "همه",
+  "pending": "در انتظار",
+  "done": "انجام شده",
+  "searchTasks": "جستجوی تسک‌ها...",
+  "markAsDone": "علامت انجام شده",
+  "markAsPending": "علامت در انتظار"
 }

@@ -6,6 +6,8 @@ import { DashboardStore } from '../store/dashboard';
 import { AuthStore } from '../../auth/store/auth';
 import { TaskFormComponent } from '../../../shared/components/task-form';
 import { TaskListComponent } from '../components/task-list';
+import { StatusFilterComponent } from '../components/status-filter';
+import { SearchInputComponent } from '../components/search-input';
 import { ProjectListComponent } from '../components/project-list';
 import { ProjectEditDialogComponent } from '../components/project-edit-dialog';
 import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
@@ -24,6 +26,8 @@ import type { ProjectModel } from '@shared/types/project';
     LanguageToggleComponent,
     TaskFormComponent,
     TaskListComponent,
+    StatusFilterComponent,
+    SearchInputComponent,
     ProjectListComponent,
     RouterLink,
   ],
@@ -120,9 +124,25 @@ import type { ProjectModel } from '@shared/types/project';
       }
 
       <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+            {{ t('tasks') }}
+          </h2>
+          <div class="flex items-center gap-3">
+            <app-status-filter
+              [activeStatus]="store.filter().status ?? 'all'"
+              (statusChange)="onStatusFilter($event)"
+            />
+            <app-search-input
+              [searchTerm]="store.filter().searchTerm ?? ''"
+              (searchChange)="onSearchChange($event)"
+            />
+          </div>
+        </div>
         <app-task-list
           [tasks]="store.tasks()"
           [projects]="store.projects()"
+          [filter]="store.currentFilters()"
           (reorder)="onReorder($event)"
           (editTask)="store.startEdit($event)"
           (refresh)="store.loadTasks()"
@@ -158,6 +178,16 @@ export class DashboardComponent {
     this.store.reorderTasks(current);
   }
 
+  onStatusFilter(status: string): void {
+    const current = this.store.filter();
+    this.store.setFilter({ ...current, status });
+  }
+
+  onSearchChange(searchTerm: string): void {
+    const current = this.store.filter();
+    this.store.setFilter({ ...current, searchTerm });
+  }
+
   openEditProject(project: ProjectModel): void {
     this.store.startEditProject(project);
     const dialogRef = this.#dialog.open(ProjectEditDialogComponent, {
@@ -175,18 +205,20 @@ export class DashboardComponent {
   }
 
   confirmDeleteProject(project: ProjectModel): void {
-    this.#dashboardService.getTasks(project.id).subscribe((tasks) => {
-      const undoneCount = tasks.filter((t) => t.status !== 'done').length;
+    this.#dashboardService
+      .getTasks({ projectId: project.id })
+      .subscribe((tasks) => {
+        const undoneCount = tasks.filter((t) => t.status !== 'done').length;
 
-      const dialogRef = this.#dialog.open(ProjectDeleteConfirmComponent, {
-        data: { undoneCount },
-        width: '400px',
-      });
+        const dialogRef = this.#dialog.open(ProjectDeleteConfirmComponent, {
+          data: { undoneCount },
+          width: '400px',
+        });
 
-      dialogRef.afterClosed().subscribe((confirmed) => {
-        if (!confirmed) return;
-        this.store.deleteProject(project);
+        dialogRef.afterClosed().subscribe((confirmed) => {
+          if (!confirmed) return;
+          this.store.deleteProject(project);
+        });
       });
-    });
   }
 }

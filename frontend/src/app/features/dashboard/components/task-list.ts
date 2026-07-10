@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, output } from '@angular/core';
-import type { TaskFilterModel } from '../task-filter';
-import type { TaskModel } from '@shared/types/task';
+import type { TaskModel, TaskFilterModel } from '@shared/types/task';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-task-list',
@@ -32,10 +32,16 @@ import type { TaskModel } from '@shared/types/task';
           class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-700 p-4"
         >
           <div class="w-full">
-            <h3 class="font-medium text-slate-900 dark:text-slate-100">{{ task.title }}</h3>
-            <p class="text-sm text-slate-600 dark:text-slate-400">{{ task.description }}</p>
+            <h3 class="font-medium text-slate-900 dark:text-slate-100">
+              {{ task.title }}
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+              {{ task.description }}
+            </p>
             <div class="mt-2 flex items-center gap-2">
-              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300">
+              <span
+                class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300"
+              >
                 {{ task.status }}
               </span>
               <span class="text-xs text-slate-500 dark:text-slate-400">
@@ -63,12 +69,16 @@ import type { TaskModel } from '@shared/types/task';
               class="text-sm text-green-600 dark:text-green-400 hover:underline"
               (click)="onToggleStatus(task)"
             >
-              {{ task.status === 'done' ? t('markAsPending') : t('markAsDone') }}
+              {{
+                task.status === 'done' ? t('markAsPending') : t('markAsDone')
+              }}
             </button>
           </div>
         </article>
       } @empty {
-        <p class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-6 text-center text-slate-500 dark:text-slate-400">
+        <p
+          class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-6 text-center text-slate-500 dark:text-slate-400"
+        >
           {{ t('noTasksYet') }}
         </p>
       }
@@ -96,13 +106,16 @@ export class TaskListComponent {
     const filter = this.filter();
     if (!filter) return tasks;
 
-    return tasks.filter(task => {
-      const searchMatch = !filter.searchTerm ||
+    return tasks.filter((task) => {
+      const searchMatch =
+        !filter.searchTerm ||
         task.title.toLowerCase().includes(filter.searchTerm.toLowerCase());
 
-      const statusMatch = filter.status === 'all' || task.status === filter.status;
+      const statusMatch =
+        filter.status === 'all' || task.status === filter.status;
 
-      const projectMatch = filter.projectId === undefined || task.projectId === filter.projectId;
+      const projectMatch =
+        filter.projectId === undefined || task.projectId === filter.projectId;
 
       return searchMatch && statusMatch && projectMatch;
     });
@@ -114,11 +127,11 @@ export class TaskListComponent {
     this.editTask.emit(task);
   }
 
-  onDelete(task: TaskModel): void {
+  onDelete(): void {
     this.refresh.emit();
   }
 
-  onToggleStatus(task: TaskModel): void {
+  onToggleStatus(): void {
     this.refresh.emit();
   }
 }

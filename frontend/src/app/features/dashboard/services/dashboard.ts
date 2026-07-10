@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { TaskStatus } from '../../../shared/models/task';
-import type { TaskModel } from '@shared/types/task';
+import type { TaskModel, TaskFilterModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import type {
   HealthResponseModel,
@@ -29,9 +29,16 @@ export class DashboardService {
     return this.#http.get<ProjectModel[]>(`${this.#apiBaseUrl}/projects`);
   }
 
-  getTasks(projectId?: number) {
-    const query = projectId ? `?projectId=${projectId}` : '';
-    return this.#http.get<TaskModel[]>(`${this.#apiBaseUrl}/tasks${query}`);
+  getTasks(filters?: TaskFilterModel) {
+    const params = new URLSearchParams();
+    if (filters?.projectId) params.set('projectId', String(filters.projectId));
+    if (filters?.status && filters.status !== 'all')
+      params.set('status', filters.status);
+    if (filters?.searchTerm) params.set('search', filters.searchTerm);
+    const query = params.toString();
+    return this.#http.get<TaskModel[]>(
+      `${this.#apiBaseUrl}/tasks${query ? '?' + query : ''}`,
+    );
   }
 
   createProject(name: string) {

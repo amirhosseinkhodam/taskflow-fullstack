@@ -12,13 +12,14 @@ import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { DashboardService } from '../services/dashboard';
 import type { ProjectModel } from '@shared/types/project';
-import type { TaskModel } from '@shared/types/task';
+import type { TaskModel, TaskFilterModel } from '@shared/types/task';
 import type { UpdateProjectRequestModel } from '../../../shared/models/api';
 
 interface DashboardStateModel {
   projects: ProjectModel[];
   tasks: TaskModel[];
   selectedProjectId: number;
+  filter: TaskFilterModel;
   editingTaskId: number | null;
   editingProjectId: number | null;
   message: string;
@@ -30,6 +31,7 @@ const initialState: DashboardStateModel = {
   projects: [],
   tasks: [],
   selectedProjectId: 0,
+  filter: {},
   editingTaskId: null,
   editingProjectId: null,
   message: '',
@@ -47,6 +49,11 @@ export const DashboardStore = signalStore(
       if (!id) return null;
       return store.tasks().find((t) => t.id === id) ?? null;
     }),
+    currentFilters: computed<TaskFilterModel>(() => ({
+      projectId: store.selectedProjectId() || undefined,
+      status: store.filter().status,
+      searchTerm: store.filter().searchTerm,
+    })),
   })),
   withMethods((store, dashboardService = inject(DashboardService)) => {
     const loadHealth = rxMethod<void>(
@@ -89,14 +96,12 @@ export const DashboardStore = signalStore(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
         switchMap(() =>
-          dashboardService
-            .getTasks(store.selectedProjectId() || undefined)
-            .pipe(
-              tapResponse({
-                next: (tasks) => patchState(store, { tasks, isLoading: false }),
-                error: () => patchState(store, { isLoading: false }),
-              }),
-            ),
+          dashboardService.getTasks(store.currentFilters()).pipe(
+            tapResponse({
+              next: (tasks) => patchState(store, { tasks, isLoading: false }),
+              error: () => patchState(store, { isLoading: false }),
+            }),
+          ),
         ),
       ),
     );
@@ -111,13 +116,11 @@ export const DashboardStore = signalStore(
                 const selectedProjectId =
                   store.selectedProjectId() || (projects[0]?.id ?? 0);
                 patchState(store, { projects, selectedProjectId });
-                dashboardService
-                  .getTasks(selectedProjectId || undefined)
-                  .subscribe({
-                    next: (tasks) =>
-                      patchState(store, { tasks, isLoading: false }),
-                    error: () => patchState(store, { isLoading: false }),
-                  });
+                dashboardService.getTasks(store.currentFilters()).subscribe({
+                  next: (tasks) =>
+                    patchState(store, { tasks, isLoading: false }),
+                  error: () => patchState(store, { isLoading: false }),
+                });
               },
               error: () => patchState(store, { isLoading: false }),
             }),
@@ -152,7 +155,15 @@ export const DashboardStore = signalStore(
 
     const setSelectedProjectId = (id: number) => {
       patchState(store, { selectedProjectId: id });
-      dashboardService.getTasks(id || undefined).subscribe({
+      dashboardService.getTasks(store.currentFilters()).subscribe({
+        next: (tasks) => patchState(store, { tasks }),
+        error: () => patchState(store, { message: 'couldNotLoadTasks' }),
+      });
+    };
+
+    const setFilter = (filter: TaskFilterModel) => {
+      patchState(store, { filter });
+      dashboardService.getTasks(store.currentFilters()).subscribe({
         next: (tasks) => patchState(store, { tasks }),
         error: () => patchState(store, { message: 'couldNotLoadTasks' }),
       });
@@ -191,12 +202,13 @@ export const DashboardStore = signalStore(
                       isLoading: false,
                       message: 'taskUpdated',
                     });
-                    const pid = store.selectedProjectId();
-                    dashboardService.getTasks(pid || undefined).subscribe({
-                      next: (tasks) => patchState(store, { tasks }),
-                      error: () =>
-                        patchState(store, { message: 'couldNotLoadTasks' }),
-                    });
+                    dashboardService
+                      .getTasks(store.currentFilters())
+                      .subscribe({
+                        next: (tasks) => patchState(store, { tasks }),
+                        error: () =>
+                          patchState(store, { message: 'couldNotLoadTasks' }),
+                      });
                   },
                   error: () =>
                     patchState(store, {
@@ -215,12 +227,11 @@ export const DashboardStore = signalStore(
             .pipe(
               tapResponse({
                 next: () => {
-                  const pid = store.selectedProjectId();
                   patchState(store, {
                     isLoading: false,
                     message: 'taskCreated',
                   });
-                  dashboardService.getTasks(pid || undefined).subscribe({
+                  dashboardService.getTasks(store.currentFilters()).subscribe({
                     next: (tasks) => patchState(store, { tasks }),
                     error: () =>
                       patchState(store, { message: 'couldNotLoadTasks' }),
@@ -244,13 +255,11 @@ export const DashboardStore = signalStore(
             tapResponse({
               next: () => patchState(store, { tasks }),
               error: () =>
-                dashboardService
-                  .getTasks(store.selectedProjectId() || undefined)
-                  .subscribe({
-                    next: (tasks) => patchState(store, { tasks }),
-                    error: () =>
-                      patchState(store, { message: 'couldNotLoadTasks' }),
-                  }),
+                dashboardService.getTasks(store.currentFilters()).subscribe({
+                  next: (tasks) => patchState(store, { tasks }),
+                  error: () =>
+                    patchState(store, { message: 'couldNotLoadTasks' }),
+                }),
             }),
           ),
         ),
@@ -268,13 +277,11 @@ export const DashboardStore = signalStore(
             .pipe(
               tapResponse({
                 next: () =>
-                  dashboardService
-                    .getTasks(store.selectedProjectId() || undefined)
-                    .subscribe({
-                      next: (tasks) => patchState(store, { tasks }),
-                      error: () =>
-                        patchState(store, { message: 'couldNotLoadTasks' }),
-                    }),
+                  dashboardService.getTasks(store.currentFilters()).subscribe({
+                    next: (tasks) => patchState(store, { tasks }),
+                    error: () =>
+                      patchState(store, { message: 'couldNotLoadTasks' }),
+                  }),
                 error: () =>
                   patchState(store, { message: 'couldNotUpdateTaskStatus' }),
               }),
@@ -289,13 +296,11 @@ export const DashboardStore = signalStore(
           dashboardService.deleteTask(task.id).pipe(
             tapResponse({
               next: () =>
-                dashboardService
-                  .getTasks(store.selectedProjectId() || undefined)
-                  .subscribe({
-                    next: (tasks) => patchState(store, { tasks }),
-                    error: () =>
-                      patchState(store, { message: 'couldNotLoadTasks' }),
-                  }),
+                dashboardService.getTasks(store.currentFilters()).subscribe({
+                  next: (tasks) => patchState(store, { tasks }),
+                  error: () =>
+                    patchState(store, { message: 'couldNotLoadTasks' }),
+                }),
               error: () => patchState(store, { message: 'couldNotDeleteTask' }),
             }),
           ),
@@ -362,13 +367,11 @@ export const DashboardStore = signalStore(
                   editingProjectId: null,
                   message: 'projectDeleted',
                 });
-                dashboardService
-                  .getTasks(selectedProjectId || undefined)
-                  .subscribe({
-                    next: (tasks) => patchState(store, { tasks }),
-                    error: () =>
-                      patchState(store, { message: 'couldNotLoadTasks' }),
-                  });
+                dashboardService.getTasks(store.currentFilters()).subscribe({
+                  next: (tasks) => patchState(store, { tasks }),
+                  error: () =>
+                    patchState(store, { message: 'couldNotLoadTasks' }),
+                });
               },
               error: () =>
                 patchState(store, { message: 'couldNotDeleteProject' }),
@@ -389,6 +392,7 @@ export const DashboardStore = signalStore(
       updateProject,
       deleteProject,
       setSelectedProjectId,
+      setFilter,
       startEdit,
       cancelEdit,
       saveTask,

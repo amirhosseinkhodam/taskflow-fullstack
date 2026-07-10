@@ -25,8 +25,16 @@ export class TaskController {
   }
 
   @Get()
-  findAll(@Query('projectId') projectId?: string): Promise<TaskModel[]> {
-    return this.#taskService.findAll(projectId ? Number(projectId) : undefined);
+  findAll(
+    @Query('projectId') projectId?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ): Promise<TaskModel[]> {
+    return this.#taskService.findAll({
+      projectId: projectId ? Number(projectId) : undefined,
+      status,
+      searchTerm: search,
+    });
   }
 
   @Get(':id')

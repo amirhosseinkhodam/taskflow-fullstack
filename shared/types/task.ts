@@ -10,3 +10,9 @@ export interface TaskModel {
   readonly userId: number;
   readonly creatorName?: string;
 }
+
+export interface TaskFilterModel {
+  readonly projectId?: number;
+  readonly status?: string;
+  readonly searchTerm?: string;
+}

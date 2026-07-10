@@ -91,5 +91,11 @@
   "backToDashboard": "Back to Dashboard",
   "loading": "Loading...",
   "taskNotFound": "Task not found",
-  "detail": "Detail"
+  "detail": "Detail",
+  "all": "All",
+  "pending": "Pending",
+  "done": "Done",
+  "searchTasks": "Search tasks...",
+  "markAsDone": "Mark as Done",
+  "markAsPending": "Mark as Pending"
 }

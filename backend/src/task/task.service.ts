@@ -39,13 +39,30 @@ export class TaskService {
     return task;
   }
 
-  async findAll(projectId?: number): Promise<TaskModel[]> {
+  async findAll(filters: {
+    projectId?: number;
+    status?: string;
+    searchTerm?: string;
+  }): Promise<TaskModel[]> {
     let query = `SELECT ${this.#taskColumns} FROM tasks t LEFT JOIN users u ON t."userId" = u.id`;
+    const conditions: string[] = [];
     const params: (string | number)[] = [];
 
-    if (projectId !== undefined) {
-      query += ` WHERE t."projectId" = $1`;
-      params.push(projectId);
+    if (filters.projectId !== undefined) {
+      params.push(filters.projectId);
+      conditions.push(`t."projectId" = $${params.length}`);
+    }
+    if (filters.status && filters.status !== 'all') {
+      params.push(filters.status);
+      conditions.push(`t.status = $${params.length}`);
+    }
+    if (filters.searchTerm) {
+      params.push(`%${filters.searchTerm}%`);
+      conditions.push(`t.title ILIKE $${params.length}`);
+    }
+
+    if (conditions.length) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     query += ` ORDER BY t."position" ASC, t.id ASC`;

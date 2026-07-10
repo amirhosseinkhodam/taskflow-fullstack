@@ -347,10 +347,13 @@ Rules:
   readonly form = input.required<FormGroup>();
   ```
 
-### Component decomposition (SOLID/DRY)
+### Component decomposition (SOLID/DRY) — components must be as dumb and reusable as possible
 
 - **Page components** (in `pages/`) act as orchestrators — they inject stores, compose layout from sub-components, and wire events.
-- **Sub-components** (in `components/`) are presentational/dumb — receive data via `input()`, emit actions via `output()`.
+- **Sub-components** (in `components/`) are presentational/dumb — receive data via `input()`, emit actions via `output()`. They must be **as dumb as possible**: no business logic, no service injection, no store access. They are reusable UI building blocks.
+- **Every component has exactly one purpose.** If a component does two things, split it into two components. A filter bar is not the same as a task list — they are separate components. A search input is not the same as a status chip group — they are separate components. Follow the Single Responsibility Principle strictly.
+- **Break down aggressively.** If a template block is reused or could be reused, extract it. If a component has more than ~80 lines of template, it probably needs splitting. Each component should be small enough that you can understand it at a glance.
+- **Reuse across features.** A component in `shared/components/` must not depend on any feature-specific store, service, or model. It receives everything via `input()` and communicates via `output()`. This makes it usable in any feature without modification.
 - Use `input()`, `input.required()`, and `output()` from `@angular/core` instead of the `@Input()` / `@Output()` decorator pattern.
   ```ts
   // ✅ new signal-based API
