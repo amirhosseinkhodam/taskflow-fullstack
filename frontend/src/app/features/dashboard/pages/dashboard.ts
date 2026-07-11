@@ -142,7 +142,6 @@ import type { ProjectModel } from '@shared/types/project';
         <app-task-list
           [tasks]="store.tasks()"
           [projects]="store.projects()"
-          [filter]="store.currentFilters()"
           (reorder)="onReorder($event)"
           (editTask)="store.startEdit($event)"
           (refresh)="store.loadTasks()"
