@@ -18,8 +18,10 @@ import type { UpdateProjectRequestModel } from '../../../shared/models/api';
 interface DashboardStateModel {
   projects: ProjectModel[];
   tasks: TaskModel[];
-  selectedProjectId: number;
   filter: TaskFilterModel;
+  page: number;
+  totalPages: number;
+  totalTasks: number;
   editingTaskId: number | null;
   editingProjectId: number | null;
   message: string;
@@ -30,14 +32,18 @@ interface DashboardStateModel {
 const initialState: DashboardStateModel = {
   projects: [],
   tasks: [],
-  selectedProjectId: 0,
   filter: {},
+  page: 1,
+  totalPages: 1,
+  totalTasks: 0,
   editingTaskId: null,
   editingProjectId: null,
   message: '',
   isLoading: false,
   healthStatus: 'checking',
 };
+
+const TASKS_PER_PAGE = 5;
 
 export const DashboardStore = signalStore(
   withState(initialState),
@@ -50,9 +56,11 @@ export const DashboardStore = signalStore(
       return store.tasks().find((t) => t.id === id) ?? null;
     }),
     currentFilters: computed<TaskFilterModel>(() => ({
-      projectId: store.selectedProjectId() || undefined,
+      projectId: store.filter().projectId,
       status: store.filter().status,
       searchTerm: store.filter().searchTerm,
+      page: store.page(),
+      limit: TASKS_PER_PAGE,
     })),
   })),
   withMethods((store, dashboardService = inject(DashboardService)) => {
@@ -77,11 +85,8 @@ export const DashboardStore = signalStore(
           dashboardService.getProjects().pipe(
             tapResponse({
               next: (projects) => {
-                const selectedProjectId =
-                  store.selectedProjectId() || (projects[0]?.id ?? 0);
                 patchState(store, {
                   projects,
-                  selectedProjectId,
                   isLoading: false,
                 });
               },
@@ -98,7 +103,14 @@ export const DashboardStore = signalStore(
         switchMap(() =>
           dashboardService.getTasks(store.currentFilters()).pipe(
             tapResponse({
-              next: (tasks) => patchState(store, { tasks, isLoading: false }),
+              next: (response) =>
+                patchState(store, {
+                  tasks: response.data,
+                  totalPages: response.totalPages,
+                  totalTasks: response.total,
+                  page: response.page,
+                  isLoading: false,
+                }),
               error: () => patchState(store, { isLoading: false }),
             }),
           ),
@@ -113,12 +125,16 @@ export const DashboardStore = signalStore(
           dashboardService.getProjects().pipe(
             tapResponse({
               next: (projects) => {
-                const selectedProjectId =
-                  store.selectedProjectId() || (projects[0]?.id ?? 0);
-                patchState(store, { projects, selectedProjectId });
+                patchState(store, { projects });
                 dashboardService.getTasks(store.currentFilters()).subscribe({
-                  next: (tasks) =>
-                    patchState(store, { tasks, isLoading: false }),
+                  next: (response) =>
+                    patchState(store, {
+                      tasks: response.data,
+                      totalPages: response.totalPages,
+                      totalTasks: response.total,
+                      page: response.page,
+                      isLoading: false,
+                    }),
                   error: () => patchState(store, { isLoading: false }),
                 });
               },
@@ -138,7 +154,6 @@ export const DashboardStore = signalStore(
               next: (project) =>
                 patchState(store, {
                   projects: [...store.projects(), project],
-                  selectedProjectId: project.id,
                   isLoading: false,
                   message: 'projectCreated',
                 }),
@@ -153,18 +168,30 @@ export const DashboardStore = signalStore(
       ),
     );
 
-    const setSelectedProjectId = (id: number) => {
-      patchState(store, { selectedProjectId: id });
+    const setFilter = (filter: TaskFilterModel) => {
+      patchState(store, { filter, page: 1 });
       dashboardService.getTasks(store.currentFilters()).subscribe({
-        next: (tasks) => patchState(store, { tasks }),
+        next: (response) =>
+          patchState(store, {
+            tasks: response.data,
+            totalPages: response.totalPages,
+            totalTasks: response.total,
+            page: response.page,
+          }),
         error: () => patchState(store, { message: 'couldNotLoadTasks' }),
       });
     };
 
-    const setFilter = (filter: TaskFilterModel) => {
-      patchState(store, { filter });
+    const setPage = (page: number) => {
+      patchState(store, { page });
       dashboardService.getTasks(store.currentFilters()).subscribe({
-        next: (tasks) => patchState(store, { tasks }),
+        next: (response) =>
+          patchState(store, {
+            tasks: response.data,
+            totalPages: response.totalPages,
+            totalTasks: response.total,
+            page: response.page,
+          }),
         error: () => patchState(store, { message: 'couldNotLoadTasks' }),
       });
     };
@@ -205,9 +232,17 @@ export const DashboardStore = signalStore(
                     dashboardService
                       .getTasks(store.currentFilters())
                       .subscribe({
-                        next: (tasks) => patchState(store, { tasks }),
+                        next: (response) =>
+                          patchState(store, {
+                            tasks: response.data,
+                            totalPages: response.totalPages,
+                            totalTasks: response.total,
+                            page: response.page,
+                          }),
                         error: () =>
-                          patchState(store, { message: 'couldNotLoadTasks' }),
+                          patchState(store, {
+                            message: 'couldNotLoadTasks',
+                          }),
                       });
                   },
                   error: () =>
@@ -232,9 +267,17 @@ export const DashboardStore = signalStore(
                     message: 'taskCreated',
                   });
                   dashboardService.getTasks(store.currentFilters()).subscribe({
-                    next: (tasks) => patchState(store, { tasks }),
+                    next: (response) =>
+                      patchState(store, {
+                        tasks: response.data,
+                        totalPages: response.totalPages,
+                        totalTasks: response.total,
+                        page: response.page,
+                      }),
                     error: () =>
-                      patchState(store, { message: 'couldNotLoadTasks' }),
+                      patchState(store, {
+                        message: 'couldNotLoadTasks',
+                      }),
                   });
                 },
                 error: () =>
@@ -256,9 +299,12 @@ export const DashboardStore = signalStore(
               next: () => patchState(store, { tasks }),
               error: () =>
                 dashboardService.getTasks(store.currentFilters()).subscribe({
-                  next: (tasks) => patchState(store, { tasks }),
+                  next: (response) =>
+                    patchState(store, { tasks: response.data }),
                   error: () =>
-                    patchState(store, { message: 'couldNotLoadTasks' }),
+                    patchState(store, {
+                      message: 'couldNotLoadTasks',
+                    }),
                 }),
             }),
           ),
@@ -278,12 +324,17 @@ export const DashboardStore = signalStore(
               tapResponse({
                 next: () =>
                   dashboardService.getTasks(store.currentFilters()).subscribe({
-                    next: (tasks) => patchState(store, { tasks }),
+                    next: (response) =>
+                      patchState(store, { tasks: response.data }),
                     error: () =>
-                      patchState(store, { message: 'couldNotLoadTasks' }),
+                      patchState(store, {
+                        message: 'couldNotLoadTasks',
+                      }),
                   }),
                 error: () =>
-                  patchState(store, { message: 'couldNotUpdateTaskStatus' }),
+                  patchState(store, {
+                    message: 'couldNotUpdateTaskStatus',
+                  }),
               }),
             ),
         ),
@@ -297,9 +348,12 @@ export const DashboardStore = signalStore(
             tapResponse({
               next: () =>
                 dashboardService.getTasks(store.currentFilters()).subscribe({
-                  next: (tasks) => patchState(store, { tasks }),
+                  next: (response) =>
+                    patchState(store, { tasks: response.data }),
                   error: () =>
-                    patchState(store, { message: 'couldNotLoadTasks' }),
+                    patchState(store, {
+                      message: 'couldNotLoadTasks',
+                    }),
                 }),
               error: () => patchState(store, { message: 'couldNotDeleteTask' }),
             }),
@@ -357,24 +411,24 @@ export const DashboardStore = signalStore(
                 const remaining = store
                   .projects()
                   .filter((p) => p.id !== project.id);
-                const selectedProjectId =
-                  store.selectedProjectId() === project.id
-                    ? (remaining[0]?.id ?? 0)
-                    : store.selectedProjectId();
                 patchState(store, {
                   projects: remaining,
-                  selectedProjectId,
                   editingProjectId: null,
                   message: 'projectDeleted',
                 });
                 dashboardService.getTasks(store.currentFilters()).subscribe({
-                  next: (tasks) => patchState(store, { tasks }),
+                  next: (response) =>
+                    patchState(store, { tasks: response.data }),
                   error: () =>
-                    patchState(store, { message: 'couldNotLoadTasks' }),
+                    patchState(store, {
+                      message: 'couldNotLoadTasks',
+                    }),
                 });
               },
               error: () =>
-                patchState(store, { message: 'couldNotDeleteProject' }),
+                patchState(store, {
+                  message: 'couldNotDeleteProject',
+                }),
             }),
           ),
         ),
@@ -391,8 +445,8 @@ export const DashboardStore = signalStore(
       cancelEditProject,
       updateProject,
       deleteProject,
-      setSelectedProjectId,
       setFilter,
+      setPage,
       startEdit,
       cancelEdit,
       saveTask,

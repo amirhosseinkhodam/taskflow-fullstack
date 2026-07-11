@@ -8,6 +8,8 @@ import { TaskFormComponent } from '../../../shared/components/task-form';
 import { TaskListComponent } from '../components/task-list';
 import { StatusFilterComponent } from '../components/status-filter';
 import { SearchInputComponent } from '../components/search-input';
+import { ProjectFilterComponent } from '../components/project-filter';
+import { PaginationComponent } from '../components/pagination';
 import { ProjectListComponent } from '../components/project-list';
 import { ProjectEditDialogComponent } from '../components/project-edit-dialog';
 import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
@@ -28,6 +30,8 @@ import type { ProjectModel } from '@shared/types/project';
     TaskListComponent,
     StatusFilterComponent,
     SearchInputComponent,
+    ProjectFilterComponent,
+    PaginationComponent,
     ProjectListComponent,
     RouterLink,
   ],
@@ -103,10 +107,8 @@ import type { ProjectModel } from '@shared/types/project';
             <app-task-form
               [projects]="store.projects()"
               [editingTask]="store.editingTask()"
-              [selectedProjectId]="store.selectedProjectId()"
               (submitTask)="store.saveTask($event)"
               (cancelEdit)="store.cancelEdit()"
-              (projectChange)="store.setSelectedProjectId($event)"
             />
           </section>
         </section>
@@ -115,10 +117,8 @@ import type { ProjectModel } from '@shared/types/project';
           <app-task-form
             [projects]="store.projects()"
             [editingTask]="store.editingTask()"
-            [selectedProjectId]="store.selectedProjectId()"
             (submitTask)="store.saveTask($event)"
             (cancelEdit)="store.cancelEdit()"
-            (projectChange)="store.setSelectedProjectId($event)"
           />
         </section>
       }
@@ -128,15 +128,26 @@ import type { ProjectModel } from '@shared/types/project';
           <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
             {{ t('tasks') }}
           </h2>
-          <div class="flex items-center gap-3">
-            <app-status-filter
-              [activeStatus]="store.filter().status ?? 'all'"
-              (statusChange)="onStatusFilter($event)"
-            />
-            <app-search-input
-              [searchTerm]="store.filter().searchTerm ?? ''"
-              (searchChange)="onSearchChange($event)"
-            />
+          <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+            <div class="w-full sm:w-auto min-w-[180px]">
+              <app-project-filter
+                [projects]="store.projects()"
+                [selectedProjectId]="store.filter().projectId ?? 0"
+                (projectChange)="onProjectFilter($event)"
+              />
+            </div>
+            <div class="w-full sm:w-auto">
+              <app-status-filter
+                [activeStatus]="store.filter().status ?? 'all'"
+                (statusChange)="onStatusFilter($event)"
+              />
+            </div>
+            <div class="w-full sm:w-auto">
+              <app-search-input
+                [searchTerm]="store.filter().searchTerm ?? ''"
+                (searchChange)="onSearchChange($event)"
+              />
+            </div>
           </div>
         </div>
         <app-task-list
@@ -145,6 +156,11 @@ import type { ProjectModel } from '@shared/types/project';
           (reorder)="onReorder($event)"
           (editTask)="store.startEdit($event)"
           (refresh)="store.loadTasks()"
+        />
+        <app-pagination
+          [currentPage]="store.page()"
+          [totalPages]="store.totalPages()"
+          (pageChange)="store.setPage($event)"
         />
       </section>
     </main>
@@ -187,6 +203,14 @@ export class DashboardComponent {
     this.store.setFilter({ ...current, searchTerm });
   }
 
+  onProjectFilter(projectId: number): void {
+    const current = this.store.filter();
+    this.store.setFilter({
+      ...current,
+      projectId: projectId || undefined,
+    });
+  }
+
   openEditProject(project: ProjectModel): void {
     this.store.startEditProject(project);
     const dialogRef = this.#dialog.open(ProjectEditDialogComponent, {
@@ -205,9 +229,11 @@ export class DashboardComponent {
 
   confirmDeleteProject(project: ProjectModel): void {
     this.#dashboardService
-      .getTasks({ projectId: project.id })
-      .subscribe((tasks) => {
-        const undoneCount = tasks.filter((t) => t.status !== 'done').length;
+      .getTasks({ projectId: project.id, limit: 1000 })
+      .subscribe((response) => {
+        const undoneCount = response.data.filter(
+          (t) => t.status !== 'done',
+        ).length;
 
         const dialogRef = this.#dialog.open(ProjectDeleteConfirmComponent, {
           data: { undoneCount },

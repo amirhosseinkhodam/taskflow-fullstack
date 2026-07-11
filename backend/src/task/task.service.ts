@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
-import { TaskModel } from '@shared/types/task';
+import type { TaskModel, PaginatedResponseModel } from '@shared/types/task';
 
 @Injectable()
 export class TaskService {
@@ -43,8 +43,9 @@ export class TaskService {
     projectId?: number;
     status?: string;
     searchTerm?: string;
-  }): Promise<TaskModel[]> {
-    let query = `SELECT ${this.#taskColumns} FROM tasks t LEFT JOIN users u ON t."userId" = u.id`;
+    page?: number;
+    limit?: number;
+  }): Promise<PaginatedResponseModel<TaskModel>> {
     const conditions: string[] = [];
     const params: (string | number)[] = [];
 
@@ -58,17 +59,44 @@ export class TaskService {
     }
     if (filters.searchTerm) {
       params.push(`%${filters.searchTerm}%`);
-      conditions.push(`t.title ILIKE $${params.length}`);
+      conditions.push(
+        `(t.title ILIKE $${params.length} OR t.description ILIKE $${params.length})`,
+      );
     }
 
-    if (conditions.length) {
-      query += ` WHERE ${conditions.join(' AND ')}`;
-    }
+    const whereClause = conditions.length
+      ? ` WHERE ${conditions.join(' AND ')}`
+      : '';
 
-    query += ` ORDER BY t."position" ASC, t.id ASC`;
+    const countResult = await this.#db.query<{ count: string }>(
+      `SELECT COUNT(*) as count FROM tasks t${whereClause}`,
+      params,
+    );
+    const total = Number(countResult.rows[0]?.count ?? 0);
 
-    const result = await this.#db.query<TaskModel>(query, params);
-    return result.rows;
+    const page = Math.max(1, filters.page ?? 1);
+    const limit = Math.max(1, Math.min(100, filters.limit ?? 5));
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const offset = (page - 1) * limit;
+
+    const dataParams = [...params];
+    dataParams.push(limit);
+    dataParams.push(offset);
+
+    const result = await this.#db.query<TaskModel>(
+      `SELECT ${this.#taskColumns} FROM tasks t LEFT JOIN users u ON t."userId" = u.id${whereClause}
+       ORDER BY t."position" ASC, t.id ASC
+       LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}`,
+      dataParams,
+    );
+
+    return {
+      data: result.rows,
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async findOne(id: number): Promise<TaskModel | null> {

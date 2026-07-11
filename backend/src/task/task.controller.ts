@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { TaskModel } from '@shared/types/task';
+import type { TaskModel, PaginatedResponseModel } from '@shared/types/task';
 import { TaskService } from './task.service';
 
 @UseGuards(JwtAuthGuard)
@@ -29,11 +29,15 @@ export class TaskController {
     @Query('projectId') projectId?: string,
     @Query('status') status?: string,
     @Query('search') search?: string,
-  ): Promise<TaskModel[]> {
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<PaginatedResponseModel<TaskModel>> {
     return this.#taskService.findAll({
       projectId: projectId ? Number(projectId) : undefined,
       status,
       searchTerm: search,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
     });
   }
 

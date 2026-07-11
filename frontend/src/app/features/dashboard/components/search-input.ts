@@ -1,24 +1,33 @@
 import { Component, inject, input, output } from '@angular/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-search-input',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [FormsModule],
   template: `
-    <mat-form-field appearance="outline" class="w-full max-w-xs">
-      <mat-label>{{ t('searchTasks') }}</mat-label>
+    <div class="relative">
+      <svg
+        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+          clip-rule="evenodd"
+        />
+      </svg>
       <input
-        matInput
-        [value]="searchTerm()"
-        (input)="onInput($event)"
-        placeholder="{{ t('searchTasks') }}"
+        type="search"
+        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchChange.emit($event)"
+        [placeholder]="t('searchTasks')"
       />
-      <mat-icon matPrefix>search</mat-icon>
-    </mat-form-field>
+    </div>
   `,
   styles: [
     `
@@ -36,10 +45,5 @@ export class SearchInputComponent {
 
   t(key: string): string {
     return this.#languageService.translate(key);
-  }
-
-  onInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchChange.emit(value);
   }
 }

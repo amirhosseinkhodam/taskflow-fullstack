@@ -97,5 +97,10 @@
   "done": "Done",
   "searchTasks": "Search tasks...",
   "markAsDone": "Mark as Done",
-  "markAsPending": "Mark as Pending"
+  "markAsPending": "Mark as Pending",
+"allProjects": "All Projects",
+  "previous": "Previous",
+  "next": "Next",
+  "page": "Page",
+  "searchProjects": "Search projects..."
 }

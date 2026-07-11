@@ -23,7 +23,6 @@ import type { TaskModel } from '@shared/types/task';
         <select
           class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100"
           formControlName="projectId"
-          (change)="onProjectChange()"
         >
           <option [ngValue]="0">{{ t('selectProject') }}</option>
           @for (project of projects(); track project.id) {
@@ -60,7 +59,6 @@ import type { TaskModel } from '@shared/types/task';
 export class TaskFormComponent {
   readonly projects = input.required<ProjectModel[]>();
   readonly editingTask = input<TaskModel | null>(null);
-  readonly selectedProjectId = input(0);
   readonly showProjectSelect = input(true);
   readonly submitTask = output<{
     title: string;
@@ -68,7 +66,6 @@ export class TaskFormComponent {
     projectId: number;
   }>();
   readonly cancelEdit = output<void>();
-  readonly projectChange = output<number>();
 
   readonly #taskForm = inject(TaskFormService);
   readonly #languageService = inject(LanguageService);
@@ -92,12 +89,6 @@ export class TaskFormComponent {
         );
       }
     });
-
-    effect(() => {
-      if (!this.editingTask()) {
-        this.#taskForm.patchProjectId(this.selectedProjectId());
-      }
-    });
   }
 
   onSubmit(): void {
@@ -109,9 +100,5 @@ export class TaskFormComponent {
   onCancel(): void {
     this.cancelEdit.emit();
     this.#taskForm.resetForm(this.#taskForm.form.getRawValue().projectId);
-  }
-
-  onProjectChange(): void {
-    this.projectChange.emit(this.#taskForm.form.value.projectId ?? 0);
   }
 }

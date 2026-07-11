@@ -97,5 +97,10 @@
   "done": "انجام شده",
   "searchTasks": "جستجوی تسک‌ها...",
   "markAsDone": "علامت انجام شده",
-  "markAsPending": "علامت در انتظار"
+  "markAsPending": "علامت در انتظار",
+"allProjects": "همه پروژه‌ها",
+  "previous": "قبلی",
+  "next": "بعدی",
+  "page": "صفحه",
+  "searchProjects": "جستجوی پروژه‌ها..."
 }

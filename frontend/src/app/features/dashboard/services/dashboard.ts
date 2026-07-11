@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { TaskStatus } from '../../../shared/models/task';
-import type { TaskModel, TaskFilterModel } from '@shared/types/task';
+import type {
+  TaskModel,
+  TaskFilterModel,
+  PaginatedResponseModel,
+} from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import type {
   HealthResponseModel,
@@ -35,8 +39,10 @@ export class DashboardService {
     if (filters?.status && filters.status !== 'all')
       params.set('status', filters.status);
     if (filters?.searchTerm) params.set('search', filters.searchTerm);
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.limit) params.set('limit', String(filters.limit));
     const query = params.toString();
-    return this.#http.get<TaskModel[]>(
+    return this.#http.get<PaginatedResponseModel<TaskModel>>(
       `${this.#apiBaseUrl}/tasks${query ? '?' + query : ''}`,
     );
   }

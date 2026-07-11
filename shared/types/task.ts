@@ -15,4 +15,14 @@ export interface TaskFilterModel {
   readonly projectId?: number;
   readonly status?: string;
   readonly searchTerm?: string;
+  readonly page?: number;
+  readonly limit?: number;
+}
+
+export interface PaginatedResponseModel<T> {
+  readonly data: T[];
+  readonly total: number;
+  readonly page: number;
+  readonly limit: number;
+  readonly totalPages: number;
 }
