@@ -1,11 +1,12 @@
 import { Component, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
+import { InputComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-search-input',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, InputComponent],
   template: `
     <div class="relative">
       <svg
@@ -20,12 +21,13 @@ import { LanguageService } from '../../../shared/services/language';
           clip-rule="evenodd"
         />
       </svg>
-      <input
+      <app-input
         type="search"
-        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-2 pl-9 pr-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400"
         [ngModel]="searchTerm()"
         (ngModelChange)="searchChange.emit($event)"
         [placeholder]="t('searchTasks')"
+        variant="default"
+        [cssClass]="'pl-9'"
       />
     </div>
   `,

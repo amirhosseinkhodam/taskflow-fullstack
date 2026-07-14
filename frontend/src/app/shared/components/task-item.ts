@@ -5,13 +5,14 @@ import { LanguageService } from '../services/language';
 import { JalaliDatePipe } from '../pipes/jalali-date';
 import { DashboardService } from '../../features/dashboard/services/dashboard';
 import { ConfirmDialogComponent } from './confirm-dialog';
+import { ButtonComponent } from './button';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 
 @Component({
   selector: 'app-task-item',
   standalone: true,
-  imports: [RouterLink, JalaliDatePipe],
+  imports: [RouterLink, JalaliDatePipe, ButtonComponent],
   template: `
     @if (task(); as task) {
       <div class="flex items-start gap-3 w-full">
@@ -83,7 +84,9 @@ import type { ProjectModel } from '@shared/types/project';
             }
             @if (showEditButton()) {
               <button
-                class="flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm text-white min-h-[44px]"
+                appButton
+                variant="warning"
+                size="md"
                 type="button"
                 (click)="edit.emit(task)"
                 [title]="t('edit')"
@@ -102,7 +105,9 @@ import type { ProjectModel } from '@shared/types/project';
               </button>
             }
             <button
-              class="flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm text-white min-h-[44px]"
+              appButton
+              variant="success"
+              size="md"
               type="button"
               (click)="handleToggle()"
             >
@@ -121,7 +126,9 @@ import type { ProjectModel } from '@shared/types/project';
               <span class="hidden sm:inline">{{ t('toggle') }}</span>
             </button>
             <button
-              class="flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm text-white min-h-[44px]"
+              appButton
+              variant="destructive"
+              size="md"
               type="button"
               (click)="confirmDelete()"
             >

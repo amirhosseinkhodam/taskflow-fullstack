@@ -1,6 +1,17 @@
-import { Component, input, output } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  forwardRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-textarea',
@@ -8,6 +19,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   template: `
     <textarea
+      #textareaElement
       [rows]="rows()"
       [placeholder]="placeholder()"
       [value]="value()"
@@ -18,11 +30,18 @@ import { FormsModule } from '@angular/forms';
       (focus)="onFocus()"
     ></textarea>
   `,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => TextareaComponent),
+      multi: true,
+    },
+  ],
 })
-export class TextareaComponent {
+export class TextareaComponent implements ControlValueAccessor {
   readonly rows = input<number>(4);
   readonly placeholder = input<string>();
-  readonly value = input<string>();
+  readonly value = input<string>('');
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
@@ -32,17 +51,44 @@ export class TextareaComponent {
   readonly blur = output<void>({ alias: 'inputBlur' });
   readonly focus = output<void>({ alias: 'inputFocus' });
 
+  @ViewChild('textareaElement', { static: false })
+  textareaElement!: ElementRef<HTMLTextAreaElement>;
+  #onChange: (value: string) => void = () => {};
+  #onTouched: () => void = () => {};
+
   onInput(event: Event) {
     const value = (event.target as HTMLTextAreaElement).value;
+    this.#onChange(value);
     this.input.emit(value);
   }
 
   onBlur() {
+    this.#onTouched();
     this.blur.emit();
   }
 
   onFocus() {
     this.focus.emit();
+  }
+
+  writeValue(value: string): void {
+    if (this.textareaElement) {
+      this.textareaElement.nativeElement.value = value ?? '';
+    }
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.#onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.#onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    if (this.textareaElement) {
+      this.textareaElement.nativeElement.disabled = isDisabled;
+    }
   }
 
   readonly computedClasses = () => {

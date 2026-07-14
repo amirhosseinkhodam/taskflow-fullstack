@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
-import { TaskFormComponent } from '../../../shared/components/task-form';
+import { TaskFormComponent, ButtonComponent } from '../../../shared/components';
 import { TaskFormService } from '../../../shared/forms/task';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
@@ -12,7 +12,7 @@ import { switchMap } from 'rxjs';
 @Component({
   selector: 'app-task-details',
   standalone: true,
-  imports: [RouterLink, TaskItemComponent, TaskFormComponent],
+  imports: [RouterLink, TaskItemComponent, TaskFormComponent, ButtonComponent],
   template: `
     <main class="mx-auto max-w-2xl p-6">
       <div class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
@@ -20,11 +20,7 @@ import { switchMap } from 'rxjs';
           <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
             {{ t('taskDetails') }}
           </h1>
-          <button
-            class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-            type="button"
-            routerLink="/"
-          >
+          <button appButton variant="secondary" type="button" routerLink="/">
             {{ t('backToDashboard') }}
           </button>
         </div>

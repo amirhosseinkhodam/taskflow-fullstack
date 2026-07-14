@@ -1,14 +1,17 @@
 import { Component, inject, input, output } from '@angular/core';
 import { LanguageService } from '../../../shared/services/language';
+import { ButtonComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
+  imports: [ButtonComponent],
   template: `
     @if (totalPages() > 1) {
       <div class="flex items-center justify-center gap-2 mt-4">
         <button
-          class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          appButton
+          variant="secondary"
           type="button"
           [disabled]="currentPage() <= 1"
           (click)="pageChange.emit(currentPage() - 1)"
@@ -19,7 +22,8 @@ import { LanguageService } from '../../../shared/services/language';
           {{ t('page') }} {{ currentPage() }} / {{ totalPages() }}
         </span>
         <button
-          class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          appButton
+          variant="secondary"
           type="button"
           [disabled]="currentPage() >= totalPages()"
           (click)="pageChange.emit(currentPage() + 1)"

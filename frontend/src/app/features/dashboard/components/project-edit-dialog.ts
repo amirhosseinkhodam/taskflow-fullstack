@@ -7,19 +7,20 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { LanguageService } from '../../../shared/services/language';
+import { InputComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-project-edit-dialog',
   standalone: true,
-  imports: [FormsModule, MatDialogModule, MatButtonModule],
+  imports: [FormsModule, MatDialogModule, MatButtonModule, InputComponent],
   template: `
     <h2 mat-dialog-title>{{ t('editProject') }}</h2>
     <mat-dialog-content>
-      <input
-        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+      <app-input
         [(ngModel)]="projectName"
         [placeholder]="t('editProjectName')"
         (keydown.enter)="onConfirm()"
+        variant="default"
       />
     </mat-dialog-content>
     <mat-dialog-actions align="end">

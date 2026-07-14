@@ -60,6 +60,7 @@ No test setup exists (no spec/e2e files found).
 - **Plan mode for multi-file changes**: When a task requires editing more than 1–2 files, present a plan first and ask for approval before implementing. The user often forgets to switch to plan mode, so the assistant must proactively propose one.
 - **Auto-delete plan files**: When a plan `.md` file is created during planning, delete it after implementation is complete.
 - **Never commit or push to GitHub**: Commits and pushes are **permanently blocked** unless they originate from a verified human user. Automated scripts and non-human processes are denied access to the GitHub repository entirely.
+- **Always use custom components**: Replace all standard HTML (`<input>`, `<button>`, `<textarea>`, `<form>`, etc.) with custom component equivalents from `frontend/src/app/shared/components/`. Never create new HTML elements for common UI patterns — use the existing component library instead.
 
 ## Conventions
 

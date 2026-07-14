@@ -3,27 +3,41 @@ import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
 import type { ProjectModel } from '@shared/types/project';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [FormsModule, JalaliDatePipe],
+  imports: [
+    FormsModule,
+    JalaliDatePipe,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
+  ],
   template: `
     <div class="h-full flex flex-col min-h-0">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ t('projects') }}
       </h2>
-      <form class="mt-4 flex gap-2" (ngSubmit)="createProject()">
-        <input
-          class="min-w-0 flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+      <form
+        class="w-full flex gap-2"
+        (ngSubmit)="createProject($event)"
+        appForm
+        variant="inline"
+      >
+        <app-input
+          class="min-w-0 flex-1"
           name="projectName"
           [placeholder]="t('newProjectName')"
           [(ngModel)]="projectName"
+          variant="default"
         />
-        <button
-          class="rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white"
-          type="submit"
-        >
+        <button appButton variant="primary" type="submit">
           {{ t('add') }}
         </button>
       </form>
@@ -58,7 +72,8 @@ import type { ProjectModel } from '@shared/types/project';
             </div>
             <div class="flex items-center gap-1 shrink-0 ms-2">
               <button
-                class="rounded p-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors"
+                appButton
+                variant="ghost"
                 type="button"
                 [attr.aria-label]="t('edit')"
                 (click)="edit.emit(project)"
@@ -75,7 +90,9 @@ import type { ProjectModel } from '@shared/types/project';
                 </svg>
               </button>
               <button
-                class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                appButton
+                variant="ghost"
+                [cssClass]="'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'"
                 type="button"
                 [attr.aria-label]="t('delete')"
                 (click)="delete.emit(project)"
@@ -120,7 +137,8 @@ export class ProjectListComponent {
     return this.#languageService.translate(key);
   }
 
-  createProject(): void {
+  createProject(event: Event): void {
+    event.preventDefault();
     const name = this.projectName().trim();
     if (!name) return;
     this.create.emit(name);

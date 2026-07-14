@@ -4,7 +4,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardStore } from '../store/dashboard';
 import { AuthStore } from '../../auth/store/auth';
-import { TaskFormComponent } from '../../../shared/components/task-form';
+import { TaskFormComponent, ButtonComponent } from '../../../shared/components';
 import { TaskListComponent } from '../components/task-list';
 import { StatusFilterComponent } from '../components/status-filter';
 import { SearchInputComponent } from '../components/search-input';
@@ -26,6 +26,7 @@ import type { ProjectModel } from '@shared/types/project';
   imports: [
     ThemeToggleComponent,
     LanguageToggleComponent,
+    ButtonComponent,
     TaskFormComponent,
     TaskListComponent,
     StatusFilterComponent,
@@ -52,7 +53,8 @@ import type { ProjectModel } from '@shared/types/project';
             <app-language-toggle></app-language-toggle>
             @if (isAdmin()) {
               <button
-                class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-600 h-9 px-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                appButton
+                variant="secondary"
                 type="button"
                 routerLink="/admin"
               >
@@ -60,7 +62,8 @@ import type { ProjectModel } from '@shared/types/project';
               </button>
             }
             <button
-              class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-600 h-9 px-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+              appButton
+              variant="secondary"
               type="button"
               (click)="logout()"
             >

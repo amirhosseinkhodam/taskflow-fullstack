@@ -5,7 +5,11 @@ import { AuthStore } from '../store/auth';
 import { RegisterFormService } from '../forms/register';
 import { LanguageService } from '../../../shared/services/language';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
-import { PasswordInputComponent } from '../components/password-input';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-register',
@@ -14,13 +18,17 @@ import { PasswordInputComponent } from '../components/password-input';
     ReactiveFormsModule,
     RouterLink,
     LanguageToggleComponent,
-    PasswordInputComponent,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
   ],
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <form
         [formGroup]="registerForm.form"
         (ngSubmit)="auth.register()"
+        appForm
+        variant="default"
         class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
         <div class="flex items-center justify-between mb-6">
@@ -43,29 +51,35 @@ import { PasswordInputComponent } from '../components/password-input';
           </p>
         }
 
-        <input
-          class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        <app-input
+          class="mt-6"
           type="text"
           formControlName="name"
           [placeholder]="t('name')"
           autocomplete="name"
+          variant="default"
         />
-        <input
-          class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        <app-input
+          class="mt-3"
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
           autocomplete="email"
+          variant="default"
         />
 
-        <app-password-input
-          controlName="password"
-          [placeholderValue]="t('password')"
-          autocompleteValue="new-password"
+        <app-input
+          type="password"
+          formControlName="password"
+          [placeholder]="t('password')"
+          [disabled]="auth.isLoading()"
+          variant="default"
         />
 
         <button
-          class="mt-6 w-full rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white disabled:opacity-50"
+          appButton
+          variant="primary"
+          class="mt-6"
           type="submit"
           [disabled]="auth.isLoading()"
         >

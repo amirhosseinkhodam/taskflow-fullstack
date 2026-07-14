@@ -1,6 +1,17 @@
-import { Component, input, output } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  forwardRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-input',
@@ -8,6 +19,7 @@ import { FormsModule } from '@angular/forms';
   imports: [CommonModule, FormsModule],
   template: `
     <input
+      #inputElement
       [type]="type()"
       [placeholder]="placeholder()"
       [value]="value()"
@@ -19,15 +31,23 @@ import { FormsModule } from '@angular/forms';
       (input)="onInput($event)"
       (blur)="onBlur()"
       (focus)="onFocus()"
+      (keydown)="keydown.emit($event)"
     />
   `,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputComponent),
+      multi: true,
+    },
+  ],
 })
-export class InputComponent {
-  readonly type = input<'text' | 'email' | 'password' | 'number' | 'textarea'>(
-    'text',
-  );
+export class InputComponent implements ControlValueAccessor {
+  readonly type = input<
+    'text' | 'email' | 'password' | 'number' | 'textarea' | 'search'
+  >('text');
   readonly placeholder = input<string>();
-  readonly value = input<string>();
+  readonly value = input<string>('');
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
@@ -39,18 +59,46 @@ export class InputComponent {
   readonly input = output<string>({ alias: 'inputChange' });
   readonly blur = output<void>({ alias: 'inputBlur' });
   readonly focus = output<void>({ alias: 'inputFocus' });
+  readonly keydown = output<KeyboardEvent>({ alias: 'inputKeydown' });
+
+  @ViewChild('inputElement', { static: false })
+  inputElement!: ElementRef<HTMLInputElement>;
+  #onChange: (value: string) => void = () => {};
+  #onTouched: () => void = () => {};
 
   onInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
+    this.#onChange(value);
     this.input.emit(value);
   }
 
   onBlur() {
+    this.#onTouched();
     this.blur.emit();
   }
 
   onFocus() {
     this.focus.emit();
+  }
+
+  writeValue(value: string): void {
+    if (this.inputElement) {
+      this.inputElement.nativeElement.value = value ?? '';
+    }
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.#onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.#onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    if (this.inputElement) {
+      this.inputElement.nativeElement.disabled = isDisabled;
+    }
   }
 
   readonly computedClasses = () => {
