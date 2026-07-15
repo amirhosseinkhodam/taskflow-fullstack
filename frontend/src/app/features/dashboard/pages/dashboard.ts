@@ -1,10 +1,14 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
 import { DashboardStore } from '../store/dashboard';
 import { AuthStore } from '../../auth/store/auth';
-import { TaskFormComponent, ButtonComponent } from '../../../shared/components';
+import {
+  TaskFormComponent,
+  ButtonComponent,
+  CardComponent,
+} from '../../../shared/components';
 import { TaskListComponent } from '../components/task-list';
 import { StatusFilterComponent } from '../components/status-filter';
 import { SearchInputComponent } from '../components/search-input';
@@ -27,6 +31,7 @@ import type { ProjectModel } from '@shared/types/project';
     ThemeToggleComponent,
     LanguageToggleComponent,
     ButtonComponent,
+    CardComponent,
     TaskFormComponent,
     TaskListComponent,
     StatusFilterComponent,
@@ -34,11 +39,10 @@ import type { ProjectModel } from '@shared/types/project';
     ProjectFilterComponent,
     PaginationComponent,
     ProjectListComponent,
-    RouterLink,
   ],
   template: `
     <main class="mx-auto max-w-4xl p-6">
-      <section class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
+      <app-card variant="default">
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
@@ -52,23 +56,21 @@ import type { ProjectModel } from '@shared/types/project';
             <app-theme-toggle></app-theme-toggle>
             <app-language-toggle></app-language-toggle>
             @if (isAdmin()) {
-              <button
-                appButton
+              <app-button
                 variant="secondary"
                 type="button"
-                routerLink="/admin"
+                (buttonClick)="goToAdmin()"
               >
                 {{ t('adminPanel') }}
-              </button>
+              </app-button>
             }
-            <button
-              appButton
+            <app-button
               variant="secondary"
               type="button"
-              (click)="logout()"
+              (buttonClick)="logout()"
             >
               {{ t('logout') }}
-            </button>
+            </app-button>
           </div>
         </div>
 
@@ -85,16 +87,18 @@ import type { ProjectModel } from '@shared/types/project';
             {{ t(store.message()) }}
           </p>
         }
-      </section>
+      </app-card>
 
       @if (isAdmin()) {
         <section
           class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 items-stretch"
         >
-          <div
-            class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow flex flex-col h-96 overflow-auto"
+          <app-card
+            variant="default"
+            class="flex flex-col min-h-0"
+            padding="md"
           >
-            <div class="flex-1 flex flex-col min-h-0">
+            <div class="flex-1 min-h-0">
               <app-project-list
                 [projects]="store.projects()"
                 (create)="store.createProject($event)"
@@ -102,10 +106,12 @@ import type { ProjectModel } from '@shared/types/project';
                 (delete)="confirmDeleteProject($event)"
               />
             </div>
-          </div>
+          </app-card>
 
-          <section
-            class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow h-96"
+          <app-card
+            variant="default"
+            class="flex flex-col min-h-0"
+            padding="md"
           >
             <app-task-form
               [projects]="store.projects()"
@@ -113,58 +119,62 @@ import type { ProjectModel } from '@shared/types/project';
               (submitTask)="store.saveTask($event)"
               (cancelEdit)="store.cancelEdit()"
             />
-          </section>
+          </app-card>
         </section>
       } @else {
-        <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
+        <div class="mt-6">
           <app-task-form
             [projects]="store.projects()"
             [editingTask]="store.editingTask()"
             (submitTask)="store.saveTask($event)"
             (cancelEdit)="store.cancelEdit()"
           />
-        </section>
+        </div>
       }
 
-      <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            {{ t('tasks') }}
-          </h2>
-          <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <div class="w-full sm:w-auto min-w-[180px]">
-              <app-project-filter
-                [projects]="store.projects()"
-                [selectedProjectId]="store.filter().projectId ?? 0"
-                (projectChange)="onProjectFilter($event)"
-              />
-            </div>
-            <div class="w-full sm:w-auto">
-              <app-status-filter
-                [activeStatus]="store.filter().status ?? 'all'"
-                (statusChange)="onStatusFilter($event)"
-              />
-            </div>
-            <div class="w-full sm:w-auto">
-              <app-search-input
-                [searchTerm]="store.filter().searchTerm ?? ''"
-                (searchChange)="onSearchChange($event)"
-              />
+      <section class="mt-6">
+        <app-card variant="default">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <h2
+              class="text-xl font-semibold text-slate-900 dark:text-slate-100"
+            >
+              {{ t('tasks') }}
+            </h2>
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <div class="w-full sm:w-auto min-w-[180px]">
+                <app-project-filter
+                  [projects]="store.projects()"
+                  [selectedProjectId]="store.filter().projectId ?? 0"
+                  (projectChange)="onProjectFilter($event)"
+                />
+              </div>
+              <div class="w-full sm:w-auto">
+                <app-status-filter
+                  [activeStatus]="store.filter().status ?? 'all'"
+                  (statusChange)="onStatusFilter($event)"
+                />
+              </div>
+              <div class="w-full sm:w-auto">
+                <app-search-input
+                  [searchTerm]="store.filter().searchTerm ?? ''"
+                  (searchChange)="onSearchChange($event)"
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <app-task-list
-          [tasks]="store.tasks()"
-          [projects]="store.projects()"
-          (reorder)="onReorder($event)"
-          (editTask)="store.startEdit($event)"
-          (refresh)="store.loadTasks()"
-        />
-        <app-pagination
-          [currentPage]="store.page()"
-          [totalPages]="store.totalPages()"
-          (pageChange)="store.setPage($event)"
-        />
+          <app-task-list
+            [tasks]="store.tasks()"
+            [projects]="store.projects()"
+            (reorder)="onReorder($event)"
+            (editTask)="store.startEdit($event)"
+            (refresh)="store.loadTasks()"
+          />
+          <app-pagination
+            [currentPage]="store.page()"
+            [totalPages]="store.totalPages()"
+            (pageChange)="store.setPage($event)"
+          />
+        </app-card>
       </section>
     </main>
   `,
@@ -188,6 +198,10 @@ export class DashboardComponent {
   logout(): void {
     this.auth.logout();
     this.#router.navigate(['/login']);
+  }
+
+  goToAdmin(): void {
+    this.#router.navigate(['/admin']);
   }
 
   onReorder(event: { previousIndex: number; currentIndex: number }): void {

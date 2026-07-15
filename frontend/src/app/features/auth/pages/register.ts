@@ -24,12 +24,11 @@ import {
   ],
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
-      <form
+      <app-form
         [formGroup]="registerForm.form"
         (ngSubmit)="auth.register()"
-        appForm
         variant="default"
-        class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
+        cssClass="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
       >
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -76,15 +75,14 @@ import {
           variant="default"
         />
 
-        <button
-          appButton
+        <app-button
           variant="primary"
           class="mt-6"
           type="submit"
           [disabled]="auth.isLoading()"
         >
           {{ auth.isLoading() ? t('creatingAccount') : t('registerButton') }}
-        </button>
+        </app-button>
 
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
           {{ t('alreadyHaveAccount') }}
@@ -94,7 +92,7 @@ import {
             >{{ t('signIn') }}</a
           >
         </p>
-      </form>
+      </app-form>
     </main>
   `,
 })

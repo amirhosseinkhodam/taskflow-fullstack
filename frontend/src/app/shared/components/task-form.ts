@@ -1,65 +1,75 @@
 import { Component, effect, inject, input, output } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { LanguageService } from '../services/language';
-import { TaskFormService } from '../forms/task';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
-import { InputComponent, ButtonComponent, TextareaComponent } from './';
+import { TaskFormService } from '../forms/task';
+import { LanguageService } from '../services/language';
+import {
+  ButtonComponent,
+  FormComponent,
+  InputComponent,
+  SelectComponent,
+  TextareaComponent,
+  type SelectOption,
+} from './';
 
 @Component({
   selector: 'app-task-form',
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    FormComponent,
     InputComponent,
     ButtonComponent,
     TextareaComponent,
+    SelectComponent,
   ],
   template: `
-    <form [formGroup]="form" (ngSubmit)="onSubmit($event)" class="space-y-4">
+    <app-form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit($event)"
+      variant="default"
+    >
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ form.get('title')?.value ? t('editTask') : t('newTask') }}
       </h2>
       <app-input
-        class="mt-4"
         formControlName="title"
-        [placeholder]="t('taskTitle')"
+        [label]="t('taskTitle')"
+        [placeholder]="t('taskTitlePlaceholder')"
         variant="default"
       />
       @if (showProjectSelect()) {
-        <select
-          class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100"
+        <app-select
           formControlName="projectId"
-        >
-          <option [ngValue]="0">{{ t('selectProject') }}</option>
-          @for (project of projects(); track project.id) {
-            <option [ngValue]="project.id">{{ project.name }}</option>
-          }
-        </select>
+          [label]="t('project')"
+          [placeholder]="t('selectProject')"
+          [options]="projectOptions()"
+          variant="default"
+        />
       }
       <app-textarea
-        class="mt-3"
         formControlName="description"
-        [placeholder]="t('description')"
+        [label]="t('description')"
+        [placeholder]="t('descriptionPlaceholder')"
         rows="5"
         variant="default"
       />
-      <div class="mt-3 flex gap-2">
-        <button appButton variant="primary" type="submit">
+      <div class="mt-6 flex gap-2">
+        <app-button variant="primary" type="submit">
           {{ form.get('title')?.value ? t('save') : t('addTask') }}
-        </button>
+        </app-button>
         @if (form.get('title')?.value) {
-          <button
-            appButton
+          <app-button
             variant="secondary"
             type="button"
-            (click)="onCancel()"
+            (buttonClick)="onCancel()"
           >
             {{ t('cancel') }}
-          </button>
+          </app-button>
         }
       </div>
-    </form>
+    </app-form>
   `,
 })
 export class TaskFormComponent {
@@ -82,6 +92,13 @@ export class TaskFormComponent {
 
   get form() {
     return this.#taskForm.form;
+  }
+
+  projectOptions(): SelectOption[] {
+    return [
+      { value: 0, label: this.t('selectProject') },
+      ...this.projects().map((p) => ({ value: p.id, label: p.name })),
+    ];
   }
 
   constructor() {

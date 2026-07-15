@@ -2,7 +2,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   MatBottomSheet,
   MatBottomSheetModule,
@@ -32,7 +32,6 @@ import { AdminStore } from '../store/admin';
     LanguageToggleComponent,
     InputComponent,
     ButtonComponent,
-    RouterLink,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -42,14 +41,13 @@ import { AdminStore } from '../store/admin';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center gap-4">
-              <button
-                appButton
+              <app-button
                 variant="secondary"
                 type="button"
-                routerLink="/"
+                (buttonClick)="goBack()"
               >
                 {{ t('backToDashboard') }}
-              </button>
+              </app-button>
               <h1 class="text-xl font-semibold text-slate-900 dark:text-white">
                 {{ t('adminPanel') }}
               </h1>
@@ -75,9 +73,9 @@ import { AdminStore } from '../store/admin';
             <div class="flex items-center gap-3 flex-wrap justify-end">
               <app-language-toggle></app-language-toggle>
               <app-theme-toggle></app-theme-toggle>
-              <button appButton variant="ghost" (click)="logout()">
+              <app-button variant="ghost" (buttonClick)="logout()">
                 {{ t('logout') }}
-              </button>
+              </app-button>
             </div>
           </div>
         </div>
@@ -151,8 +149,7 @@ import { AdminStore } from '../store/admin';
                   </td>
                   <td class="px-4 py-3 text-right">
                     <div class="flex items-center justify-end gap-2">
-                      <button
-                        appButton
+                      <app-button
                         variant="ghost"
                         [cssClass]="
                           user.role === 'user'
@@ -162,32 +159,30 @@ import { AdminStore } from '../store/admin';
                         [disabled]="
                           user.id === currentUserId() || isSuperAdminUser(user)
                         "
-                        (click)="toggleRole(user)"
+                        (buttonClick)="toggleRole(user)"
                       >
                         {{
                           user.role === 'user'
                             ? t('promoteToAdmin')
                             : t('demoteToUser')
                         }}
-                      </button>
-                      <button
-                        appButton
+                      </app-button>
+                      <app-button
                         variant="ghost"
                         [disabled]="isSuperAdminUser(user)"
-                        (click)="startPasswordChange(user)"
+                        (buttonClick)="startPasswordChange(user)"
                       >
                         {{ t('changePassword') }}
-                      </button>
-                      <button
-                        appButton
+                      </app-button>
+                      <app-button
                         variant="destructive"
                         [disabled]="
                           user.id === currentUserId() || isSuperAdminUser(user)
                         "
-                        (click)="confirmDeleteUser(user)"
+                        (buttonClick)="confirmDeleteUser(user)"
                       >
                         {{ t('deleteUser') }}
-                      </button>
+                      </app-button>
                     </div>
                     @if (store.passwordChangeUserId() === user.id) {
                       <form
@@ -231,23 +226,21 @@ import { AdminStore } from '../store/admin';
                           </p>
                         }
                         <div class="mt-2 flex gap-2">
-                          <button
-                            appButton
+                          <app-button
                             variant="primary"
                             class="flex-1"
                             type="submit"
                             [disabled]="passwordForm.form.invalid"
                           >
                             {{ t('save') }}
-                          </button>
-                          <button
-                            appButton
+                          </app-button>
+                          <app-button
                             variant="secondary"
                             type="button"
-                            (click)="cancelPasswordChange()"
+                            (buttonClick)="cancelPasswordChange()"
                           >
                             {{ t('cancel') }}
-                          </button>
+                          </app-button>
                         </div>
                       </form>
                     }
@@ -292,6 +285,7 @@ export class AdminPanelComponent implements OnInit {
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
+  readonly #router = inject(Router);
 
   readonly currentUserId = computed(() => this.auth.user()?.id ?? null);
   isPhone = signal(false);
@@ -324,6 +318,11 @@ export class AdminPanelComponent implements OnInit {
 
   logout(): void {
     this.auth.logout();
+    this.#router.navigate(['/login']);
+  }
+
+  goBack(): void {
+    this.#router.navigate(['/']);
   }
 
   toggleRole(user: UserModel): void {

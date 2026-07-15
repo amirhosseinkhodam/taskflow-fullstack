@@ -1,14 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { ThemeService } from '../services/theme';
+import { ButtonComponent } from './button';
 
 @Component({
   selector: 'app-theme-toggle',
   standalone: true,
-  imports: [],
+  imports: [ButtonComponent],
   template: `
-    <button
-      class="flex items-center bg-transparent border-0 p-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
-      (click)="theme.toggle()"
+    <app-button
+      variant="icon"
+      [cssClass]="'flex items-center bg-transparent border-0 p-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500'"
+      (buttonClick)="theme.toggle()"
       [class.dark]="theme.isDark()"
       role="switch"
       [attr.aria-checked]="theme.isDark()"
@@ -51,7 +53,7 @@ import { ThemeService } from '../services/theme';
           class="absolute top-[6px] left-[4px] w-6 h-6 rounded-full bg-white shadow-sm transition-all duration-300 ease-in-out dark:translate-x-8 dark:bg-slate-600 hover:shadow-md"
         ></span>
       </span>
-    </button>
+    </app-button>
   `,
 })
 export class ThemeToggleComponent {

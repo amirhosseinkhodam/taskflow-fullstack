@@ -14,15 +14,27 @@ import { CommonModule } from '@angular/common';
 export class CardComponent {
   readonly cssClass = input<string>();
   readonly variant = input<'default' | 'bordered'>('default');
+  readonly padding = input<'none' | 'sm' | 'md' | 'lg'>('md');
 
   readonly computedClasses = () => {
     const base = 'rounded-2xl shadow';
     const variants = {
-      default: 'bg-white dark:bg-slate-800 p-6',
+      default: 'bg-white dark:bg-slate-800',
       bordered:
-        'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6',
+        'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
     };
-    return [base, variants[this.variant()], this.cssClass()]
+    const padding = {
+      none: '',
+      sm: 'p-4',
+      md: 'p-6',
+      lg: 'p-8',
+    };
+    return [
+      base,
+      variants[this.variant()],
+      padding[this.padding()],
+      this.cssClass(),
+    ]
       .filter(Boolean)
       .join(' ');
   };

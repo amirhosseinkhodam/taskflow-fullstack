@@ -1,9 +1,13 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
-import { TaskFormComponent, ButtonComponent } from '../../../shared/components';
+import {
+  TaskFormComponent,
+  ButtonComponent,
+  CardComponent,
+} from '../../../shared/components';
 import { TaskFormService } from '../../../shared/forms/task';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
@@ -12,17 +16,26 @@ import { switchMap } from 'rxjs';
 @Component({
   selector: 'app-task-details',
   standalone: true,
-  imports: [RouterLink, TaskItemComponent, TaskFormComponent, ButtonComponent],
+  imports: [
+    TaskItemComponent,
+    TaskFormComponent,
+    ButtonComponent,
+    CardComponent,
+  ],
   template: `
     <main class="mx-auto max-w-2xl p-6">
-      <div class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
+      <app-card>
         <div class="flex items-center justify-between mb-6">
           <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
             {{ t('taskDetails') }}
           </h1>
-          <button appButton variant="secondary" type="button" routerLink="/">
+          <app-button
+            variant="secondary"
+            type="button"
+            (buttonClick)="goBack()"
+          >
             {{ t('backToDashboard') }}
-          </button>
+          </app-button>
         </div>
 
         @if (loading()) {
@@ -53,7 +66,7 @@ import { switchMap } from 'rxjs';
             }
           }
         }
-      </div>
+      </app-card>
     </main>
   `,
 })
@@ -156,6 +169,10 @@ export class TaskDetailsPageComponent {
   }
 
   onDeleted(): void {
+    this.#router.navigate(['/']);
+  }
+
+  goBack(): void {
     this.#router.navigate(['/']);
   }
 }

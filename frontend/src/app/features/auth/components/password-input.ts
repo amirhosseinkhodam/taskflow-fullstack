@@ -17,10 +17,12 @@ import { ButtonComponent } from '../../../shared/components/button';
         [disabled]="disabled()"
         variant="default"
       />
-      <button
+      <app-button
+        variant="icon"
         type="button"
-        class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
-        (click)="showPassword.set(!showPassword())"
+        class="absolute inset-y-0 right-0 flex items-center pr-3"
+        (buttonClick)="showPassword.set(!showPassword())"
+        aria-label="Toggle password visibility"
       >
         @if (showPassword()) {
           <svg
@@ -53,7 +55,7 @@ import { ButtonComponent } from '../../../shared/components/button';
             <circle cx="12" cy="12" r="3" />
           </svg>
         }
-      </button>
+      </app-button>
     </div>
   `,
 })

@@ -3,33 +3,18 @@ import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
 import type { ProjectModel } from '@shared/types/project';
-import {
-  InputComponent,
-  ButtonComponent,
-  FormComponent,
-} from '../../../shared/components';
+import { InputComponent, ButtonComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [
-    FormsModule,
-    JalaliDatePipe,
-    InputComponent,
-    ButtonComponent,
-    FormComponent,
-  ],
+  imports: [FormsModule, JalaliDatePipe, InputComponent, ButtonComponent],
   template: `
     <div class="h-full flex flex-col min-h-0">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ t('projects') }}
       </h2>
-      <form
-        class="w-full flex gap-2"
-        (ngSubmit)="createProject($event)"
-        appForm
-        variant="inline"
-      >
+      <form (submit)="createProject($event)" class="w-full flex gap-2">
         <app-input
           class="min-w-0 flex-1"
           name="projectName"
@@ -37,9 +22,9 @@ import {
           [(ngModel)]="projectName"
           variant="default"
         />
-        <button appButton variant="primary" type="submit">
+        <app-button variant="primary" type="submit">
           {{ t('add') }}
-        </button>
+        </app-button>
       </form>
 
       <ul
@@ -71,12 +56,11 @@ import {
               </div>
             </div>
             <div class="flex items-center gap-1 shrink-0 ms-2">
-              <button
-                appButton
+              <app-button
                 variant="ghost"
                 type="button"
                 [attr.aria-label]="t('edit')"
-                (click)="edit.emit(project)"
+                (buttonClick)="edit.emit(project)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -88,14 +72,13 @@ import {
                     d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
                   />
                 </svg>
-              </button>
-              <button
-                appButton
+              </app-button>
+              <app-button
                 variant="ghost"
                 [cssClass]="'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'"
                 type="button"
                 [attr.aria-label]="t('delete')"
-                (click)="delete.emit(project)"
+                (buttonClick)="delete.emit(project)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -109,7 +92,7 @@ import {
                     clip-rule="evenodd"
                   />
                 </svg>
-              </button>
+              </app-button>
             </div>
           </li>
         } @empty {

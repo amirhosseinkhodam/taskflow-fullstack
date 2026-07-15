@@ -1,16 +1,16 @@
 import { Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialogModule,
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { LanguageService } from '../../../shared/services/language';
+import { ButtonComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-project-delete-confirm',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [MatDialogModule, ButtonComponent],
   template: `
     <h2 mat-dialog-title>{{ t('confirmDeleteProject') }}</h2>
     <mat-dialog-content>
@@ -22,10 +22,15 @@ import { LanguageService } from '../../../shared/services/language';
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">{{ t('cancel') }}</button>
-      <button mat-raised-button color="warn" (click)="onConfirm()">
-        {{ t('delete') }}
-      </button>
+      <app-button variant="mat-text" (buttonClick)="onCancel()">{{
+        t('cancel')
+      }}</app-button>
+      <app-button
+        variant="mat-raised"
+        color="warn"
+        (buttonClick)="onConfirm()"
+        >{{ t('delete') }}</app-button
+      >
     </mat-dialog-actions>
   `,
 })

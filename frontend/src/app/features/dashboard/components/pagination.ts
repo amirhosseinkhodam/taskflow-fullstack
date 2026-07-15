@@ -9,27 +9,25 @@ import { ButtonComponent } from '../../../shared/components';
   template: `
     @if (totalPages() > 1) {
       <div class="flex items-center justify-center gap-2 mt-4">
-        <button
-          appButton
+        <app-button
           variant="secondary"
           type="button"
           [disabled]="currentPage() <= 1"
-          (click)="pageChange.emit(currentPage() - 1)"
+          (buttonClick)="pageChange.emit(currentPage() - 1)"
         >
           {{ t('previous') }}
-        </button>
+        </app-button>
         <span class="text-sm text-slate-600 dark:text-slate-400">
           {{ t('page') }} {{ currentPage() }} / {{ totalPages() }}
         </span>
-        <button
-          appButton
+        <app-button
           variant="secondary"
           type="button"
           [disabled]="currentPage() >= totalPages()"
-          (click)="pageChange.emit(currentPage() + 1)"
+          (buttonClick)="pageChange.emit(currentPage() + 1)"
         >
           {{ t('next') }}
-        </button>
+        </app-button>
       </div>
     }
   `,

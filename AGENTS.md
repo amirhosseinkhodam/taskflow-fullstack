@@ -387,3 +387,185 @@ Rules:
 - Component-level `styles:` blocks must be eliminated entirely. All styling must use Tailwind classes directly in templates.
 - If a design requires CSS that can be expressed with Tailwind utilities (including arbitrary values like `w-[18px]`, `top-[9px]`), use those instead of writing custom CSS.
 - This is enforced by convention — code review should reject any new `styles:`, `styleUrl`, or `styleUrls` in component metadata.
+
+## Custom Element Pattern
+
+All shared UI primitives (buttons, inputs, cards, toggles, dialogs, etc.) **must** follow this pattern:
+
+### Core Rule: Always Use Custom Elements
+- **Always use custom elements** for UI primitives — never use native HTML elements directly in components.
+- If a custom element doesn't exist for a native element you need (e.g., checkbox, radio, date picker), **suggest building it** before falling back to the native element.
+- **Never silently use native HTML** when a custom equivalent should exist — ask for permission to build it.
+
+### Component Syntax Only
+- **Always use `<app-button>`, `<app-input>`, `<app-card>`, etc.** (element selector)
+- **Never** use attribute syntax like `<button appButton>`, `<input appInput>`, etc.
+
+### Native Attribute Passthrough
+Accept native HTML attributes as `input()` signals and pass them to the rendered native element:
+```ts
+readonly routerLink = input<any[] | string>();
+readonly href = input<string>();
+readonly type = input<'button' | 'submit' | 'reset'>('button');
+readonly disabled = input<boolean>(false);
+readonly id = input<string>();
+readonly ariaLabel = input<string>();
+// ...other native attributes as needed
+```
+
+### Render Appropriate Native Element
+- Use `<a>` when `routerLink` or `href` is provided (navigation)
+- Use `<button>` for form actions (submit, reset, button)
+- Use `<input>` for form controls
+- Use conditional templates (`*ngIf` / `ng-template`) to switch between native elements
+
+### Content Projection
+Always use `<ng-content></ng-content>` for flexible content (text, icons, nested components).
+
+### Class-Based Variants
+Use `variant`, `size`, `cssClass`, and optionally `color`/`appearance` inputs with a computed `class` binding:
+```ts
+// Standard variants
+readonly variant = input<'primary' | 'secondary' | 'destructive' | 'ghost' | 'warning' | 'success' | 'outline'
+  | 'mat' | 'mat-raised' | 'mat-flat' | 'mat-stroked' | 'mat-text'>('secondary');
+
+// Material Design color variants (for mat-* variants)
+readonly color = input<'primary' | 'accent' | 'warn' | 'basic'>('primary');
+
+readonly size = input<'sm' | 'md' | 'lg'>('md');
+readonly cssClass = input<string>();
+
+readonly computedClasses = () => {
+  const base = 'inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors';
+  const sizes = { sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm', lg: 'px-6 py-3 text-base' };
+  // ...variant logic including Material Design variants
+  return [base, sizes[this.size()], variantClass, this.cssClass()].filter(Boolean).join(' ');
+};
+```
+
+### Output Events
+Emit native events via `output()` with aliased names:
+```ts
+readonly click = output<void>({ alias: 'buttonClick' });
+readonly focus = output<void>({ alias: 'buttonFocus' });
+```
+
+### Template Example
+```html
+<ng-container *ngIf="routerLink() || href(); else buttonTemplate">
+  <a [routerLink]="routerLink()" [href]="href()" [class]="computedClasses()" (click)="onClick($event)">
+    <ng-content></ng-content>
+  </a>
+</ng-container>
+<ng-template #buttonTemplate>
+  <button [type]="type()" [disabled]="disabled()" [class]="computedClasses()" (click)="onClick()" (keydown.enter)="onEnter($event)">
+    <ng-content></ng-content>
+  </button>
+</ng-template>
+```
+
+### Usage Examples
+```html
+<!-- Standard buttons -->
+<app-button variant="primary" routerLink="/dashboard" size="lg">
+  <mat-icon>home</mat-icon>
+  {{ t('goHome') }}
+</app-button>
+
+<app-button variant="secondary" type="submit" (buttonClick)="onSubmit()">
+  {{ t('save') }}
+</app-button>
+
+<app-button variant="ghost" ariaLabel="Close dialog" (buttonClick)="close()">
+  <mat-icon>close</mat-icon>
+</app-button>
+
+<!-- Material Design buttons (for dialogs, bottom sheets) -->
+<app-button variant="mat-text" (buttonClick)="onCancel()">{{ t('cancel') }}</app-button>
+<app-button variant="mat-raised" color="warn" (buttonClick)="onConfirm()">{{ t('delete') }}</app-button>
+<app-button variant="mat-stroked" color="primary" (buttonClick)="onAction()">{{ t('action') }}</app-button>
+<app-button variant="mat-flat" color="accent" (buttonClick)="onSave()">{{ t('save') }}</app-button>
+```
+
+### Specialized Components Exception
+Components with unique behavior/animations (e.g., `ThemeToggleComponent`, `LanguageToggleComponent`, `PasswordInputComponent`) may use native `<button>` directly since they are **self-contained UI components**, not generic reusable primitives.
+
+### Missing Custom Elements
+- **Never fall back to native HTML elements** when a custom element is needed but doesn't exist. Always prefer custom elements over native HTML for consistency and maintainability.
+- If you encounter a native element that requires a custom equivalent (e.g., `<input type="checkbox">`, `<input type="radio">`, `<input type="range">`, `<details>`, `<dialog>`), **ask permission to build it** rather than using the native element directly.
+- When proposing a new custom element, **suggest the selector name** (e.g., `app-checkbox`, `app-radio`, `app-toggle`) and **describe the API surface** (inputs, outputs, variants) before building it.
+- **Existing native elements that need custom equivalents** (build these if not yet created):
+  - `<input type="checkbox">` → `app-checkbox`
+  - `<input type="radio">` → `app-radio`
+  - `<input type="range">` → `app-slider`
+  - `<input type="date">` → `app-date-picker`
+  - `<details>` → `app-collapsible`
+  - Native `<select>` → `app-select` (already exists)
+- **Exception**: Elements inside self-contained specialized components (e.g., `ThemeToggleComponent`) may use native elements directly since they are isolated, non-reusable UI.
+
+### Existing Components Following This Pattern
+- `ButtonComponent` (`frontend/src/app/shared/components/button.ts`)
+- `InputComponent` (`frontend/src/app/shared/components/input.ts`)
+- `CardComponent` (`frontend/src/app/shared/components/card.ts`)
+- `TextareaComponent` (`frontend/src/app/shared/components/textarea.ts`)
+- `SelectComponent` (`frontend/src/app/shared/components/select.ts`)
+- **Check this list before building a new component** — if the element already exists, use it. Only propose a new component when no existing one matches the required native element.
+
+## Modern Angular Syntax Rules
+
+### Use Built-in Control Flow (Angular 17+)
+- **Never use `*ngIf`, `*ngFor`, `*ngSwitch`** — use `@if`, `@for`, `@switch` instead
+- **Never use `<ng-container>` or `<ng-template>`** for control flow — use `@if`/`@for` blocks directly
+- **Never use `*ngIf="condition; else template"`** — use `@if (condition) { ... } @else { ... }`
+
+### Component Template Syntax
+- Use **inline `template:`** only (no `templateUrl`)
+- Use **signal-based inputs**: `input()`, `input.required()` from `@angular/core`
+- Use **signal-based outputs**: `output()` from `@angular/core`
+- Use **signal-based queries**: `viewChild()`, `contentChild()` etc.
+- **No `NgModule`** — standalone components only
+
+### Custom Element Naming Convention
+- **Selector prefix**: All shared UI primitives use `app-` prefix (e.g., `app-button`, `app-input`, `app-select`, `app-card`, `app-form`)
+- **Component class**: PascalCase with `Component` suffix (e.g., `ButtonComponent`, `SelectComponent`)
+- **File name**: kebab-case matching selector without prefix (e.g., `button.ts`, `select.ts`)
+- **Export barrel**: Export from `shared/components/index.ts`
+
+### Custom Element Simplicity Rules
+- **Minimal API surface**: Only expose props needed by consumers — prefer `cssClass` for custom styling over many variant props
+- **Single responsibility**: Each custom element does ONE thing (button, input, select, card)
+- **No business logic**: Custom elements are presentational only — no service injection, no store access, no API calls
+- **Native attribute passthrough**: Pass through standard HTML attributes (`disabled`, `id`, `aria-*`, `placeholder`, `type`) as `input()` signals
+- **Content projection**: Use `<ng-content>` for flexible content — avoid rigid slot APIs
+- **Output aliasing**: Emit events with `output({ alias: 'customName' })` for clean consumer API
+- **Signal-based inputs/outputs**: Use `input()`, `output()` — no `@Input()`/`@Output()` decorators
+- **No `ng-container`/`ng-template`**: Keep template flat — simple native element wrapper only
+- **Inline template only**: No `templateUrl` — template in `@Component({ template: \`...\` })`
+
+### Button Component
+- **Always use `<app-button>`** for all button needs
+- **Never use native `<button>`** directly in components (except specialized components like `ThemeToggleComponent`)
+- **No `routerLink` on `<app-button>`** — use `(buttonClick)` handler with `router.navigate()` instead
+- **No `<ng-container>` or `<ng-template>`** in button component — simple `<button>` element only
+
+### Select Component
+- **Always use `<app-select>`** for all select/dropdown needs
+- **Never use native `<select>`** directly in components
+- **Internally uses `@ng-select/ng-select`** for enhanced UI (searchable, clearable, customizable)
+- **Options format**: `{ value: number | string; label: string }[]`
+- **ControlValueAccessor**: Works with `formControlName` in reactive forms
+- **Inputs**: `options`, `placeholder`, `disabled`, `variant`, `cssClass`, `value`
+- **Outputs**: `selectChange`, `selectBlur`, `selectFocus`, `selectKeydown`
+- **Example**:
+  ```html
+  <app-select
+    formControlName="projectId"
+    [placeholder]="t('selectProject')"
+    [options]="projectOptions()"
+    variant="default"
+  />
+  ```
+
+### Router Navigation
+- Inject `Router` and use `this.#router.navigate([...])` in click handlers
+- Don't use `routerLink` directive on custom button components

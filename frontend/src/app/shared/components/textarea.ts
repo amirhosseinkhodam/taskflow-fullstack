@@ -18,11 +18,17 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
+    @if (label()) {
+      <label
+        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+      >
+        {{ label() }}
+      </label>
+    }
     <textarea
       #textareaElement
       [rows]="rows()"
       [placeholder]="placeholder()"
-      [value]="value()"
       [disabled]="disabled()"
       [class]="computedClasses()"
       (input)="onInput($event)"
@@ -41,11 +47,11 @@ import {
 export class TextareaComponent implements ControlValueAccessor {
   readonly rows = input<number>(4);
   readonly placeholder = input<string>();
-  readonly value = input<string>('');
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
   readonly error = input<boolean>(false);
+  readonly label = input<string>();
 
   readonly input = output<string>({ alias: 'inputChange' });
   readonly blur = output<void>({ alias: 'inputBlur' });
