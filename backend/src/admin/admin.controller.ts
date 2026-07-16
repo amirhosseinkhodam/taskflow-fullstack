@@ -14,7 +14,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import type { AuthenticatedRequest } from '@shared/types/auth';
 import { AdminService } from './admin.service';
+import { AdminChangeRoleDto, AdminChangePasswordDto } from './admin.dto';
 
 @ApiTags('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,7 +36,7 @@ export class AdminController {
   @Delete('users/:id')
   deleteUser(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: Request & { user: { id: number } },
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.#adminService.deleteUser(id, req.user.id);
   }
@@ -42,18 +44,18 @@ export class AdminController {
   @Patch('users/:id/role')
   updateUserRole(
     @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: 'user' | 'admin',
-    @Req() req: Request & { user: { id: number } },
+    @Body() dto: AdminChangeRoleDto,
+    @Req() req: AuthenticatedRequest,
   ) {
-    return this.#adminService.updateUserRole(id, role, req.user.id);
+    return this.#adminService.updateUserRole(id, dto.role, req.user.id);
   }
 
   @Post('users/:id/change-password')
   changeUserPassword(
     @Param('id', ParseIntPipe) id: number,
-    @Body('password') password: string,
-    @Req() req: Request & { user: { id: number } },
+    @Body() dto: AdminChangePasswordDto,
+    @Req() req: AuthenticatedRequest,
   ) {
-    return this.#adminService.updateUserPassword(id, password, req.user.id);
+    return this.#adminService.updateUserPassword(id, dto.password, req.user.id);
   }
 }

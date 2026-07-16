@@ -1,4 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Pool } from 'pg';
 import type { TaskModel, PaginatedResponseModel } from '@shared/types/task';
 
@@ -17,6 +23,14 @@ export class TaskService {
     projectId: number,
     userId: number,
   ): Promise<TaskModel> {
+    const projectCheck = await this.#db.query<{ id: number }>(
+      `SELECT id FROM projects WHERE id = $1`,
+      [projectId],
+    );
+    if (projectCheck.rows.length === 0) {
+      throw new NotFoundException('Project not found');
+    }
+
     const posResult = await this.#db.query<{ max: number | null }>(
       `SELECT MAX("position") as max FROM tasks WHERE "projectId" = $1`,
       [projectId],
@@ -113,11 +127,43 @@ export class TaskService {
 
   async update(
     id: number,
+    requesterId: number,
+    requesterRole: string,
     title?: string,
     description?: string,
     status?: string,
     projectId?: number,
   ): Promise<boolean> {
+    const taskResult = await this.#db.query<{
+      id: number;
+      userId: number | null;
+    }>(`SELECT id, "userId" FROM tasks WHERE id = $1`, [id]);
+    const task = taskResult.rows[0];
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
+    if (!isAdmin && task.userId !== requesterId) {
+      throw new ForbiddenException('You can only update your own tasks');
+    }
+
+    if (projectId !== undefined && !isAdmin) {
+      throw new ForbiddenException(
+        'Only admins can move tasks between projects',
+      );
+    }
+
+    if (projectId !== undefined) {
+      const projectCheck = await this.#db.query<{ id: number }>(
+        `SELECT id FROM projects WHERE id = $1`,
+        [projectId],
+      );
+      if (projectCheck.rows.length === 0) {
+        throw new NotFoundException('Target project not found');
+      }
+    }
+
     const fields: string[] = [];
     const params: (string | number)[] = [];
 
@@ -156,7 +202,49 @@ export class TaskService {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async reorder(taskIds: number[]): Promise<void> {
+  async reorder(
+    taskIds: number[],
+    requesterId: number,
+    requesterRole: string,
+  ): Promise<void> {
+    if (taskIds.length === 0) {
+      throw new BadRequestException('taskIds must not be empty');
+    }
+
+    const uniqueIds = [...new Set(taskIds)];
+    if (uniqueIds.length !== taskIds.length) {
+      throw new BadRequestException('taskIds must not contain duplicates');
+    }
+
+    const result = await this.#db.query<{
+      id: number;
+      projectId: number;
+      userId: number | null;
+    }>(`SELECT id, "projectId", "userId" FROM tasks WHERE id = ANY($1)`, [
+      uniqueIds,
+    ]);
+
+    if (result.rows.length !== uniqueIds.length) {
+      throw new BadRequestException('One or more task IDs do not exist');
+    }
+
+    const projectIds = new Set(result.rows.map((r) => r.projectId));
+    if (projectIds.size !== 1) {
+      throw new BadRequestException(
+        'All tasks must belong to the same project',
+      );
+    }
+
+    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
+    if (!isAdmin) {
+      const unauthorizedTask = result.rows.find(
+        (r) => r.userId !== requesterId,
+      );
+      if (unauthorizedTask) {
+        throw new ForbiddenException('You can only reorder your own tasks');
+      }
+    }
+
     const client = await this.#db.connect();
     try {
       await client.query('BEGIN');
@@ -175,7 +263,25 @@ export class TaskService {
     }
   }
 
-  async delete(id: number): Promise<boolean> {
+  async delete(
+    id: number,
+    requesterId: number,
+    requesterRole: string,
+  ): Promise<boolean> {
+    const taskResult = await this.#db.query<{
+      id: number;
+      userId: number | null;
+    }>(`SELECT id, "userId" FROM tasks WHERE id = $1`, [id]);
+    const task = taskResult.rows[0];
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
+    if (!isAdmin && task.userId !== requesterId) {
+      throw new ForbiddenException('You can only delete your own tasks');
+    }
+
     const result = await this.#db.query(`DELETE FROM tasks WHERE id = $1`, [
       id,
     ]);

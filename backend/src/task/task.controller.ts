@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { TaskModel, PaginatedResponseModel } from '@shared/types/task';
+import type { AuthenticatedRequest } from '@shared/types/auth';
 import { TaskService } from './task.service';
+import { CreateTaskDto, UpdateTaskDto, ReorderTaskDto } from './task.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('tasks')
@@ -48,13 +50,13 @@ export class TaskController {
 
   @Post()
   create(
-    @Body() body: { title: string; description: string; projectId: number },
-    @Req() req: Request & { user: { id: number } },
+    @Body() dto: CreateTaskDto,
+    @Req() req: AuthenticatedRequest,
   ): Promise<TaskModel> {
     return this.#taskService.create(
-      body.title,
-      body.description,
-      body.projectId,
+      dto.title,
+      dto.description ?? '',
+      dto.projectId,
       req.user.id,
     );
   }
@@ -62,30 +64,33 @@ export class TaskController {
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body()
-    body: {
-      title?: string;
-      description?: string;
-      status?: string;
-      projectId?: number;
-    },
+    @Body() dto: UpdateTaskDto,
+    @Req() req: AuthenticatedRequest,
   ): Promise<boolean> {
     return this.#taskService.update(
       id,
-      body.title,
-      body.description,
-      body.status,
-      body.projectId,
+      req.user.id,
+      req.user.role,
+      dto.title,
+      dto.description,
+      dto.status,
+      dto.projectId,
     );
   }
 
   @Patch('reorder')
-  reorder(@Body() body: { taskIds: number[] }): Promise<void> {
-    return this.#taskService.reorder(body.taskIds);
+  reorder(
+    @Body() dto: ReorderTaskDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    return this.#taskService.reorder(dto.taskIds, req.user.id, req.user.role);
   }
 
   @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: number): Promise<boolean> {
-    return this.#taskService.delete(id);
+  delete(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<boolean> {
+    return this.#taskService.delete(id, req.user.id, req.user.role);
   }
 }
