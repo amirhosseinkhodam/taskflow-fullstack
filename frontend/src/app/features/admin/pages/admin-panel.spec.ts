@@ -215,7 +215,7 @@ describe('AdminPanelComponent', () => {
 
   it('should render role badge for current user', () => {
     const roleBadge: HTMLElement =
-      fixture.nativeElement.querySelector('span.inline-flex');
+      fixture.nativeElement.querySelector('span.rounded-full');
     expect(roleBadge).toBeTruthy();
     expect(roleBadge.textContent).toContain('role');
   });

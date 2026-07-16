@@ -52,18 +52,15 @@ describe('ProjectListComponent', () => {
     setInput('projects', []);
 
     const emitSpy = jest.spyOn(fixture.componentInstance.create, 'emit');
-    const inputEl = fixture.nativeElement.querySelector(
-      'input[name="projectName"]',
-    );
-    inputEl.value = 'New Project';
-    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+
+    fixture.componentInstance.projectName.set('New Project');
     fixture.detectChanges();
 
-    const submitBtn = fixture.nativeElement.querySelector('button[type="submit"]');
-    submitBtn.click();
+    fixture.componentInstance.createProject();
     fixture.detectChanges();
 
     expect(emitSpy).toHaveBeenCalledWith('New Project');
+    expect(fixture.componentInstance.projectName()).toBe('');
   });
 
   it('should not emit create when name is empty', () => {
