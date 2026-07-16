@@ -36,6 +36,7 @@ export class ButtonComponent {
   >('secondary');
   readonly color = input<'primary' | 'accent' | 'warn' | 'basic'>('primary');
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+  readonly focusRing = input<boolean>(false);
 
   readonly click = output<void>({ alias: 'buttonClick' });
 
@@ -53,8 +54,10 @@ export class ButtonComponent {
   }
 
   readonly computedClasses = () => {
-    const base =
-      'inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+    const focusClasses = this.focusRing()
+      ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
+      : 'focus:outline-none';
+    const base = `inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors ${focusClasses} disabled:cursor-not-allowed disabled:opacity-50`;
 
     const sizes = {
       sm: 'px-3 py-1.5 text-xs min-h-[36px]',
@@ -73,7 +76,7 @@ export class ButtonComponent {
         'bg-red-600 dark:bg-red-700 text-white hover:bg-red-700 dark:hover:bg-red-600',
       ghost:
         'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800',
-      icon: 'text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400 p-2 rounded-lg',
+      icon: 'text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-400',
       warning: 'bg-amber-500 text-white hover:bg-amber-600',
       success: 'bg-green-600 text-white hover:bg-green-700',
       outline:

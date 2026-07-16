@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="rounded-2xl shadow" [class]="computedClasses()">
+    <div [class]="computedClasses()">
       <ng-content></ng-content>
     </div>
   `,
@@ -17,7 +17,7 @@ export class CardComponent {
   readonly padding = input<'none' | 'sm' | 'md' | 'lg'>('md');
 
   readonly computedClasses = () => {
-    const base = 'rounded-2xl shadow';
+    const base = 'rounded-card shadow-card';
     const variants = {
       default: 'bg-white dark:bg-slate-800',
       bordered:

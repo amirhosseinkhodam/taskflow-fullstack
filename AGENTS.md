@@ -397,6 +397,13 @@ All shared UI primitives (buttons, inputs, cards, toggles, dialogs, etc.) **must
 - If a custom element doesn't exist for a native element you need (e.g., checkbox, radio, date picker), **suggest building it** before falling back to the native element.
 - **Never silently use native HTML** when a custom equivalent should exist — ask for permission to build it.
 
+### Visual Fidelity When Replacing Native Elements
+When replacing native HTML with custom elements, you **must** verify the rendered output matches exactly:
+1. **Compare rendered classes**: List every class on the original native element. Compare with what the custom component renders. Any extra or missing classes are bugs.
+2. **Check for unintended additions**: Custom components add base classes (focus rings, transitions, min-height, inline-flex, etc.) that the original didn't have. Use `cssClass` to override or make the feature optional (e.g., `focusRing` input).
+3. **Check attribute passthrough**: If the original had `autocomplete`, `aria-*`, or other attributes, ensure the custom component accepts and passes them through.
+4. **Specialized components may use native elements**: Components with unique styling (toggles, specialized buttons) that can't be reproduced by custom element inputs should use native `<button>`/`<input>` directly. See `ThemeToggleComponent` and `LanguageToggleComponent` as examples.
+
 ### Component Syntax Only
 - **Always use `<app-button>`, `<app-input>`, `<app-card>`, etc.** (element selector)
 - **Never** use attribute syntax like `<button appButton>`, `<input appInput>`, etc.

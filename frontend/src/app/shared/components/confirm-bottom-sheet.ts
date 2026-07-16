@@ -18,7 +18,7 @@ import { ButtonComponent } from './button';
       {{ t('confirmDeleteMessage') }}
     </p>
     <div class="flex gap-2 justify-end">
-      <app-button variant="mat-text" (buttonClick)="onCancel()">
+      <app-button variant="primary" (buttonClick)="onCancel()">
         {{ t('cancel') }}
       </app-button>
       <app-button variant="mat-raised" color="warn" (buttonClick)="onConfirm()">

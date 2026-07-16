@@ -22,8 +22,8 @@ import { InputComponent, ButtonComponent } from '../../../shared/components';
         variant="default"
       />
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <app-button variant="mat-text" (buttonClick)="onCancel()">{{
+    <mat-dialog-actions align="end" class="gap-2">
+      <app-button variant="primary" (buttonClick)="onCancel()">{{
         t('cancel')
       }}</app-button>
       <app-button

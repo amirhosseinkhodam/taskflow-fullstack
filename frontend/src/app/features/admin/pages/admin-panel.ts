@@ -12,7 +12,11 @@ import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
-import { InputComponent, ButtonComponent } from '../../../shared/components';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 import { LanguageService } from '../../../shared/services/language';
 import { AuthStore } from '../../auth/store/auth';
 import { PasswordFormService } from '../forms/password';
@@ -32,6 +36,7 @@ import { AdminStore } from '../store/admin';
     LanguageToggleComponent,
     InputComponent,
     ButtonComponent,
+    FormComponent,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -92,7 +97,7 @@ import { AdminStore } from '../store/admin';
         </div>
 
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+          class="overflow-hidden rounded-card border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         >
           <table class="w-full">
             <thead
@@ -185,10 +190,11 @@ import { AdminStore } from '../store/admin';
                       </app-button>
                     </div>
                     @if (store.passwordChangeUserId() === user.id) {
-                      <form
+                      <app-form
                         [formGroup]="passwordForm.form"
+                        variant="vertical"
+                        [cssClass]="'mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-2'"
                         (ngSubmit)="submitPasswordChange()"
-                        class="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
                       >
                         <app-input
                           type="password"
@@ -197,7 +203,6 @@ import { AdminStore } from '../store/admin';
                           variant="default"
                         />
                         <app-input
-                          class="mt-2"
                           type="password"
                           formControlName="confirmPassword"
                           [placeholder]="t('confirmPassword')"
@@ -225,7 +230,7 @@ import { AdminStore } from '../store/admin';
                             {{ t('passwordTooShort') }}
                           </p>
                         }
-                        <div class="mt-2 flex gap-2">
+                        <div class="flex gap-2">
                           <app-button
                             variant="primary"
                             class="flex-1"
@@ -242,7 +247,7 @@ import { AdminStore } from '../store/admin';
                             {{ t('cancel') }}
                           </app-button>
                         </div>
-                      </form>
+                      </app-form>
                     }
                   </td>
                 </tr>
@@ -262,7 +267,7 @@ import { AdminStore } from '../store/admin';
 
         @if (store.message()) {
           <div
-            class="mt-4 p-4 rounded-lg text-sm"
+            class="mt-4 rounded-lg px-4 py-3 text-sm"
             [ngClass]="{
               'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300':
                 !store.message().startsWith('couldNot'),

@@ -31,13 +31,6 @@ import { InputComponent } from '../../../shared/components';
       />
     </div>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-    `,
-  ],
 })
 export class SearchInputComponent {
   readonly searchTerm = input<string>('');

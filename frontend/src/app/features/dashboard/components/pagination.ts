@@ -8,7 +8,7 @@ import { ButtonComponent } from '../../../shared/components';
   imports: [ButtonComponent],
   template: `
     @if (totalPages() > 1) {
-      <div class="flex items-center justify-center gap-2 mt-4">
+      <div class="flex items-center justify-center gap-3 mt-3">
         <app-button
           variant="secondary"
           type="button"

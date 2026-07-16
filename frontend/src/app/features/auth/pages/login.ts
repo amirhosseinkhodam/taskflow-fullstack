@@ -5,6 +5,7 @@ import { AuthStore } from '../store/auth';
 import { LoginFormService } from '../forms/login';
 import { LanguageService } from '../../../shared/services/language';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
+import { PasswordInputComponent } from '../components/password-input';
 import {
   InputComponent,
   ButtonComponent,
@@ -18,6 +19,7 @@ import {
     ReactiveFormsModule,
     RouterLink,
     LanguageToggleComponent,
+    PasswordInputComponent,
     InputComponent,
     ButtonComponent,
     FormComponent,
@@ -25,9 +27,11 @@ import {
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <app-form
+        class="w-full"
         [formGroup]="loginForm.form"
         (ngSubmit)="auth.login()"
         variant="default"
+        [cssClass]="'rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
       >
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -50,26 +54,25 @@ import {
         }
 
         <app-input
-          class="mt-6"
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
           [disabled]="auth.isLoading()"
+          autocomplete="email"
           variant="default"
+          [cssClass]="'mt-6'"
         />
 
-        <app-input
-          type="password"
-          formControlName="password"
-          [placeholder]="t('password')"
-          [disabled]="auth.isLoading()"
-          variant="default"
+        <app-password-input
+          controlName="password"
+          [placeholderValue]="t('password')"
+          autocompleteValue="current-password"
         />
 
         <app-button
-          class="mt-6"
           variant="primary"
           type="submit"
+          [cssClass]="'w-full mt-6'"
           [disabled]="auth.isLoading()"
         >
           {{ auth.isLoading() ? t('signingIn') : t('signIn') }}

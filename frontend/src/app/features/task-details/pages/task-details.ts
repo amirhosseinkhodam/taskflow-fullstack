@@ -39,9 +39,17 @@ import { switchMap } from 'rxjs';
         </div>
 
         @if (loading()) {
-          <p class="text-slate-500 dark:text-slate-400">{{ t('loading') }}</p>
+          <p
+            class="rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300"
+          >
+            {{ t('loading') }}
+          </p>
         } @else if (error()) {
-          <p class="text-red-600 dark:text-red-400">{{ t('taskNotFound') }}</p>
+          <p
+            class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+          >
+            {{ t('taskNotFound') }}
+          </p>
         } @else {
           @if (task(); as task) {
             @if (isEditing()) {

@@ -1,31 +1,45 @@
-import { Component, inject, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, input, output } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
 import type { ProjectModel } from '@shared/types/project';
-import { InputComponent, ButtonComponent } from '../../../shared/components';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [FormsModule, JalaliDatePipe, InputComponent, ButtonComponent],
+  imports: [
+    ReactiveFormsModule,
+    JalaliDatePipe,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
+  ],
   template: `
     <div class="h-full flex flex-col min-h-0">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ t('projects') }}
       </h2>
-      <form (submit)="createProject($event)" class="w-full flex gap-2">
+      <app-form
+        [formGroup]="form"
+        variant="inline"
+        [cssClass]="'w-full mt-4 gap-2 items-center'"
+        (ngSubmit)="createProject()"
+      >
         <app-input
+          formControlName="projectName"
           class="min-w-0 flex-1"
-          name="projectName"
           [placeholder]="t('newProjectName')"
-          [(ngModel)]="projectName"
           variant="default"
         />
         <app-button variant="primary" type="submit">
           {{ t('add') }}
         </app-button>
-      </form>
+      </app-form>
 
       <ul
         class="my-4 divide-y divide-slate-200 dark:divide-slate-700 overflow-y-auto flex-1 min-h-0"
@@ -56,11 +70,11 @@ import { InputComponent, ButtonComponent } from '../../../shared/components';
               </div>
             </div>
             <div class="flex items-center gap-1 shrink-0 ms-2">
-              <app-button
-                variant="ghost"
+              <button
+                class="rounded p-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors"
                 type="button"
                 [attr.aria-label]="t('edit')"
-                (buttonClick)="edit.emit(project)"
+                (click)="edit.emit(project)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -72,13 +86,12 @@ import { InputComponent, ButtonComponent } from '../../../shared/components';
                     d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
                   />
                 </svg>
-              </app-button>
-              <app-button
-                variant="ghost"
-                [cssClass]="'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'"
+              </button>
+              <button
+                class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
                 type="button"
                 [attr.aria-label]="t('delete')"
-                (buttonClick)="delete.emit(project)"
+                (click)="delete.emit(project)"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -92,7 +105,7 @@ import { InputComponent, ButtonComponent } from '../../../shared/components';
                     clip-rule="evenodd"
                   />
                 </svg>
-              </app-button>
+              </button>
             </div>
           </li>
         } @empty {
@@ -113,18 +126,20 @@ export class ProjectListComponent {
   readonly delete = output<ProjectModel>();
 
   readonly #languageService = inject(LanguageService);
+  readonly #fb = inject(FormBuilder);
 
-  projectName = signal('');
+  readonly form = this.#fb.nonNullable.group({
+    projectName: ['', Validators.required],
+  });
 
   t(key: string): string {
     return this.#languageService.translate(key);
   }
 
-  createProject(event: Event): void {
-    event.preventDefault();
-    const name = this.projectName().trim();
+  createProject(): void {
+    const name = this.form.getRawValue().projectName.trim();
     if (!name) return;
     this.create.emit(name);
-    this.projectName.set('');
+    this.form.reset();
   }
 }

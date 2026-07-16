@@ -95,25 +95,21 @@ import type { ProjectModel } from '@shared/types/project';
         >
           <app-card
             variant="default"
-            class="flex flex-col min-h-0"
+            class="flex flex-col h-98 overflow-auto"
             padding="md"
           >
-            <div class="flex-1 min-h-0">
-              <app-project-list
-                [projects]="store.projects()"
-                (create)="store.createProject($event)"
-                (edit)="openEditProject($event)"
-                (delete)="confirmDeleteProject($event)"
-              />
-            </div>
+            <app-project-list
+              class="flex-1 flex flex-col min-h-0"
+              [projects]="store.projects()"
+              (create)="store.createProject($event)"
+              (edit)="openEditProject($event)"
+              (delete)="confirmDeleteProject($event)"
+            />
           </app-card>
 
-          <app-card
-            variant="default"
-            class="flex flex-col min-h-0"
-            padding="md"
-          >
+          <app-card variant="default" class="flex flex-col h-98" padding="md">
             <app-task-form
+              class="flex-1 flex flex-col"
               [projects]="store.projects()"
               [editingTask]="store.editingTask()"
               (submitTask)="store.saveTask($event)"
@@ -122,14 +118,14 @@ import type { ProjectModel } from '@shared/types/project';
           </app-card>
         </section>
       } @else {
-        <div class="mt-6">
+        <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
           <app-task-form
             [projects]="store.projects()"
             [editingTask]="store.editingTask()"
             (submitTask)="store.saveTask($event)"
             (cancelEdit)="store.cancelEdit()"
           />
-        </div>
+        </section>
       }
 
       <section class="mt-6">
@@ -141,7 +137,7 @@ import type { ProjectModel } from '@shared/types/project';
               {{ t('tasks') }}
             </h2>
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <div class="w-full sm:w-auto min-w-[180px]">
+              <div class="w-full sm:w-auto min-w-[212px]">
                 <app-project-filter
                   [projects]="store.projects()"
                   [selectedProjectId]="store.filter().projectId ?? 0"

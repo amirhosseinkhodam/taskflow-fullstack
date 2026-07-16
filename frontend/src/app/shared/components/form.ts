@@ -25,12 +25,12 @@ export class FormComponent {
   readonly formSubmit = output<Event>({ alias: 'ngSubmit' });
 
   readonly computedClasses = () => {
-    const base = 'space-y-4';
+    const base = '';
 
     const variants = {
-      default: 'bg-white dark:bg-slate-800 rounded-2xl p-6 shadow',
+      default: '',
       inline: 'flex gap-4 items-end',
-      vertical: 'space-y-4',
+      vertical: '',
       horizontal: 'flex gap-4 items-center',
     };
 

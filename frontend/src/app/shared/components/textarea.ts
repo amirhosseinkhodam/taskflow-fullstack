@@ -49,6 +49,7 @@ export class TextareaComponent implements ControlValueAccessor {
   readonly placeholder = input<string>();
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
+  readonly focusRing = input<boolean>(false);
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
   readonly error = input<boolean>(false);
   readonly label = input<string>();
@@ -98,8 +99,10 @@ export class TextareaComponent implements ControlValueAccessor {
   }
 
   readonly computedClasses = () => {
-    const base =
-      'w-full rounded-lg border px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-vertical';
+    const focusClasses = this.focusRing()
+      ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
+      : 'focus:outline-none';
+    const base = `w-full rounded-control border px-3 py-2 transition-colors ${focusClasses} placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-vertical`;
 
     const variants = {
       default:

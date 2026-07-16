@@ -36,8 +36,8 @@ export interface SelectOption {
       (blur)="onBlur()"
       (focus)="onFocus()"
       (keydown)="keydown.emit($event)"
-      [clearable]="false"
-      [searchable]="false"
+      [clearable]="clearable()"
+      [searchable]="searchable()"
     />
   `,
   providers: [
@@ -51,6 +51,8 @@ export interface SelectOption {
 export class SelectComponent implements ControlValueAccessor {
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
+  readonly clearable = input<boolean>(false);
+  readonly searchable = input<boolean>(false);
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
   readonly value = input<number | string | null>(null);
   readonly options = input.required<SelectOption[]>();

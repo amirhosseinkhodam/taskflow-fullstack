@@ -24,15 +24,11 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
       </button>
     </div> -->
 
-    <div
-      cdkDropList
-      class="mt-4 space-y-3"
-      (cdkDropListDropped)="onDrop($event)"
-    >
+    <div cdkDropList class="space-y-3" (cdkDropListDropped)="onDrop($event)">
       @for (task of tasks(); track task.id) {
         <article
           cdkDrag
-          class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-700 p-4"
+          class="flex items-start justify-between gap-4 rounded-container border border-slate-200 dark:border-slate-700 p-4"
         >
           <app-task-item
             class="w-full"
@@ -64,7 +60,7 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
         </article>
       } @empty {
         <p
-          class="rounded-xl border border-dashed border-slate-300 dark:border-slate-600 p-6 text-center text-slate-500 dark:text-slate-400"
+          class="rounded-card border border-dashed border-slate-300 dark:border-slate-600 p-8 text-center text-sm text-slate-500 dark:text-slate-400"
         >
           {{ t('noTasksYet') }}
         </p>

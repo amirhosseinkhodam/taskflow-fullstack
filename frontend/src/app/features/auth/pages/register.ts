@@ -5,6 +5,7 @@ import { AuthStore } from '../store/auth';
 import { RegisterFormService } from '../forms/register';
 import { LanguageService } from '../../../shared/services/language';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
+import { PasswordInputComponent } from '../components/password-input';
 import {
   InputComponent,
   ButtonComponent,
@@ -18,6 +19,7 @@ import {
     ReactiveFormsModule,
     RouterLink,
     LanguageToggleComponent,
+    PasswordInputComponent,
     InputComponent,
     ButtonComponent,
     FormComponent,
@@ -28,7 +30,7 @@ import {
         [formGroup]="registerForm.form"
         (ngSubmit)="auth.register()"
         variant="default"
-        cssClass="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
+        [cssClass]="'w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
       >
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -51,34 +53,32 @@ import {
         }
 
         <app-input
-          class="mt-6"
           type="text"
           formControlName="name"
           [placeholder]="t('name')"
           autocomplete="name"
           variant="default"
+          [cssClass]="'mt-6'"
         />
         <app-input
-          class="mt-3"
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
           autocomplete="email"
           variant="default"
+          [cssClass]="'mt-3'"
         />
 
-        <app-input
-          type="password"
-          formControlName="password"
-          [placeholder]="t('password')"
-          [disabled]="auth.isLoading()"
-          variant="default"
+        <app-password-input
+          controlName="password"
+          [placeholderValue]="t('password')"
+          autocompleteValue="new-password"
         />
 
         <app-button
           variant="primary"
-          class="mt-6"
           type="submit"
+          [cssClass]="'w-full mt-6'"
           [disabled]="auth.isLoading()"
         >
           {{ auth.isLoading() ? t('creatingAccount') : t('registerButton') }}

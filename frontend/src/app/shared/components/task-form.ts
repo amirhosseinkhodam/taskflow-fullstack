@@ -6,7 +6,6 @@ import { TaskFormService } from '../forms/task';
 import { LanguageService } from '../services/language';
 import {
   ButtonComponent,
-  FormComponent,
   InputComponent,
   SelectComponent,
   TextareaComponent,
@@ -18,45 +17,44 @@ import {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    FormComponent,
     InputComponent,
     ButtonComponent,
     TextareaComponent,
     SelectComponent,
   ],
   template: `
-    <app-form
-      [formGroup]="form"
-      (ngSubmit)="onSubmit($event)"
-      variant="default"
-    >
+    <form [formGroup]="form" (ngSubmit)="onSubmit($event)">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ form.get('title')?.value ? t('editTask') : t('newTask') }}
       </h2>
       <app-input
         formControlName="title"
-        [label]="t('taskTitle')"
         [placeholder]="t('taskTitlePlaceholder')"
         variant="default"
+        [cssClass]="'mt-4'"
       />
       @if (showProjectSelect()) {
         <app-select
           formControlName="projectId"
-          [label]="t('project')"
           [placeholder]="t('selectProject')"
           [options]="projectOptions()"
           variant="default"
+          [cssClass]="'mt-3'"
         />
       }
       <app-textarea
         formControlName="description"
-        [label]="t('description')"
         [placeholder]="t('descriptionPlaceholder')"
         rows="5"
         variant="default"
+        [cssClass]="'mt-3'"
       />
-      <div class="mt-6 flex gap-2">
-        <app-button variant="primary" type="submit">
+      <div class="mt-3 flex gap-2">
+        <app-button
+          class="w-full"
+          type="submit"
+          [cssClass]="'flex-1 w-full bg-blue-600 hover:bg-blue-700 text-white'"
+        >
           {{ form.get('title')?.value ? t('save') : t('addTask') }}
         </app-button>
         @if (form.get('title')?.value) {
@@ -69,7 +67,7 @@ import {
           </app-button>
         }
       </div>
-    </app-form>
+    </form>
   `,
 })
 export class TaskFormComponent {
