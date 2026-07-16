@@ -6,6 +6,11 @@ import { RegisterFormService } from '../forms/register';
 import { LanguageService } from '../../../shared/services/language';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { PasswordInputComponent } from '../components/password-input';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-register',
@@ -15,13 +20,17 @@ import { PasswordInputComponent } from '../components/password-input';
     RouterLink,
     LanguageToggleComponent,
     PasswordInputComponent,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
   ],
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
-      <form
+      <app-form
         [formGroup]="registerForm.form"
         (ngSubmit)="auth.register()"
-        class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
+        variant="default"
+        [cssClass]="'w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
       >
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -43,19 +52,21 @@ import { PasswordInputComponent } from '../components/password-input';
           </p>
         }
 
-        <input
-          class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        <app-input
           type="text"
           formControlName="name"
           [placeholder]="t('name')"
           autocomplete="name"
+          variant="default"
+          [cssClass]="'mt-6'"
         />
-        <input
-          class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        <app-input
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
           autocomplete="email"
+          variant="default"
+          [cssClass]="'mt-3'"
         />
 
         <app-password-input
@@ -64,13 +75,14 @@ import { PasswordInputComponent } from '../components/password-input';
           autocompleteValue="new-password"
         />
 
-        <button
-          class="mt-6 w-full rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white disabled:opacity-50"
+        <app-button
+          variant="primary"
           type="submit"
+          [cssClass]="'w-full mt-6'"
           [disabled]="auth.isLoading()"
         >
           {{ auth.isLoading() ? t('creatingAccount') : t('registerButton') }}
-        </button>
+        </app-button>
 
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
           {{ t('alreadyHaveAccount') }}
@@ -80,7 +92,7 @@ import { PasswordInputComponent } from '../components/password-input';
             >{{ t('signIn') }}</a
           >
         </p>
-      </form>
+      </app-form>
     </main>
   `,
 })

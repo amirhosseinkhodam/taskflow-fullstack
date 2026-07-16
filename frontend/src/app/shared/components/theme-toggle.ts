@@ -4,7 +4,6 @@ import { ThemeService } from '../services/theme';
 @Component({
   selector: 'app-theme-toggle',
   standalone: true,
-  imports: [],
   template: `
     <button
       class="flex items-center bg-transparent border-0 p-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"

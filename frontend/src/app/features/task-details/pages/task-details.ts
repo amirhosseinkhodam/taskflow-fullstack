@@ -1,9 +1,13 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
-import { TaskFormComponent } from '../../../shared/components/task-form';
+import {
+  TaskFormComponent,
+  ButtonComponent,
+  CardComponent,
+} from '../../../shared/components';
 import { TaskFormService } from '../../../shared/forms/task';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
@@ -12,27 +16,40 @@ import { switchMap } from 'rxjs';
 @Component({
   selector: 'app-task-details',
   standalone: true,
-  imports: [RouterLink, TaskItemComponent, TaskFormComponent],
+  imports: [
+    TaskItemComponent,
+    TaskFormComponent,
+    ButtonComponent,
+    CardComponent,
+  ],
   template: `
     <main class="mx-auto max-w-2xl p-6">
-      <div class="rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
+      <app-card>
         <div class="flex items-center justify-between mb-6">
           <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
             {{ t('taskDetails') }}
           </h1>
-          <button
-            class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+          <app-button
+            variant="secondary"
             type="button"
-            routerLink="/"
+            (buttonClick)="goBack()"
           >
             {{ t('backToDashboard') }}
-          </button>
+          </app-button>
         </div>
 
         @if (loading()) {
-          <p class="text-slate-500 dark:text-slate-400">{{ t('loading') }}</p>
+          <p
+            class="rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300"
+          >
+            {{ t('loading') }}
+          </p>
         } @else if (error()) {
-          <p class="text-red-600 dark:text-red-400">{{ t('taskNotFound') }}</p>
+          <p
+            class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+          >
+            {{ t('taskNotFound') }}
+          </p>
         } @else {
           @if (task(); as task) {
             @if (isEditing()) {
@@ -57,7 +74,7 @@ import { switchMap } from 'rxjs';
             }
           }
         }
-      </div>
+      </app-card>
     </main>
   `,
 })
@@ -160,6 +177,10 @@ export class TaskDetailsPageComponent {
   }
 
   onDeleted(): void {
+    this.#router.navigate(['/']);
+  }
+
+  goBack(): void {
     this.#router.navigate(['/']);
   }
 }

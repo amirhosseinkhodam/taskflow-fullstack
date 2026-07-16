@@ -1,40 +1,41 @@
-import { Component, input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, output } from '@angular/core';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-  selector: '[appForm]',
+  selector: 'app-form',
   standalone: true,
-  imports: [CommonModule],
+  imports: [ReactiveFormsModule],
   template: `
-    <form [class]="computedClasses()">
+    <form
+      [formGroup]="formGroup()!"
+      (ngSubmit)="formSubmit.emit($event)"
+      [class]="computedClasses()"
+    >
       <ng-content></ng-content>
     </form>
   `,
 })
 export class FormComponent {
+  readonly formGroup = input<FormGroup>();
   readonly cssClass = input<string>();
   readonly variant = input<'default' | 'inline' | 'vertical' | 'horizontal'>(
     'default',
   );
 
-  readonly computedClasses = signal<string>(this.#getClasses());
+  readonly formSubmit = output<Event>({ alias: 'ngSubmit' });
 
-  #getClasses(): string {
-    const base = 'space-y-4';
+  readonly computedClasses = () => {
+    const base = '';
 
     const variants = {
-      default: 'bg-white dark:bg-slate-800 rounded-2xl p-6 shadow',
+      default: '',
       inline: 'flex gap-4 items-end',
-      vertical: 'space-y-4',
+      vertical: '',
       horizontal: 'flex gap-4 items-center',
     };
 
     return [base, variants[this.variant()], this.cssClass()]
       .filter(Boolean)
       .join(' ');
-  }
-
-  ngOnInit() {
-    this.computedClasses.set(this.#getClasses());
-  }
+  };
 }

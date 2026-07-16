@@ -1,15 +1,15 @@
 import { Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
 import { LanguageService } from '../services/language';
+import { ButtonComponent } from './button';
 
 @Component({
   selector: 'app-confirm-bottom-sheet',
   standalone: true,
-  imports: [MatBottomSheetModule, MatButtonModule],
+  imports: [MatBottomSheetModule, ButtonComponent],
   template: `
     <h3 class="mat-body-large mb-2 font-bold">
       {{ t('confirmDeleteTask') }}
@@ -18,10 +18,12 @@ import { LanguageService } from '../services/language';
       {{ t('confirmDeleteMessage') }}
     </p>
     <div class="flex gap-2 justify-end">
-      <button mat-button (click)="onCancel()">{{ t('cancel') }}</button>
-      <button mat-raised-button color="warn" (click)="onConfirm()">
+      <app-button variant="primary" (buttonClick)="onCancel()">
+        {{ t('cancel') }}
+      </app-button>
+      <app-button variant="mat-raised" color="warn" (buttonClick)="onConfirm()">
         {{ t('delete') }}
-      </button>
+      </app-button>
     </div>
   `,
 })

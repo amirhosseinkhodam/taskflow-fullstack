@@ -6,6 +6,11 @@ import { LoginFormService } from '../forms/login';
 import { LanguageService } from '../../../shared/services/language';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { PasswordInputComponent } from '../components/password-input';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-login',
@@ -15,13 +20,18 @@ import { PasswordInputComponent } from '../components/password-input';
     RouterLink,
     LanguageToggleComponent,
     PasswordInputComponent,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
   ],
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
-      <form
+      <app-form
+        class="w-full"
         [formGroup]="loginForm.form"
         (ngSubmit)="auth.login()"
-        class="w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow"
+        variant="default"
+        [cssClass]="'rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
       >
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -43,12 +53,14 @@ import { PasswordInputComponent } from '../components/password-input';
           </p>
         }
 
-        <input
-          class="mt-6 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        <app-input
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
+          [disabled]="auth.isLoading()"
           autocomplete="email"
+          variant="default"
+          [cssClass]="'mt-6'"
         />
 
         <app-password-input
@@ -57,13 +69,14 @@ import { PasswordInputComponent } from '../components/password-input';
           autocompleteValue="current-password"
         />
 
-        <button
-          class="mt-6 w-full rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white disabled:opacity-50"
+        <app-button
+          variant="primary"
           type="submit"
+          [cssClass]="'w-full mt-6'"
           [disabled]="auth.isLoading()"
         >
           {{ auth.isLoading() ? t('signingIn') : t('signIn') }}
-        </button>
+        </app-button>
 
         <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
           {{ t('dontHaveAccount') }}
@@ -73,7 +86,7 @@ import { PasswordInputComponent } from '../components/password-input';
             >{{ t('register') }}</a
           >
         </p>
-      </form>
+      </app-form>
     </main>
   `,
 })

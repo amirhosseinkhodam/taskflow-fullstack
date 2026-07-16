@@ -1,32 +1,45 @@
-import { Component, inject, input, output, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, input, output } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
 import type { ProjectModel } from '@shared/types/project';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [FormsModule, JalaliDatePipe],
+  imports: [
+    ReactiveFormsModule,
+    JalaliDatePipe,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
+  ],
   template: `
     <div class="h-full flex flex-col min-h-0">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ t('projects') }}
       </h2>
-      <form class="mt-4 flex gap-2" (ngSubmit)="createProject()">
-        <input
-          class="min-w-0 flex-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
-          name="projectName"
+      <app-form
+        [formGroup]="form"
+        variant="inline"
+        [cssClass]="'w-full mt-4 gap-2 items-center'"
+        (ngSubmit)="createProject()"
+      >
+        <app-input
+          formControlName="projectName"
+          class="min-w-0 flex-1"
           [placeholder]="t('newProjectName')"
-          [(ngModel)]="projectName"
+          variant="default"
         />
-        <button
-          class="rounded-lg bg-slate-900 dark:bg-slate-600 px-4 py-2 text-white"
-          type="submit"
-        >
+        <app-button variant="primary" type="submit">
           {{ t('add') }}
-        </button>
-      </form>
+        </app-button>
+      </app-form>
 
       <ul
         class="my-4 divide-y divide-slate-200 dark:divide-slate-700 overflow-y-auto flex-1 min-h-0"
@@ -113,17 +126,20 @@ export class ProjectListComponent {
   readonly delete = output<ProjectModel>();
 
   readonly #languageService = inject(LanguageService);
+  readonly #fb = inject(FormBuilder);
 
-  projectName = signal('');
+  readonly form = this.#fb.nonNullable.group({
+    projectName: ['', Validators.required],
+  });
 
   t(key: string): string {
     return this.#languageService.translate(key);
   }
 
   createProject(): void {
-    const name = this.projectName().trim();
+    const name = this.form.getRawValue().projectName.trim();
     if (!name) return;
     this.create.emit(name);
-    this.projectName.set('');
+    this.form.reset();
   }
 }

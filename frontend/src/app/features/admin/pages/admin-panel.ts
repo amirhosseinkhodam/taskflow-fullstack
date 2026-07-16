@@ -2,7 +2,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   MatBottomSheet,
   MatBottomSheetModule,
@@ -12,6 +12,11 @@ import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
+import {
+  InputComponent,
+  ButtonComponent,
+  FormComponent,
+} from '../../../shared/components';
 import { LanguageService } from '../../../shared/services/language';
 import { AuthStore } from '../../auth/store/auth';
 import { PasswordFormService } from '../forms/password';
@@ -29,7 +34,9 @@ import { AdminStore } from '../store/admin';
     MatBottomSheetModule,
     ThemeToggleComponent,
     LanguageToggleComponent,
-    RouterLink,
+    InputComponent,
+    ButtonComponent,
+    FormComponent,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -39,13 +46,13 @@ import { AdminStore } from '../store/admin';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center gap-4">
-              <button
-                class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+              <app-button
+                variant="secondary"
                 type="button"
-                routerLink="/"
+                (buttonClick)="goBack()"
               >
                 {{ t('backToDashboard') }}
-              </button>
+              </app-button>
               <h1 class="text-xl font-semibold text-slate-900 dark:text-white">
                 {{ t('adminPanel') }}
               </h1>
@@ -71,12 +78,9 @@ import { AdminStore } from '../store/admin';
             <div class="flex items-center gap-3 flex-wrap justify-end">
               <app-language-toggle></app-language-toggle>
               <app-theme-toggle></app-theme-toggle>
-              <button
-                (click)="logout()"
-                class="px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
+              <app-button variant="ghost" (buttonClick)="logout()">
                 {{ t('logout') }}
-              </button>
+              </app-button>
             </div>
           </div>
         </div>
@@ -93,7 +97,7 @@ import { AdminStore } from '../store/admin';
         </div>
 
         <div
-          class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+          class="overflow-hidden rounded-card border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         >
           <table class="w-full">
             <thead
@@ -150,72 +154,59 @@ import { AdminStore } from '../store/admin';
                   </td>
                   <td class="px-4 py-3 text-right">
                     <div class="flex items-center justify-end gap-2">
-                      <button
-                        (click)="toggleRole(user)"
-                        [disabled]="
-                          user.id === currentUserId() || isSuperAdminUser(user)
-                        "
-                        class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-                        [ngClass]="
+                      <app-button
+                        variant="ghost"
+                        [cssClass]="
                           user.role === 'user'
                             ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50'
                             : 'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
                         "
-                        [class.opacity-50]="
+                        [disabled]="
                           user.id === currentUserId() || isSuperAdminUser(user)
                         "
-                        [class.cursor-not-allowed]="
-                          user.id === currentUserId() || isSuperAdminUser(user)
-                        "
+                        (buttonClick)="toggleRole(user)"
                       >
                         {{
                           user.role === 'user'
                             ? t('promoteToAdmin')
                             : t('demoteToUser')
                         }}
-                      </button>
-                      <button
-                        (click)="startPasswordChange(user)"
+                      </app-button>
+                      <app-button
+                        variant="ghost"
                         [disabled]="isSuperAdminUser(user)"
-                        class="px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                        [class.opacity-50]="isSuperAdminUser(user)"
-                        [class.cursor-not-allowed]="isSuperAdminUser(user)"
+                        (buttonClick)="startPasswordChange(user)"
                       >
                         {{ t('changePassword') }}
-                      </button>
-                      <button
-                        (click)="confirmDeleteUser(user)"
+                      </app-button>
+                      <app-button
+                        variant="destructive"
                         [disabled]="
                           user.id === currentUserId() || isSuperAdminUser(user)
                         "
-                        class="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                        [class.opacity-50]="
-                          user.id === currentUserId() || isSuperAdminUser(user)
-                        "
-                        [class.cursor-not-allowed]="
-                          user.id === currentUserId() || isSuperAdminUser(user)
-                        "
+                        (buttonClick)="confirmDeleteUser(user)"
                       >
                         {{ t('deleteUser') }}
-                      </button>
+                      </app-button>
                     </div>
                     @if (store.passwordChangeUserId() === user.id) {
-                      <form
+                      <app-form
                         [formGroup]="passwordForm.form"
+                        variant="vertical"
+                        [cssClass]="'mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-2'"
                         (ngSubmit)="submitPasswordChange()"
-                        class="mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
                       >
-                        <input
-                          class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+                        <app-input
                           type="password"
                           formControlName="newPassword"
                           [placeholder]="t('newPassword')"
+                          variant="default"
                         />
-                        <input
-                          class="mt-2 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+                        <app-input
                           type="password"
                           formControlName="confirmPassword"
                           [placeholder]="t('confirmPassword')"
+                          variant="default"
                         />
                         @if (
                           passwordForm.form.hasError('passwordsMismatch') &&
@@ -239,23 +230,24 @@ import { AdminStore } from '../store/admin';
                             {{ t('passwordTooShort') }}
                           </p>
                         }
-                        <div class="mt-2 flex gap-2">
-                          <button
-                            class="flex-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                        <div class="flex gap-2">
+                          <app-button
+                            variant="primary"
+                            class="flex-1"
                             type="submit"
                             [disabled]="passwordForm.form.invalid"
                           >
                             {{ t('save') }}
-                          </button>
-                          <button
-                            class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300"
+                          </app-button>
+                          <app-button
+                            variant="secondary"
                             type="button"
-                            (click)="cancelPasswordChange()"
+                            (buttonClick)="cancelPasswordChange()"
                           >
                             {{ t('cancel') }}
-                          </button>
+                          </app-button>
                         </div>
-                      </form>
+                      </app-form>
                     }
                   </td>
                 </tr>
@@ -275,7 +267,7 @@ import { AdminStore } from '../store/admin';
 
         @if (store.message()) {
           <div
-            class="mt-4 p-4 rounded-lg text-sm"
+            class="mt-4 rounded-lg px-4 py-3 text-sm"
             [ngClass]="{
               'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300':
                 !store.message().startsWith('couldNot'),
@@ -298,6 +290,7 @@ export class AdminPanelComponent implements OnInit {
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
+  readonly #router = inject(Router);
 
   readonly currentUserId = computed(() => this.auth.user()?.id ?? null);
   isPhone = signal(false);
@@ -330,6 +323,11 @@ export class AdminPanelComponent implements OnInit {
 
   logout(): void {
     this.auth.logout();
+    this.#router.navigate(['/login']);
+  }
+
+  goBack(): void {
+    this.#router.navigate(['/']);
   }
 
   toggleRole(user: UserModel): void {

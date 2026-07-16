@@ -1,37 +1,39 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialogModule,
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { LanguageService } from '../../../shared/services/language';
+import { InputComponent, ButtonComponent } from '../../../shared/components';
 
 @Component({
   selector: 'app-project-edit-dialog',
   standalone: true,
-  imports: [FormsModule, MatDialogModule, MatButtonModule],
+  imports: [FormsModule, MatDialogModule, InputComponent, ButtonComponent],
   template: `
     <h2 mat-dialog-title>{{ t('editProject') }}</h2>
     <mat-dialog-content>
-      <input
-        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+      <app-input
         [(ngModel)]="projectName"
         [placeholder]="t('editProjectName')"
         (keydown.enter)="onConfirm()"
+        variant="default"
       />
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">{{ t('cancel') }}</button>
-      <button
-        mat-raised-button
+    <mat-dialog-actions align="end" class="gap-2">
+      <app-button variant="primary" (buttonClick)="onCancel()">{{
+        t('cancel')
+      }}</app-button>
+      <app-button
+        variant="mat-raised"
         color="primary"
-        (click)="onConfirm()"
+        (buttonClick)="onConfirm()"
         [disabled]="!projectName.trim()"
       >
         {{ t('save') }}
-      </button>
+      </app-button>
     </mat-dialog-actions>
   `,
 })

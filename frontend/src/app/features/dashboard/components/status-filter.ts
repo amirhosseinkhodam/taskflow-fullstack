@@ -19,48 +19,6 @@ import { LanguageService } from '../../../shared/services/language';
       }
     </mat-chip-listbox>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        width: 100%;
-      }
-
-      /* Mobile: target the inner chips container of mat-chip-listbox */
-      @media (max-width: 639px) {
-        :host ::ng-deep .mat-mdc-chip-listbox,
-        :host ::ng-deep .mdc-evolution-chip-set__chips {
-          display: flex !important;
-          flex-wrap: nowrap;
-          gap: 8px !important;
-          width: 100% !important;
-          margin: 0 !important;
-        }
-
-        :host ::ng-deep mat-chip-option {
-          width: 100% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          margin: 0 !important;
-        }
-      }
-
-      /* Desktop: inline-flex */
-      @media (min-width: 640px) {
-        :host ::ng-deep .mat-mdc-chip-listbox,
-        :host ::ng-deep .mdc-evolution-chip-set__chips {
-          display: inline-flex !important;
-          grid-template-columns: none !important;
-          width: auto !important;
-        }
-
-        :host ::ng-deep mat-chip-option {
-          width: auto !important;
-        }
-      }
-    `,
-  ],
 })
 export class StatusFilterComponent {
   readonly activeStatus = input.required<string>();

@@ -1,17 +1,18 @@
 import { Component, inject, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { LanguageService } from '../services/language';
 import { JalaliDatePipe } from '../pipes/jalali-date';
 import { DashboardService } from '../../features/dashboard/services/dashboard';
 import { ConfirmDialogComponent } from './confirm-dialog';
+import { ButtonComponent } from './button';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 
 @Component({
   selector: 'app-task-item',
   standalone: true,
-  imports: [RouterLink, JalaliDatePipe],
+  imports: [JalaliDatePipe, ButtonComponent],
   template: `
     @if (task(); as task) {
       <div class="flex items-start gap-3 w-full">
@@ -62,9 +63,12 @@ import type { ProjectModel } from '@shared/types/project';
 
           <div class="flex flex-col sm:flex-row gap-2 shrink-0">
             @if (showDetailLink()) {
-              <a
-                class="flex items-center justify-center gap-1.5 rounded-lg bg-indigo-500 px-3 py-2 text-sm text-white min-h-[44px]"
-                [routerLink]="['/task-details', task.id]"
+              <app-button
+                variant="primary"
+                size="md"
+                type="button"
+                (buttonClick)="navigateToDetail(task.id)"
+                [title]="t('detail')"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -79,13 +83,14 @@ import type { ProjectModel } from '@shared/types/project';
                   />
                 </svg>
                 <span class="hidden sm:inline">{{ t('detail') }}</span>
-              </a>
+              </app-button>
             }
             @if (showEditButton()) {
-              <button
-                class="flex items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm text-white min-h-[44px]"
+              <app-button
+                variant="warning"
+                size="md"
                 type="button"
-                (click)="edit.emit(task)"
+                (buttonClick)="edit.emit(task)"
                 [title]="t('edit')"
               >
                 <svg
@@ -99,12 +104,13 @@ import type { ProjectModel } from '@shared/types/project';
                   />
                 </svg>
                 <span class="hidden sm:inline">{{ t('edit') }}</span>
-              </button>
+              </app-button>
             }
-            <button
-              class="flex items-center justify-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-sm text-white min-h-[44px]"
+            <app-button
+              variant="success"
+              size="md"
               type="button"
-              (click)="handleToggle()"
+              (buttonClick)="handleToggle()"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -119,11 +125,12 @@ import type { ProjectModel } from '@shared/types/project';
                 />
               </svg>
               <span class="hidden sm:inline">{{ t('toggle') }}</span>
-            </button>
-            <button
-              class="flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-sm text-white min-h-[44px]"
+            </app-button>
+            <app-button
+              variant="destructive"
+              size="md"
               type="button"
-              (click)="confirmDelete()"
+              (buttonClick)="confirmDelete()"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +145,7 @@ import type { ProjectModel } from '@shared/types/project';
                 />
               </svg>
               <span class="hidden sm:inline">{{ t('delete') }}</span>
-            </button>
+            </app-button>
           </div>
         </div>
       </div>
@@ -159,6 +166,7 @@ export class TaskItemComponent {
   readonly #dashboardService = inject(DashboardService);
   readonly #languageService = inject(LanguageService);
   readonly #dialog = inject(MatDialog);
+  readonly #router = inject(Router);
 
   t(key: string): string {
     return this.#languageService.translate(key);
@@ -166,6 +174,13 @@ export class TaskItemComponent {
 
   getProjectName(projectId: number): string {
     return this.projects().find((p) => p.id === projectId)?.name ?? '';
+  }
+
+  navigateToDetail(): void {
+    const task = this.task();
+    if (task) {
+      this.#router.navigate(['/task-details', task.id]);
+    }
   }
 
   handleToggle(): void {

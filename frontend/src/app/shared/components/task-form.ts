@@ -1,56 +1,70 @@
 import { Component, effect, inject, input, output } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { LanguageService } from '../services/language';
-import { TaskFormService } from '../forms/task';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
+import { TaskFormService } from '../forms/task';
+import { LanguageService } from '../services/language';
+import {
+  ButtonComponent,
+  InputComponent,
+  SelectComponent,
+  TextareaComponent,
+  type SelectOption,
+} from './';
 
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    InputComponent,
+    ButtonComponent,
+    TextareaComponent,
+    SelectComponent,
+  ],
   template: `
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <form [formGroup]="form" (ngSubmit)="onSubmit($event)">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
         {{ form.get('title')?.value ? t('editTask') : t('newTask') }}
       </h2>
-      <input
-        class="mt-4 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+      <app-input
         formControlName="title"
-        [placeholder]="t('taskTitle')"
+        [placeholder]="t('taskTitlePlaceholder')"
+        variant="default"
+        [cssClass]="'mt-4'"
       />
       @if (showProjectSelect()) {
-        <select
-          class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100"
+        <app-select
           formControlName="projectId"
-        >
-          <option [ngValue]="0">{{ t('selectProject') }}</option>
-          @for (project of projects(); track project.id) {
-            <option [ngValue]="project.id">{{ project.name }}</option>
-          }
-        </select>
+          [placeholder]="t('selectProject')"
+          [options]="projectOptions()"
+          variant="default"
+          [cssClass]="'mt-3'"
+        />
       }
-      <textarea
-        class="mt-3 w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+      <app-textarea
         formControlName="description"
-        [placeholder]="t('description')"
+        [placeholder]="t('descriptionPlaceholder')"
         rows="5"
-      ></textarea>
+        variant="default"
+        [cssClass]="'mt-3'"
+      />
       <div class="mt-3 flex gap-2">
-        <button
-          class="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white"
+        <app-button
+          class="w-full"
           type="submit"
+          [cssClass]="'flex-1 w-full bg-blue-600 hover:bg-blue-700 text-white'"
         >
           {{ form.get('title')?.value ? t('save') : t('addTask') }}
-        </button>
+        </app-button>
         @if (form.get('title')?.value) {
-          <button
-            class="rounded-lg border border-slate-300 dark:border-slate-600 px-4 py-2 text-slate-700 dark:text-slate-300"
+          <app-button
+            variant="secondary"
             type="button"
-            (click)="onCancel()"
+            (buttonClick)="onCancel()"
           >
             {{ t('cancel') }}
-          </button>
+          </app-button>
         }
       </div>
     </form>
@@ -78,6 +92,13 @@ export class TaskFormComponent {
     return this.#taskForm.form;
   }
 
+  projectOptions(): SelectOption[] {
+    return [
+      { value: 0, label: this.t('selectProject') },
+      ...this.projects().map((p) => ({ value: p.id, label: p.name })),
+    ];
+  }
+
   constructor() {
     effect(() => {
       const task = this.editingTask();
@@ -91,7 +112,8 @@ export class TaskFormComponent {
     });
   }
 
-  onSubmit(): void {
+  onSubmit(event: Event): void {
+    event.preventDefault();
     const value = this.#taskForm.form.getRawValue();
     this.submitTask.emit(value);
     this.#taskForm.resetForm(value.projectId);

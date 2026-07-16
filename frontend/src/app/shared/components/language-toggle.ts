@@ -5,7 +5,6 @@ import { ThemeService } from '../services/theme';
 @Component({
   selector: 'app-language-toggle',
   standalone: true,
-  imports: [],
   template: `
     <button
       class="inline-flex items-center gap-2 px-3 py-2 sm:px-3 sm:py-2 p-2 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium cursor-pointer whitespace-nowrap transition-all duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 hover:bg-slate-200 dark:hover:bg-slate-700 group"

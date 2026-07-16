@@ -1,51 +1,88 @@
-import { Component, input, output } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  forwardRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-input',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
+    @if (label()) {
+      <label
+        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+      >
+        {{ label() }}
+      </label>
+    }
     <input
+      #inputElement
       [type]="type()"
       [placeholder]="placeholder()"
-      [value]="value()"
       [disabled]="disabled()"
       [class]="computedClasses()"
       [min]="min()"
       [max]="max()"
       [step]="step()"
+      [autocomplete]="autocomplete()"
       (input)="onInput($event)"
       (blur)="onBlur()"
       (focus)="onFocus()"
+      (keydown)="keydown.emit($event)"
     />
   `,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputComponent),
+      multi: true,
+    },
+  ],
 })
-export class InputComponent {
-  readonly type = input<'text' | 'email' | 'password' | 'number' | 'textarea'>(
-    'text',
-  );
+export class InputComponent implements ControlValueAccessor {
+  readonly type = input<
+    'text' | 'email' | 'password' | 'number' | 'textarea' | 'search'
+  >('text');
   readonly placeholder = input<string>();
-  readonly value = input<string>();
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
+  readonly focusRing = input<boolean>(false);
+  readonly autocomplete = input<string>();
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
   readonly min = input<string | number>();
   readonly max = input<string | number>();
   readonly step = input<string | number>();
   readonly error = input<boolean>(false);
+  readonly label = input<string>();
 
   readonly input = output<string>({ alias: 'inputChange' });
   readonly blur = output<void>({ alias: 'inputBlur' });
   readonly focus = output<void>({ alias: 'inputFocus' });
+  readonly keydown = output<KeyboardEvent>({ alias: 'inputKeydown' });
+
+  @ViewChild('inputElement', { static: false })
+  inputElement!: ElementRef<HTMLInputElement>;
+  #onChange: (value: string) => void = () => {};
+  #onTouched: () => void = () => {};
 
   onInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
+    this.#onChange(value);
     this.input.emit(value);
   }
 
   onBlur() {
+    this.#onTouched();
     this.blur.emit();
   }
 
@@ -53,9 +90,31 @@ export class InputComponent {
     this.focus.emit();
   }
 
+  writeValue(value: string): void {
+    if (this.inputElement) {
+      this.inputElement.nativeElement.value = value ?? '';
+    }
+  }
+
+  registerOnChange(fn: (value: string) => void): void {
+    this.#onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this.#onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    if (this.inputElement) {
+      this.inputElement.nativeElement.disabled = isDisabled;
+    }
+  }
+
   readonly computedClasses = () => {
-    const base =
-      'w-full rounded-lg border px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 placeholder:text-slate-400 dark:placeholder:text-slate-500';
+    const focusClasses = this.focusRing()
+      ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
+      : 'focus:outline-none';
+    const base = `w-full rounded-lg border px-3 py-2 transition-colors ${focusClasses} placeholder:text-slate-400 dark:placeholder:text-slate-500`;
 
     const variants = {
       default:
