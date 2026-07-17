@@ -10,10 +10,6 @@ export class TaskFormService {
     description: [''],
   });
 
-  patchProjectId(projectId: number) {
-    this.#form.patchValue({ projectId });
-  }
-
   patchForEdit(title: string, projectId: number, description: string) {
     this.#form.patchValue({ title, projectId, description });
   }

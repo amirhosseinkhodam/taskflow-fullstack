@@ -13,10 +13,13 @@ Monorepo with a **NestJS 11 backend** (`backend/`) and an **Angular 19 standalon
 | `npm run build` | Build both: `nest build && ng build` |
 | `npm run build:backend` | `nest build` |
 | `npm run build:frontend` | `ng build` |
-| `npm run lint` | ESLint — checks both `backend/src/**/*.ts` and `frontend/src/**/*.ts` |
-| `npm run format` | Prettier — writes both `backend/src` and `frontend/src` |
+| `npm run lint` | ESLint — checks `backend/src/**/*.ts`, `backend/tests/**/*.ts`, `frontend/src/**/*.ts`, `frontend/tests/**/*.ts` |
+| `npm run format` | Prettier — writes `backend/src`, `backend/tests`, `frontend/src`, `frontend/tests` |
+| `npm run test` | Run all tests (backend + frontend) |
+| `npm run test:backend` | Run backend tests only |
+| `npm run test:frontend` | Run frontend tests only |
 
-No test setup exists (no spec/e2e files found).
+Test files live in `backend/tests/` and `frontend/tests/`, mirroring the `src/` directory structure. They import source files via relative paths (e.g. `'../../src/auth/auth.controller'`).
 
 ## Architecture
 
@@ -70,6 +73,7 @@ No test setup exists (no spec/e2e files found).
 - Single quotes, trailing commas (Prettier config).
 - Backend: `backend/src/<module>/` (controller, service, module, model, dto).
 - Frontend: `frontend/src/main.ts` bootstraps with routing; components in `frontend/src/app/features/<name>/pages/`.
+- Tests: `backend/tests/<module>/` and `frontend/tests/app/`, mirroring the `src/` directory structure.
 
 ### Naming conventions
 

@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { LanguageService } from '../../../shared/services/language';
@@ -8,7 +8,6 @@ import {
   CardComponent,
   PageHeaderComponent,
 } from '../../../shared/components';
-import { TaskFormService } from '../../../shared/forms/task';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import { switchMap } from 'rxjs';
@@ -74,7 +73,6 @@ export class TaskDetailsPageComponent {
   readonly #router = inject(Router);
   readonly #dashboardService = inject(DashboardService);
   readonly #languageService = inject(LanguageService);
-  readonly #taskForm = inject(TaskFormService);
 
   readonly task = signal<TaskModel | null>(null);
   readonly projects = signal<ProjectModel[]>([]);
@@ -110,17 +108,6 @@ export class TaskDetailsPageComponent {
           this.loading.set(false);
         },
       });
-
-    effect(() => {
-      const task = this.editingTask();
-      if (task) {
-        this.#taskForm.patchForEdit(
-          task.title,
-          task.projectId,
-          task.description,
-        );
-      }
-    });
   }
 
   t(key: string): string {

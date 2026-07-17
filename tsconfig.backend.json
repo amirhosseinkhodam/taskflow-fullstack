@@ -17,5 +17,5 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["backend/src/**/*.ts", "shared/**/*.ts"]
+  "include": ["backend/src/**/*.ts", "backend/tests/**/*.ts", "shared/**/*.ts"]
 }

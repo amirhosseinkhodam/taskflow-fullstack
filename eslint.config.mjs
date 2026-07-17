@@ -12,10 +12,10 @@ export default tseslint.config(
   // Backend: type-checked rules + Node.js globals
   ...tseslint.configs.recommendedTypeChecked.map((config) => ({
     ...config,
-    files: ['backend/src/**/*.ts'],
+    files: ['backend/src/**/*.ts', 'backend/tests/**/*.ts'],
   })),
   {
-    files: ['backend/src/**/*.ts'],
+    files: ['backend/src/**/*.ts', 'backend/tests/**/*.ts'],
     languageOptions: {
       globals: { ...globals.node },
       sourceType: 'commonjs',
@@ -27,7 +27,7 @@ export default tseslint.config(
   },
   // Frontend: ES modules + browser globals
   {
-    files: ['frontend/src/**/*.ts'],
+    files: ['frontend/src/**/*.ts', 'frontend/tests/**/*.ts'],
     languageOptions: {
       globals: { ...globals.browser },
       sourceType: 'module',

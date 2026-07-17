@@ -48,12 +48,6 @@ export class LanguageService {
     this.currentLanguage.set(this.languages[nextIndex].code);
   }
 
-  setLanguage(code: Language): void {
-    if (this.languages.some((l) => l.code === code)) {
-      this.currentLanguage.set(code);
-    }
-  }
-
   getLanguageOption(code: Language): LanguageOptionModel | undefined {
     return this.languages.find((l) => l.code === code);
   }

@@ -1,5 +1,4 @@
 import { Component, inject, input, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { SelectComponent, type SelectOption } from '../../../shared/components';
 import type { ProjectModel } from '@shared/types/project';
@@ -7,7 +6,7 @@ import type { ProjectModel } from '@shared/types/project';
 @Component({
   selector: 'app-project-filter',
   standalone: true,
-  imports: [FormsModule, SelectComponent],
+  imports: [SelectComponent],
   template: `
     <app-select
       [options]="projectOptions()"

@@ -1,5 +1,4 @@
 import { Component, input, output, forwardRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import {
   FormsModule,
   ControlValueAccessor,
@@ -15,7 +14,7 @@ export interface SelectOption {
 @Component({
   selector: 'app-select',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [FormsModule, NgSelectModule],
   template: `
     @if (label()) {
       <label

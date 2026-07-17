@@ -3,26 +3,26 @@ import type { Config } from 'jest';
 const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  rootDir: './src',
-  testMatch: ['**/*.spec.ts'],
+  rootDir: '.',
+  testMatch: ['<rootDir>/tests/**/*.spec.ts'],
   transform: {
     '^.+\\.ts$': [
       'ts-jest',
-      { tsconfig: '<rootDir>/../../tsconfig.backend.json' },
+      { tsconfig: '<rootDir>/../tsconfig.backend.json' },
     ],
   },
   moduleNameMapper: {
-    '^@shared/(.*)$': '<rootDir>/../../shared/$1',
+    '^@shared/(.*)$': '<rootDir>/../shared/$1',
   },
-  coverageDirectory: '../coverage',
+  coverageDirectory: './coverage',
   collectCoverageFrom: [
-    '**/*.service.ts',
-    '**/*.controller.ts',
-    '**/*.guard.ts',
-    '**/*.strategy.ts',
-    '!**/*.module.ts',
-    '!**/*.dto.ts',
-    '!**/*.decorator.ts',
+    'src/**/*.service.ts',
+    'src/**/*.controller.ts',
+    'src/**/*.guard.ts',
+    'src/**/*.strategy.ts',
+    '!src/**/*.module.ts',
+    '!src/**/*.dto.ts',
+    '!src/**/*.decorator.ts',
   ],
 };
 
