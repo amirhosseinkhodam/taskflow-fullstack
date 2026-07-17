@@ -16,7 +16,12 @@ describe('RegisterComponent', () => {
   const mockLanguageService = {
     translate: mockTranslate,
     currentLanguage: signal('en'),
-    getCurrentLanguageOption: jest.fn().mockReturnValue({ code: 'en', name: 'English', nativeName: 'English', rtl: false }),
+    getCurrentLanguageOption: jest.fn().mockReturnValue({
+      code: 'en',
+      name: 'English',
+      nativeName: 'English',
+      rtl: false,
+    }),
   };
 
   const mockAuthStore = {
@@ -78,7 +83,8 @@ describe('RegisterComponent', () => {
     mockAuthStore.error.set('Email already registered');
     fixture.detectChanges();
 
-    const errorEl: HTMLElement = fixture.nativeElement.querySelector('.bg-red-50');
+    const errorEl: HTMLElement =
+      fixture.nativeElement.querySelector('.bg-red-50');
     expect(errorEl).toBeTruthy();
     expect(errorEl.textContent).toContain('Email already registered');
   });

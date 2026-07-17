@@ -67,7 +67,9 @@ describe('ProjectListComponent', () => {
     setInput('projects', []);
 
     const emitSpy = jest.spyOn(fixture.componentInstance.create, 'emit');
-    const submitBtn = fixture.nativeElement.querySelector('button[type="submit"]');
+    const submitBtn = fixture.nativeElement.querySelector(
+      'button[type="submit"]',
+    );
     submitBtn.click();
     fixture.detectChanges();
 

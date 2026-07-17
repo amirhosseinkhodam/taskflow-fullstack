@@ -17,7 +17,9 @@ import { ButtonComponent } from './button';
   imports: [ButtonComponent],
 })
 class TestHost {
-  variant = signal<'primary' | 'secondary' | 'destructive' | 'ghost'>('secondary');
+  variant = signal<'primary' | 'secondary' | 'destructive' | 'ghost'>(
+    'secondary',
+  );
   disabled = signal(false);
   type = signal<'button' | 'submit' | 'reset'>('button');
   clicked = false;
@@ -41,7 +43,9 @@ describe('ButtonComponent', () => {
   });
 
   function getButtonEl() {
-    const directiveEl = hostFixture.debugElement.query(By.directive(ButtonComponent));
+    const directiveEl = hostFixture.debugElement.query(
+      By.directive(ButtonComponent),
+    );
     return directiveEl.query(By.css('button'));
   }
 

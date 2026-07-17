@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ReactiveFormsModule } from '@angular/forms';
 import { provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -8,7 +7,6 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { AdminPanelComponent } from './admin-panel';
 import { AdminStore } from '../store/admin';
-import { PasswordFormService } from '../forms/password';
 import { AuthStore } from '../../auth/store/auth';
 import { LanguageService } from '../../../shared/services/language';
 import { ThemeService } from '../../../shared/services/theme';
@@ -23,13 +21,10 @@ describe('AdminPanelComponent', () => {
     users: signal<UserModel[]>([]),
     message: signal(''),
     isLoading: signal(false),
-    passwordChangeUserId: signal<number | null>(null),
     userCount: signal(0),
     loadUsers: jest.fn(),
     deleteUser: jest.fn(),
     updateUserRole: jest.fn(),
-    startPasswordChange: jest.fn(),
-    cancelPasswordChange: jest.fn(),
     changePassword: jest.fn(),
   };
 
@@ -49,35 +44,23 @@ describe('AdminPanelComponent', () => {
     logout: jest.fn(),
   };
 
-  const mockPasswordForm = {
-    form: {
-      invalid: false,
-      touched: false,
-      get: jest.fn().mockReturnValue({
-        hasError: jest.fn().mockReturnValue(false),
-        touched: false,
-      }),
-      hasError: jest.fn().mockReturnValue(false),
-    },
-    resetForm: jest.fn(),
-  };
-
   const mockThemeService = {
     isDark: signal(false),
   };
 
   beforeEach(async () => {
-    try { TestBed.resetTestingModule(); } catch { /* CDK HighContrastModeDetector teardown error */ }
+    try {
+      TestBed.resetTestingModule();
+    } catch {
+      /* CDK HighContrastModeDetector teardown error */
+    }
     mockStore.users.set([]);
     mockStore.message.set('');
     mockStore.isLoading.set(false);
-    mockStore.passwordChangeUserId.set(null);
     mockStore.userCount.set(0);
     mockStore.loadUsers.mockClear();
     mockStore.deleteUser.mockClear();
     mockStore.updateUserRole.mockClear();
-    mockStore.startPasswordChange.mockClear();
-    mockStore.cancelPasswordChange.mockClear();
     mockStore.changePassword.mockClear();
 
     mockAuth.user.set({
@@ -89,26 +72,27 @@ describe('AdminPanelComponent', () => {
     mockAuth.isAdmin.set(true);
     mockAuth.logout.mockClear();
 
-    mockPasswordForm.resetForm.mockClear();
-
     await TestBed.configureTestingModule({
       imports: [
         AdminPanelComponent,
         NoopAnimationsModule,
-        ReactiveFormsModule,
         MatDialogModule,
         MatBottomSheetModule,
       ],
       providers: [
         provideRouter([]),
         { provide: AuthStore, useValue: mockAuth },
-        { provide: PasswordFormService, useValue: mockPasswordForm },
         {
           provide: LanguageService,
           useValue: {
             translate: mockTranslate,
             currentLanguage: signal('en'),
-            getCurrentLanguageOption: jest.fn().mockReturnValue({ code: 'en', name: 'English', nativeName: 'English', rtl: false }),
+            getCurrentLanguageOption: jest.fn().mockReturnValue({
+              code: 'en',
+              name: 'English',
+              nativeName: 'English',
+              rtl: false,
+            }),
             toggle: jest.fn(),
             setLanguage: jest.fn(),
           },
@@ -184,8 +168,8 @@ describe('AdminPanelComponent', () => {
   it('should call auth.logout when logout button is clicked', () => {
     const buttons: HTMLButtonElement[] =
       fixture.nativeElement.querySelectorAll('button');
-    const logoutButton = Array.from(buttons).find((b) =>
-      b.textContent?.trim() === 'logout',
+    const logoutButton = Array.from(buttons).find(
+      (b) => b.textContent?.trim() === 'logout',
     );
     logoutButton?.click();
     expect(mockAuth.logout).toHaveBeenCalled();

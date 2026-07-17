@@ -16,7 +16,12 @@ describe('LoginComponent', () => {
   const mockLanguageService = {
     translate: mockTranslate,
     currentLanguage: signal('en'),
-    getCurrentLanguageOption: jest.fn().mockReturnValue({ code: 'en', name: 'English', nativeName: 'English', rtl: false }),
+    getCurrentLanguageOption: jest.fn().mockReturnValue({
+      code: 'en',
+      name: 'English',
+      nativeName: 'English',
+      rtl: false,
+    }),
   };
 
   const mockAuthStore = {
@@ -75,7 +80,8 @@ describe('LoginComponent', () => {
     mockAuthStore.error.set('Invalid credentials');
     fixture.detectChanges();
 
-    const errorEl: HTMLElement = fixture.nativeElement.querySelector('.bg-red-50');
+    const errorEl: HTMLElement =
+      fixture.nativeElement.querySelector('.bg-red-50');
     expect(errorEl).toBeTruthy();
     expect(errorEl.textContent).toContain('Invalid credentials');
   });

@@ -27,7 +27,9 @@ describe('FormComponent', () => {
   });
 
   function getFormEl() {
-    const directiveEl = hostFixture.debugElement.query(By.directive(FormComponent));
+    const directiveEl = hostFixture.debugElement.query(
+      By.directive(FormComponent),
+    );
     return directiveEl.query(By.css('form'));
   }
 
