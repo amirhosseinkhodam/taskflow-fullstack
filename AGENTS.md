@@ -74,6 +74,7 @@ Test files live in `backend/tests/` and `frontend/tests/`, mirroring the `src/` 
 - Backend: `backend/src/<module>/` (controller, service, module, model, dto).
 - Frontend: `frontend/src/main.ts` bootstraps with routing; components in `frontend/src/app/features/<name>/pages/`.
 - Tests: `backend/tests/<module>/` and `frontend/tests/app/`, mirroring the `src/` directory structure.
+- Documentation: All `.md` files go in `doc/` — use `doc/general/` for reusable guidelines, `doc/project-specific/` for TaskFlow-only docs. Never create `.md` files at the repo root (except `AGENTS.md` which opencode reads directly).
 
 ### Naming conventions
 
@@ -327,6 +328,8 @@ Rules:
 - **Use `interface` instead of `type`** for object shapes. Union types (`type X = 'a' | 'b'`) are the only acceptable use of `type`.
 - **`readonly` on all immutable properties**: Add `readonly` to every interface and class property that is assigned once and never mutated. This includes DTOs, model interfaces, and injected singleton services exposed to templates. Module-level `const` variables are already immutable by the `const` binding — `readonly` applies to properties, not local bindings.
 - **Remove dead code**: Always remove unused imports, unused variables, unused `const` declarations, and anything else that isn't referenced. No dead code should survive review.
+- **No `any` or `unknown` in interfaces or types**: Never use `any` or `unknown` as a field type in interfaces or type aliases. Use specific types, `unknown` with type narrowing, or generics instead.
+- **Interfaces and types live in `models/` directories only**: Never define `interface` or `type` inside a component, service, pipe, guard, interceptor, or store file (except `initialState` type annotations inside stores, which are fine). All interfaces and types must be exported from a `models/` directory — either `shared/models/` for cross-feature types or `features/<name>/models/` for feature-specific types. Import them where needed.
 
 ### Shared form components (own their form, never receive FormGroup as input)
 
