@@ -18,6 +18,7 @@ export class PasswordFormService {
   readonly #fb = inject(FormBuilder);
   readonly #form = this.#fb.nonNullable.group(
     {
+      currentPassword: [''],
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
     },
@@ -25,7 +26,11 @@ export class PasswordFormService {
   );
 
   resetForm() {
-    this.#form.reset({ newPassword: '', confirmPassword: '' });
+    this.#form.reset({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
   }
 
   get form() {

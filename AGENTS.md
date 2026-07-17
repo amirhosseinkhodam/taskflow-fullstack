@@ -61,6 +61,7 @@ No test setup exists (no spec/e2e files found).
 - **Auto-delete plan files**: When a plan `.md` file is created during planning, delete it after implementation is complete.
 - **Never commit or push to GitHub**: Commits and pushes are **permanently blocked** unless they originate from a verified human user. Automated scripts and non-human processes are denied access to the GitHub repository entirely.
 - **Always use custom components**: Replace all standard HTML (`<input>`, `<button>`, `<textarea>`, `<form>`, etc.) with custom component equivalents from `frontend/src/app/shared/components/`. Never create new HTML elements for common UI patterns — use the existing component library instead.
+- **Update `backend-explained.md` after backend edits**: Whenever any file under `backend/` is created, edited, or deleted, update `backend/backend-explained.md` to reflect the changes. Add documentation for new modules/endpoints, update descriptions for modified ones, and remove entries for deleted ones. This keeps the backend documentation in sync with the actual code.
 
 ## Conventions
 

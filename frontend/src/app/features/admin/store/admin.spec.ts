@@ -3,22 +3,12 @@ import { patchState } from '@ngrx/signals';
 import { of } from 'rxjs';
 import { AdminStore } from './admin';
 import { AdminService } from '../services/admin';
-import { PasswordFormService } from '../forms/password';
 
 const mockAdminService = {
   getUsers: jest.fn().mockReturnValue(of([])),
   deleteUser: jest.fn().mockReturnValue(of(undefined)),
   updateUserRole: jest.fn(),
   changeUserPassword: jest.fn(),
-};
-
-const mockPasswordForm = {
-  form: {
-    invalid: false,
-    getRawValue: jest.fn().mockReturnValue({ newPassword: 'pass123' }),
-    reset: jest.fn(),
-  },
-  resetForm: jest.fn(),
 };
 
 describe('AdminStore', () => {
@@ -34,7 +24,6 @@ describe('AdminStore', () => {
       providers: [
         AdminStore,
         { provide: AdminService, useValue: mockAdminService },
-        { provide: PasswordFormService, useValue: mockPasswordForm },
       ],
     });
 
@@ -45,7 +34,6 @@ describe('AdminStore', () => {
     expect(store.users()).toEqual([]);
     expect(store.message()).toBe('');
     expect(store.isLoading()).toBe(false);
-    expect(store.passwordChangeUserId()).toBeNull();
   });
 
   it('userCount should return 0 when users is empty', () => {
@@ -60,19 +48,6 @@ describe('AdminStore', () => {
       ],
     });
     expect(store.userCount()).toBe(2);
-  });
-
-  it('startPasswordChange should set passwordChangeUserId and reset form', () => {
-    store.startPasswordChange(1);
-    expect(store.passwordChangeUserId()).toBe(1);
-    expect(mockPasswordForm.resetForm).toHaveBeenCalled();
-  });
-
-  it('cancelPasswordChange should clear passwordChangeUserId and reset form', () => {
-    store.startPasswordChange(1);
-    store.cancelPasswordChange();
-    expect(store.passwordChangeUserId()).toBeNull();
-    expect(mockPasswordForm.resetForm).toHaveBeenCalledTimes(2);
   });
 
   it('onInit should call loadUsers', () => {
@@ -91,7 +66,6 @@ describe('AdminStore', () => {
       providers: [
         AdminStore,
         { provide: AdminService, useValue: mockAdminService },
-        { provide: PasswordFormService, useValue: mockPasswordForm },
       ],
     });
 

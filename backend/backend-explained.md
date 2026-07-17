@@ -177,6 +177,42 @@ That's it. The backend is just a **middleman** between your Angular app and the 
 
 ---
 
+## `backend/src/profile/` — User Profile
+
+Self-service profile management. Users can view their profile, update their email, and change their own password.
+
+### `profile.controller.ts` — The Router
+
+```typescript
+@Controller('profile')           // all routes start with /profile
+@UseGuards(JwtAuthGuard)         // must be logged in
+export class ProfileController {
+
+  @Get('me')                     // GET  /profile/me         → get own profile
+  @Patch('me')                   // PATCH /profile/me        → update email (returns new JWT)
+  @Patch('me/password')          // PATCH /profile/me/password → change own password
+}
+```
+
+### `profile.service.ts` — The Logic
+
+- `getProfile(userId)` — fetches `{ id, email, name, role }` from the `users` table
+- `updateProfile(userId, email?, currentPassword)` — verifies current password, checks email uniqueness, updates the row, and returns a **new JWT** (because email is embedded in the token)
+- `changePassword(userId, currentPassword, newPassword)` — verifies current password, hashes new one, updates the row
+
+### `profile.dto.ts` — Request Validation
+
+- `UpdateProfileDto` — `email?`, `currentPassword` (required for security)
+- `ChangePasswordDto` — `currentPassword`, `newPassword` (min 6 chars)
+
+### Key design decisions
+
+- **Current password required** for both profile update and password change — prevents unauthorized changes if a session is compromised
+- **New JWT on profile update** — the JWT contains `{ sub, email, role }`, so changing email invalidates the old token. The backend returns a fresh token and the frontend swaps it seamlessly.
+- **No role self-modification** — users cannot change their own role (that's admin-only via `/admin/users/:id/role`)
+
+---
+
 ## Key mental model: Frontend vs Backend
 
 | Concept | Your World (Frontend) | Backend World |
@@ -205,5 +241,6 @@ Pick a feature and I'll explain it the same way:
 |---|---|
 | **Authentication** | Register, login, JWT tokens, bcrypt password hashing |
 | **Admin Panel** | User management, role changes, password resets |
+| **User Profile** | Self-service profile update, own password change, JWT refresh |
 | **Guards & Decorators** | How `@Roles('admin')` and guards protect routes |
 | **Main entry** | `main.ts`, `app.module.ts`, CORS, Swagger docs |

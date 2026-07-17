@@ -55,6 +55,13 @@ import type { ProjectModel } from '@shared/types/project';
           <div class="flex items-center gap-2 flex-wrap justify-end">
             <app-theme-toggle></app-theme-toggle>
             <app-language-toggle></app-language-toggle>
+            <app-button
+              variant="secondary"
+              type="button"
+              (buttonClick)="goToProfile()"
+            >
+              {{ t('profile') }}
+            </app-button>
             @if (isAdmin()) {
               <app-button
                 variant="secondary"
@@ -198,6 +205,10 @@ export class DashboardComponent {
 
   goToAdmin(): void {
     this.#router.navigate(['/admin']);
+  }
+
+  goToProfile(): void {
+    this.#router.navigate(['/profile']);
   }
 
   onReorder(event: { previousIndex: number; currentIndex: number }): void {

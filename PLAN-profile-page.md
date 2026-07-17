@@ -1,303 +1,140 @@
-# Plan: Profile Page with Self Password Change
+# Plan: `/profile` Route — Checklist
 
-## Context
+## Overview
 
-- **Current state**: No profile page exists. No task assignment feature exists. The `tasks` table has no `assigneeId` column. The admin panel has a password change form (inline, not modal) that uses `PasswordFormService` and calls `POST /admin/users/:id/change-password`. The admin endpoint explicitly rejects self-password-change (`id === requesterId`).
-- **User data available**: The `AuthStore` (root-level, `providedIn: 'root'`) holds the logged-in user's `id`, `email`, `name`, `role` from the JWT token. This is accessible everywhere.
-- **Reuse target**: The `PasswordFormService` (`frontend/src/app/features/admin/forms/password.ts`) with its `newPassword` + `confirmPassword` fields and `matchPasswords` validator will be **moved to shared** and reused for both admin and self password change.
+A user profile page at `/profile` showing user information (name, email, role) with editable name/email and self-service password change. Admin panel style layout. Auto re-login after profile update (new JWT). Future: profile image.
 
 ---
 
-## Phase 1: Task Assignment Feature (Backend + Shared Types)
+## Backend
 
-This is a prerequisite for the profile page to show "tasks assigned to me."
+### 1. Create `backend/src/profile/profile.dto.ts`
+- [ ] `UpdateProfileDto` — `name?: string` (1-100), `email?: string` (isEmail), `currentPassword: string` (required)
+- [ ] `ChangePasswordDto` — `currentPassword: string`, `newPassword: string` (min 6, max 128)
 
-### 1.1 Database Schema — Add `assigneeId` to tasks
+### 2. Create `backend/src/profile/profile.service.ts`
+- [ ] Inject `DATABASE` (Pool) and `JwtService`
+- [ ] `getProfile(userId)` — `SELECT id, email, name, role FROM users WHERE id = $1`
+- [ ] `updateProfile(userId, name?, email?, currentPassword)` — verify current password via bcrypt, check email uniqueness if changed, update row, return new JWT + user
+- [ ] `changePassword(userId, currentPassword, newPassword)` — verify current password, hash new, update row, return `{ success: true }`
 
-**File**: `backend/src/shared/database/database.provider.ts`
+### 3. Create `backend/src/profile/profile.controller.ts`
+- [ ] `@Controller('profile')` with `@ApiTags('profile')`
+- [ ] `GET /profile/me` — returns current user profile (uses `@Request()` to get `user.id` from JWT)
+- [ ] `PATCH /profile/me` — update name/email (requires `currentPassword`), returns `{ token, user }`
+- [ ] `PATCH /profile/me/password` — change password (requires `currentPassword`), returns `{ success: true }`
 
-Add after the existing `userId` column migration:
+### 4. Create `backend/src/profile/profile.module.ts`
+- [ ] Import `DatabaseModule`, `AuthModule` (for JwtModule/JwtService)
+- [ ] Register `ProfileController`, `ProfileService`
 
-```sql
-ALTER TABLE tasks ADD COLUMN IF NOT EXISTS "assigneeId" INTEGER REFERENCES users(id)
-```
-
-### 1.2 Shared TaskModel — Add `assigneeId`
-
-**File**: `shared/types/task.ts`
-
-Add `readonly assigneeId?: number | null` and `readonly assigneeName?: string` to `TaskModel`.
-
-### 1.3 Backend Task Service — Include assignee in queries, support assignment on create/update
-
-**File**: `backend/src/task/task.service.ts`
-
-- `findAll()`: LEFT JOIN `users` on `assigneeId` to return `assigneeName`.
-- `findOne()`: Same join.
-- `create()`: Accept optional `assigneeId` in the insert.
-- `update()`: Accept optional `assigneeId` in the update.
-- Add a new `getTasksByAssignee(userId)` method for the profile page.
-
-### 1.4 Backend Task Controller — Accept `assigneeId` in POST/PUT bodies
-
-**File**: `backend/src/task/task.controller.ts`
-
-- `POST /tasks`: Add optional `assigneeId` to body.
-- `PUT /tasks/:id`: Add optional `assigneeId` to body.
-
-### 1.5 Backend — New endpoint for user's assigned tasks
-
-**File**: `backend/src/task/task.controller.ts`
-
-Add: `GET /tasks/assigned-to-me` (protected by `JwtAuthGuard`) — returns tasks where `assigneeId = req.user.id`.
-
-**File**: `backend/src/task/task.service.ts`
-
-Implement `findByAssignee(userId: number)`.
-
-### 1.6 Frontend Task Model — Update shared type
-
-**File**: `shared/types/task.ts` (already covered in 1.2)
-
-### 1.7 Frontend — Task form component update (for assignee selection)
-
-**File**: `frontend/src/app/shared/components/task-form.ts`
-
-This is out of scope for the profile page itself but needed to actually assign tasks. The task form would need a user selector dropdown. **However**, since the user said "first we should add the feature of assigning task", this should be included but can be a minimal implementation (e.g., a `<select>` or `<app-select>` of users shown only to admins).
+### 5. Edit `backend/src/app.module.ts`
+- [ ] Add `ProfileModule` to imports array
 
 ---
 
-## Phase 2: Move `PasswordFormService` to Shared
+## Frontend
 
-### 2.1 Move form service
+### 6. Create `frontend/src/app/features/profile/services/profile.ts`
+- [ ] `ProfileService` — `@Injectable({ providedIn: 'root' })`
+- [ ] `getMe()` → `GET http://localhost:3000/profile/me`
+- [ ] `updateProfile(dto)` → `PATCH http://localhost:3000/profile/me`
+- [ ] `changePassword(dto)` → `PATCH http://localhost:3000/profile/me/password`
 
-**From**: `frontend/src/app/features/admin/forms/password.ts`
-**To**: `frontend/src/app/shared/forms/password.ts`
+### 7. Create `frontend/src/app/features/profile/forms/profile-form.ts`
+- [ ] `ProfileFormService` — reactive form with `name` and `email` fields
+- [ ] `patchFromUser(user)` method to pre-fill from `AuthStore.user()`
+- [ ] `resetForm()` method
 
-The file stays identical. Update imports in:
+### 8. Create `frontend/src/app/features/profile/forms/change-password-form.ts`
+- [ ] `ChangePasswordFormService` — reactive form with `currentPassword`, `newPassword`, `confirmPassword`
+- [ ] `matchPasswords` cross-field validator
+- [ ] `resetForm()` method
 
-- `frontend/src/app/features/admin/store/admin.ts` — change import path
-- `frontend/src/app/features/admin/pages/admin-panel.ts` — change import path
+### 9. Edit `frontend/src/app/features/auth/store/auth.ts`
+- [ ] Add `updateSession(response: AuthResponseModel)` method to `withMethods`:
+  ```ts
+  const updateSession = (response: AuthResponseModel) => {
+    localStorage.setItem('token', response.token);
+    patchState(store, { token: response.token, user: response.user });
+  };
+  ```
+- [ ] Export it in the return object: `{ login, register, logout, restoreSession, updateSession }`
 
-### 2.2 Export from barrel
+### 10. Create `frontend/src/app/features/profile/pages/profile.ts`
+- [ ] `ProfileComponent` — standalone, no store (injects `AuthStore` + `ProfileService` directly)
+- [ ] Admin panel style layout: sticky header (back button, title, role badge, lang/theme toggles, logout) + `<main>` content
+- [ ] Two `<app-card>` sections:
+  1. **Profile Information** — role badge (read-only), name input, email input, Save button
+  2. **Change Password** — current password, new password, confirm password inputs, Save button
+- [ ] `ngOnInit`: load user from `AuthStore`, pre-fill profile form
+- [ ] `saveProfile()`: call `ProfileService.updateProfile()`, on success call `auth.updateSession(response)`
+- [ ] `savePassword()`: call `ProfileService.changePassword()`, on success reset form + show message
+- [ ] Success/error messages using `signal<string>` (same pattern as admin panel)
 
-**File**: `frontend/src/app/shared/forms/` — add `password.ts` to a barrel export or import directly.
+### 11. Create `frontend/src/app/features/profile/index.ts`
+- [ ] Barrel export for `ProfileComponent`
 
----
-
-## Phase 3: Backend — Self Password Change Endpoint
-
-The admin endpoint rejects self-change. We need a new endpoint.
-
-### 3.1 New endpoint on Auth controller
-
-**File**: `backend/src/auth/auth.controller.ts`
-
-Add: `POST /auth/change-password` (protected by `JwtAuthGuard`)
-
-Body: `{ currentPassword: string, newPassword: string }`
-
-**File**: `backend/src/auth/auth.service.ts`
-
-Add `changePassword(userId, currentPassword, newPassword)` method:
-
-1. Fetch user by `userId`, verify `currentPassword` matches via `bcrypt.compare`.
-2. Validate `newPassword` length >= 6.
-3. Hash and update.
-
-**File**: `backend/src/auth/auth.module.ts`
-
-Already exports `AuthService` and `JwtModule`. The controller just needs `JwtAuthGuard` import.
-
----
-
-## Phase 4: Frontend — Profile Feature
-
-### 4.1 New feature directory structure
-
-```
-frontend/src/app/features/profile/
-├── pages/
-│   └── profile.ts              # ProfileComponent (page)
-├── store/
-│   └── profile.ts              # ProfileStore (SignalStore)
-├── services/
-│   └── profile.ts              # ProfileService (HTTP calls)
-└── index.ts                    # barrel export
-```
-
-### 4.2 ProfileService
-
-**File**: `frontend/src/app/features/profile/services/profile.ts`
-
-```ts
-@Injectable({ providedIn: 'root' })
-export class ProfileService {
-  readonly #http = inject(HttpClient);
-  readonly #apiBaseUrl = 'http://localhost:3000';
-
-  getAssignedTasks(userId: number) {
-    return this.#http.get<TaskModel[]>(`${this.#apiBaseUrl}/tasks/assigned-to/${userId}`);
+### 12. Edit `frontend/src/app/main.route.ts`
+- [ ] Add route before wildcard `**`:
+  ```ts
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/pages/profile').then((m) => m.ProfileComponent),
+    canActivate: [authGuard],
   }
+  ```
 
-  changePassword(currentPassword: string, newPassword: string) {
-    return this.#http.post<void>(`${this.#apiBaseUrl}/auth/change-password`, {
-      currentPassword,
-      newPassword,
-    });
-  }
-}
-```
+### 13. Edit `frontend/src/app/i18n/en.json`
+- [ ] Add keys: `profile`, `profileInformation`, `updateProfile`, `profileUpdated`, `couldNotUpdateProfile`, `currentPassword`, `passwordChanged`, `couldNotChangePassword`, `incorrectCurrentPassword`
 
-### 4.3 ProfileStore
-
-**File**: `frontend/src/app/features/profile/store/profile.ts`
-
-```ts
-export const ProfileStore = signalStore(
-  withState({ assignedTasks: [], isLoading: false, message: '' }),
-  withMethods((store, profileService = inject(ProfileService), passwordForm = inject(PasswordFormService), auth = inject(AuthStore)) => ({
-    loadAssignedTasks: rxMethod<void>(...),  // calls profileService.getAssignedTasks(auth.user()!.id)
-    changeOwnPassword: rxMethod<void>(...),  // calls profileService.changePassword(...) using passwordForm
-    openPasswordDialog: () => { ... },       // opens dialog/bottomsheet
-  })),
-);
-```
-
-The password change flow:
-
-1. User clicks "Change Password" button on profile page.
-2. Store's `openPasswordDialog()` checks `isPhone()` signal.
-3. Opens `PasswordDialogComponent` (new shared component) or `PasswordBottomSheetComponent` (new shared component).
-4. Both components use `PasswordFormService` internally.
-5. On submit, store calls `changeOwnPassword()` which calls `ProfileService.changePassword()`.
-6. On success, shows message and closes dialog/bottomsheet.
-
-### 4.4 Password Dialog/BottomSheet Components (shared)
-
-**New files**:
-
-- `frontend/src/app/shared/components/password-dialog.ts` — `PasswordDialogComponent` (Material Dialog)
-- `frontend/src/app/shared/components/password-bottom-sheet.ts` — `PasswordBottomSheetComponent` (Material BottomSheet)
-
-Both components:
-
-- Inject `PasswordFormService`
-- Have a form with `newPassword` + `confirmPassword` fields
-- Emit result via `MAT_DIALOG_DATA` / `MatBottomSheetRef`
-- Follow the existing `ConfirmDialogComponent` / `ConfirmBottomSheetComponent` pattern
-
-**Alternatively (simpler approach)**: Since the admin panel currently uses an **inline form** (not a dialog), and the user wants the profile page to use a **dialog/bottomsheet**, we should create these new shared components. But we could also just create a single reusable component that renders inside a dialog template.
-
-**Recommended approach**: Create a single `PasswordChangeContentComponent` (shared, in `shared/components/`) that contains the password form UI. Then:
-
-- For desktop: wrap it in a `MatDialog` with `PasswordDialogComponent` as the host.
-- For mobile: wrap it in a `MatBottomSheet` with `PasswordBottomSheetComponent` as the host.
-
-Actually, the simplest approach that follows existing patterns: create `PasswordDialogComponent` and `PasswordBottomSheetComponent` that both contain the same form template (duplicated, like `ConfirmDialogComponent` and `ConfirmBottomSheetComponent` are). This keeps each component self-contained.
-
-### 4.5 Profile Page Component
-
-**File**: `frontend/src/app/features/profile/pages/profile.ts`
-
-The page:
-
-- Header with back button, theme toggle, language toggle, logout (same pattern as admin panel).
-- Displays user info: name, email, role (from `AuthStore`).
-- "Change Password" button that triggers dialog/bottomsheet (same `isPhone()` + `BreakpointObserver` pattern as admin panel).
-- Section for "Assigned Tasks" (list of tasks where `assigneeId === user.id`). Initially shows a placeholder or empty state since task assignment isn't built yet.
-- Uses `ProfileStore` to load assigned tasks and manage password change.
+### 14. Edit `frontend/src/app/i18n/fa.json`
+- [ ] Add corresponding Persian translations for all new keys
 
 ---
 
-## Phase 5: Routing
-
-### 5.1 Add `/profile` route
-
-**File**: `frontend/src/app/main.route.ts`
-
-Add before the wildcard:
-
-```ts
-{
-  path: 'profile',
-  loadComponent: () =>
-    import('./features/profile/pages/profile').then((m) => m.ProfileComponent),
-  canActivate: [authGuard],
-},
-```
-
-### 5.2 Navigation entry point
-
-Add a "Profile" link/button somewhere accessible — likely in the header of the dashboard page, or as a user menu dropdown. The simplest: add a button in the dashboard header that navigates to `/profile`.
-
----
-
-## Phase 6: i18n
-
-### 6.1 Add translation keys
-
-**Files**: `frontend/src/app/i18n/en.json` and `fa.json`
-
-New keys:
-
-- `profile` — "Profile" / "پروفایل"
-- `yourProfile` — "Your Profile" / "پروفایل شما"
-- `assignedTasks` — "Assigned Tasks" / "تسک‌های اختصاص‌یافته"
-- `noAssignedTasks` — "No tasks assigned to you" / "تسکی به شما اختصاص داده نشده"
-- `changeOwnPassword` — "Change Password" / "تغییر رمز عبور"
-- `currentPassword` — "Current Password" / "رمز عبور فعلی"
-- `incorrectCurrentPassword` — "Current password is incorrect" / "رمز عبور فعلی اشتباه است"
-- `passwordChangedSuccessfully` — "Password changed successfully" / "رمز عبور با موفقیت تغییر کرد"
-- `couldNotChangeOwnPassword` — "Could not change password" / "نمی‌توان رمز عبور را تغییر داد"
-- `assignee` — "Assignee" / "مسئول"
-- `unassigned` — "Unassigned" / "بدون مسئول"
-
----
-
-## File Change Summary
+## File Summary
 
 | # | File | Action |
 |---|------|--------|
-| 1 | `backend/src/shared/database/database.provider.ts` | Add `assigneeId` column migration |
-| 2 | `shared/types/task.ts` | Add `assigneeId`, `assigneeName` to `TaskModel` |
-| 3 | `backend/src/task/task.service.ts` | Add assignee joins, `findByAssignee()`, accept `assigneeId` in create/update |
-| 4 | `backend/src/task/task.controller.ts` | Accept `assigneeId` in POST/PUT, add `GET /tasks/assigned-to-me` |
-| 5 | `backend/src/auth/auth.controller.ts` | Add `POST /auth/change-password` |
-| 6 | `backend/src/auth/auth.service.ts` | Add `changePassword()` method |
-| 7 | `frontend/src/app/features/admin/forms/password.ts` | Move to `shared/forms/password.ts` |
-| 8 | `frontend/src/app/features/admin/store/admin.ts` | Update import path |
-| 9 | `frontend/src/app/features/admin/pages/admin-panel.ts` | Update import path |
-| 10 | `frontend/src/app/shared/components/password-dialog.ts` | **New** — dialog for password change |
-| 11 | `frontend/src/app/shared/components/password-bottom-sheet.ts` | **New** — bottomsheet for password change |
-| 12 | `frontend/src/app/shared/components/index.ts` | Export new components |
-| 13 | `frontend/src/app/features/profile/services/profile.ts` | **New** — HTTP service |
-| 14 | `frontend/src/app/features/profile/store/profile.ts` | **New** — SignalStore |
-| 15 | `frontend/src/app/features/profile/pages/profile.ts` | **New** — profile page component |
-| 16 | `frontend/src/app/features/profile/index.ts` | **New** — barrel export |
-| 17 | `frontend/src/app/main.route.ts` | Add `/profile` route |
-| 18 | `frontend/src/app/i18n/en.json` | Add new translation keys |
-| 19 | `frontend/src/app/i18n/fa.json` | Add new translation keys |
+| 1 | `backend/src/profile/profile.dto.ts` | **Create** |
+| 2 | `backend/src/profile/profile.service.ts` | **Create** |
+| 3 | `backend/src/profile/profile.controller.ts` | **Create** |
+| 4 | `backend/src/profile/profile.module.ts` | **Create** |
+| 5 | `backend/src/app.module.ts` | **Edit** — add ProfileModule |
+| 6 | `frontend/src/app/features/profile/services/profile.ts` | **Create** |
+| 7 | `frontend/src/app/features/profile/forms/profile-form.ts` | **Create** |
+| 8 | `frontend/src/app/features/profile/forms/change-password-form.ts` | **Create** |
+| 9 | `frontend/src/app/features/auth/store/auth.ts` | **Edit** — add updateSession |
+| 10 | `frontend/src/app/features/profile/pages/profile.ts` | **Create** |
+| 11 | `frontend/src/app/features/profile/index.ts` | **Create** |
+| 12 | `frontend/src/app/main.route.ts` | **Edit** — add /profile route |
+| 13 | `frontend/src/app/i18n/en.json` | **Edit** — add profile keys |
+| 14 | `frontend/src/app/i18n/fa.json` | **Edit** — add profile keys |
+
+**Total: 9 new files, 5 edits**
 
 ---
 
 ## Implementation Order
 
-1. **Phase 1** (Task Assignment) — Backend schema + service + controller + shared types
-2. **Phase 2** (Move PasswordFormService) — Quick refactor, no behavior change
-3. **Phase 3** (Self Password Change Endpoint) — Backend auth controller + service
-4. **Phase 4** (Frontend Profile Feature) — New feature with dialog/bottomsheet
-5. **Phase 5** (Routing) — Wire up the route
-6. **Phase 6** (i18n) — Can be done alongside Phase 4
+1. Backend DTOs + Service + Controller + Module (files 1-4)
+2. Register module in AppModule (file 5)
+3. Frontend service + form services (files 6-8)
+4. Auth store updateSession method (file 9)
+5. Profile page component (file 10)
+6. Barrel export + routing (files 11-12)
+7. i18n keys (files 13-14)
+8. Run `npm run lint` and `npm run build` to verify
 
 ---
 
-## Open Questions
+## Design Decisions
 
-1. **Task assignment UI**: Should the task assignment be admin-only (admin assigns tasks to users) or should any user be able to assign? Currently the task form is shared and used in the dashboard.
-
-2. **Profile page header**: Should the profile page have its own header (like admin panel does) or should it reuse the dashboard header with an extra nav link?
-
-3. **Password dialog/bottomsheet**: Should these be brand new shared components, or would you prefer a single reusable component that renders differently based on screen size? (The existing pattern uses separate `ConfirmDialogComponent` and `ConfirmBottomSheetComponent` — I'd follow that.)
-
-4. **"Assigned to me" task list**: Should it show basic task info (title, status, project) as a simple list, or should it be a full-featured table with filtering/pagination like the admin users table?
+- **No store for profile page** — self-contained, injects AuthStore directly
+- **Auto re-login** — backend returns new JWT after name/email change, frontend updates seamlessly
+- **Current password required** for both profile update and password change
+- **Role displayed as read-only badge** — same styling as admin panel
+- **Admin panel style layout** — sticky header with back/title/role/toggles/logout
+- **Future-proof** — card-based layout makes it easy to add avatar section later

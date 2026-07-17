@@ -1,8 +1,6 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
   MatBottomSheet,
   MatBottomSheetModule,
@@ -10,16 +8,14 @@ import {
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
-import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
+import { PasswordBottomSheetComponent } from '../../../shared/components/password-bottom-sheet';
+import { PasswordDialogComponent } from '../../../shared/components/password-dialog';
 import {
-  InputComponent,
   ButtonComponent,
-  FormComponent,
+  PageHeaderComponent,
 } from '../../../shared/components';
 import { LanguageService } from '../../../shared/services/language';
 import { AuthStore } from '../../auth/store/auth';
-import { PasswordFormService } from '../forms/password';
 import type { UserModel } from '../models/admin';
 import { AdminStore } from '../store/admin';
 
@@ -29,62 +25,17 @@ import { AdminStore } from '../store/admin';
   providers: [AdminStore],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     MatDialogModule,
     MatBottomSheetModule,
-    ThemeToggleComponent,
-    LanguageToggleComponent,
-    InputComponent,
     ButtonComponent,
-    FormComponent,
+    PageHeaderComponent,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <header
-        class="sticky top-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700"
-      >
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex items-center justify-between h-16">
-            <div class="flex items-center gap-4">
-              <app-button
-                variant="secondary"
-                type="button"
-                (buttonClick)="goBack()"
-              >
-                {{ t('backToDashboard') }}
-              </app-button>
-              <h1 class="text-xl font-semibold text-slate-900 dark:text-white">
-                {{ t('adminPanel') }}
-              </h1>
-              <span
-                class="px-2 py-0.5 text-xs font-medium rounded-full"
-                [ngClass]="{
-                  'bg-amber-200 text-amber-900 dark:bg-amber-800/40 dark:text-amber-200':
-                    isSuperAdmin(),
-                  'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300':
-                    !isSuperAdmin() && isAdmin(),
-                  'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300':
-                    !isAdmin(),
-                }"
-              >
-                {{ t('role') }}:
-                {{
-                  t(
-                    isSuperAdmin() ? 'superAdmin' : isAdmin() ? 'admin' : 'user'
-                  )
-                }}
-              </span>
-            </div>
-            <div class="flex items-center gap-3 flex-wrap justify-end">
-              <app-language-toggle></app-language-toggle>
-              <app-theme-toggle></app-theme-toggle>
-              <app-button variant="ghost" (buttonClick)="logout()">
-                {{ t('logout') }}
-              </app-button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <app-page-header
+        [title]="t('adminPanel')"
+        [roleBadge]="roleBadgeText()"
+      />
 
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-6 flex items-center justify-between">
@@ -175,7 +126,7 @@ import { AdminStore } from '../store/admin';
                       <app-button
                         variant="ghost"
                         [disabled]="isSuperAdminUser(user)"
-                        (buttonClick)="startPasswordChange(user)"
+                        (buttonClick)="openPasswordChange(user)"
                       >
                         {{ t('changePassword') }}
                       </app-button>
@@ -189,66 +140,6 @@ import { AdminStore } from '../store/admin';
                         {{ t('deleteUser') }}
                       </app-button>
                     </div>
-                    @if (store.passwordChangeUserId() === user.id) {
-                      <app-form
-                        [formGroup]="passwordForm.form"
-                        variant="vertical"
-                        [cssClass]="'mt-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-2'"
-                        (ngSubmit)="submitPasswordChange()"
-                      >
-                        <app-input
-                          type="password"
-                          formControlName="newPassword"
-                          [placeholder]="t('newPassword')"
-                          variant="default"
-                        />
-                        <app-input
-                          type="password"
-                          formControlName="confirmPassword"
-                          [placeholder]="t('confirmPassword')"
-                          variant="default"
-                        />
-                        @if (
-                          passwordForm.form.hasError('passwordsMismatch') &&
-                          passwordForm.form.touched
-                        ) {
-                          <p
-                            class="mt-1 text-xs text-red-600 dark:text-red-400"
-                          >
-                            {{ t('passwordsDoNotMatch') }}
-                          </p>
-                        }
-                        @if (
-                          passwordForm.form
-                            .get('newPassword')
-                            ?.hasError('minLength') &&
-                          passwordForm.form.get('newPassword')?.touched
-                        ) {
-                          <p
-                            class="mt-1 text-xs text-red-600 dark:text-red-400"
-                          >
-                            {{ t('passwordTooShort') }}
-                          </p>
-                        }
-                        <div class="flex gap-2">
-                          <app-button
-                            variant="primary"
-                            class="flex-1"
-                            type="submit"
-                            [disabled]="passwordForm.form.invalid"
-                          >
-                            {{ t('save') }}
-                          </app-button>
-                          <app-button
-                            variant="secondary"
-                            type="button"
-                            (buttonClick)="cancelPasswordChange()"
-                          >
-                            {{ t('cancel') }}
-                          </app-button>
-                        </div>
-                      </app-form>
-                    }
                   </td>
                 </tr>
               } @empty {
@@ -284,15 +175,18 @@ import { AdminStore } from '../store/admin';
 })
 export class AdminPanelComponent implements OnInit {
   readonly store = inject(AdminStore);
-  readonly passwordForm = inject(PasswordFormService);
   readonly auth = inject(AuthStore);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
-  readonly #router = inject(Router);
 
   readonly currentUserId = computed(() => this.auth.user()?.id ?? null);
+  readonly roleBadgeText = computed(() => {
+    const role = this.auth.user()?.role;
+    if (!role) return '';
+    return `${this.t('role')}: ${this.t(role)}`;
+  });
   isPhone = signal(false);
 
   constructor() {
@@ -309,25 +203,8 @@ export class AdminPanelComponent implements OnInit {
     return this.#languageService.translate(key);
   }
 
-  isAdmin(): boolean {
-    return this.auth.isAdmin();
-  }
-
-  isSuperAdmin(): boolean {
-    return this.auth.user()?.role === 'superAdmin';
-  }
-
   isSuperAdminUser(user: UserModel): boolean {
     return user.role === 'superAdmin';
-  }
-
-  logout(): void {
-    this.auth.logout();
-    this.#router.navigate(['/login']);
-  }
-
-  goBack(): void {
-    this.#router.navigate(['/']);
   }
 
   toggleRole(user: UserModel): void {
@@ -348,15 +225,22 @@ export class AdminPanelComponent implements OnInit {
     });
   }
 
-  startPasswordChange(user: UserModel): void {
-    this.store.startPasswordChange(user.id);
-  }
+  openPasswordChange(user: UserModel): void {
+    const data = { requireCurrentPassword: false };
+    const result$ = this.isPhone()
+      ? this.#bottomSheet
+          .open(PasswordBottomSheetComponent, { data })
+          .afterDismissed()
+      : this.#dialog
+          .open(PasswordDialogComponent, { data, width: '400px' })
+          .afterClosed();
 
-  cancelPasswordChange(): void {
-    this.store.cancelPasswordChange();
-  }
-
-  submitPasswordChange(): void {
-    this.store.changePassword();
+    result$.subscribe((result) => {
+      if (!result) return;
+      this.store.changePassword({
+        userId: user.id,
+        newPassword: result.newPassword,
+      });
+    });
   }
 }

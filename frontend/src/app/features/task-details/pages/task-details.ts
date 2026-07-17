@@ -5,8 +5,8 @@ import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 import {
   TaskFormComponent,
-  ButtonComponent,
   CardComponent,
+  PageHeaderComponent,
 } from '../../../shared/components';
 import { TaskFormService } from '../../../shared/forms/task';
 import type { TaskModel } from '@shared/types/task';
@@ -19,63 +19,54 @@ import { switchMap } from 'rxjs';
   imports: [
     TaskItemComponent,
     TaskFormComponent,
-    ButtonComponent,
     CardComponent,
+    PageHeaderComponent,
   ],
   template: `
-    <main class="mx-auto max-w-2xl p-6">
-      <app-card>
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {{ t('taskDetails') }}
-          </h1>
-          <app-button
-            variant="secondary"
-            type="button"
-            (buttonClick)="goBack()"
-          >
-            {{ t('backToDashboard') }}
-          </app-button>
-        </div>
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <app-page-header [title]="t('taskDetails')" />
 
-        @if (loading()) {
-          <p
-            class="rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300"
-          >
-            {{ t('loading') }}
-          </p>
-        } @else if (error()) {
-          <p
-            class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
-          >
-            {{ t('taskNotFound') }}
-          </p>
-        } @else {
-          @if (task(); as task) {
-            @if (isEditing()) {
-              <app-task-form
-                [projects]="projects()"
-                [editingTask]="editingTask()"
-                [showProjectSelect]="false"
-                (submitTask)="saveTask($event)"
-                (cancelEdit)="cancelEdit()"
-              />
-            } @else {
-              <app-task-item
-                [task]="task"
-                [projects]="projects()"
-                [showDetailLink]="false"
-                [showCreatorBadge]="true"
-                [showEditButton]="true"
-                (edit)="startEdit($event)"
-                (toggled)="onToggled($event)"
-                (deleted)="onDeleted()"
-              />
+      <main class="mx-auto max-w-2xl p-6">
+        <app-card>
+          @if (loading()) {
+            <p
+              class="rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300"
+            >
+              {{ t('loading') }}
+            </p>
+          } @else if (error()) {
+            <p
+              class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+            >
+              {{ t('taskNotFound') }}
+            </p>
+          } @else {
+            @if (task(); as task) {
+              @if (isEditing()) {
+                <app-task-form
+                  [projects]="projects()"
+                  [editingTask]="editingTask()"
+                  [showProjectSelect]="false"
+                  (submitTask)="saveTask($event)"
+                  (cancelEdit)="cancelEdit()"
+                />
+              } @else {
+                <app-task-item
+                  [task]="task"
+                  [projects]="projects()"
+                  [showDetailLink]="false"
+                  [showCreatorBadge]="true"
+                  [showEditButton]="true"
+                  (edit)="startEdit($event)"
+                  (toggled)="onToggled($event)"
+                  (deleted)="onDeleted()"
+                />
+              }
             }
           }
-        }
-      </app-card>
-    </main>
+        </app-card>
+      </main>
+    </div>
   `,
 })
 export class TaskDetailsPageComponent {
@@ -177,10 +168,6 @@ export class TaskDetailsPageComponent {
   }
 
   onDeleted(): void {
-    this.#router.navigate(['/']);
-  }
-
-  goBack(): void {
     this.#router.navigate(['/']);
   }
 }

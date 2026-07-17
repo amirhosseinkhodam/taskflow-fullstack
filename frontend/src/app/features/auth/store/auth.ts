@@ -157,7 +157,15 @@ export const AuthStore = signalStore(
         }
       };
 
-      return { login, register, logout, restoreSession };
+      const updateSession = (response: AuthResponseModel) => {
+        localStorage.setItem('token', response.token);
+        patchState(store, {
+          token: response.token,
+          user: response.user,
+        });
+      };
+
+      return { login, register, logout, restoreSession, updateSession };
     },
   ),
   withHooks({
