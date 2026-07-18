@@ -1,10 +1,16 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import {
+  MatBottomSheet,
+  MatBottomSheetModule,
+} from '@angular/material/bottom-sheet';
 import { LanguageService } from '../services/language';
 import { JalaliDatePipe } from '../pipes/jalali-date';
 import { DashboardService } from '../../features/dashboard/services/dashboard';
 import { ConfirmDialogComponent } from './confirm-dialog';
+import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
 import { ButtonComponent } from './button';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
@@ -12,7 +18,7 @@ import type { ProjectModel } from '@shared/types/project';
 @Component({
   selector: 'app-task-item',
   standalone: true,
-  imports: [JalaliDatePipe, ButtonComponent],
+  imports: [JalaliDatePipe, ButtonComponent, MatBottomSheetModule],
   template: `
     @if (task(); as task) {
       <div class="flex items-start gap-3 w-full">
@@ -166,7 +172,17 @@ export class TaskItemComponent {
   readonly #dashboardService = inject(DashboardService);
   readonly #languageService = inject(LanguageService);
   readonly #dialog = inject(MatDialog);
+  readonly #bottomSheet = inject(MatBottomSheet);
+  readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #router = inject(Router);
+
+  readonly isPhone = signal(false);
+
+  constructor() {
+    this.#breakpointObserver
+      .observe(['(max-width: 767px)'])
+      .subscribe((result) => this.isPhone.set(result.matches));
+  }
 
   t(key: string): string {
     return this.#languageService.translate(key);
@@ -198,8 +214,11 @@ export class TaskItemComponent {
   }
 
   confirmDelete(): void {
-    const dialogRef = this.#dialog.open(ConfirmDialogComponent);
-    dialogRef.afterClosed().subscribe((confirmed) => {
+    const result$ = this.isPhone()
+      ? this.#bottomSheet.open(ConfirmBottomSheetComponent).afterDismissed()
+      : this.#dialog.open(ConfirmDialogComponent).afterClosed();
+
+    result$.subscribe((confirmed) => {
       if (!confirmed) return;
       const task = this.task();
       if (!task) return;

@@ -8,7 +8,9 @@
   "newTask": "New Task",
   "editTask": "Edit Task",
   "taskTitle": "Task title",
+  "taskTitlePlaceholder": "Enter task title",
   "description": "Description",
+  "descriptionPlaceholder": "Enter task description",
   "addTask": "Add Task",
   "save": "Save",
   "cancel": "Cancel",
@@ -109,5 +111,11 @@
   "profileUpdated": "Profile updated successfully",
   "couldNotUpdateProfile": "Could not update profile",
   "incorrectCurrentPassword": "Current password is incorrect",
-  "changePasswordDescription": "Update your password to keep your account secure."
+  "changePasswordDescription": "Update your password to keep your account secure.",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "nationalCode": "National Code",
+  "phone": "Phone",
+  "birthDate": "Birth Date",
+  "emailAlreadyInUse": "Email is already in use"
 }

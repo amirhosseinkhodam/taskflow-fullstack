@@ -2,6 +2,7 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Pool } from 'pg';
+import type { AuthUserModel } from '@shared/types/auth';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -20,12 +21,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     email: string;
     role: 'user' | 'admin' | 'superAdmin';
   }) {
-    const result = await this.#db.query<{
-      id: number;
-      email: string;
-      name: string;
-      role: 'user' | 'admin' | 'superAdmin';
-    }>('SELECT id, email, name, role FROM users WHERE id = $1', [payload.sub]);
+    const result = await this.#db.query<AuthUserModel>(
+      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role
+       FROM users WHERE id = $1`,
+      [payload.sub],
+    );
     const user = result.rows[0];
     if (!user) throw new UnauthorizedException();
     return user;

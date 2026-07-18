@@ -15,14 +15,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { LoginFormService } from '../forms/login';
 import { RegisterFormService } from '../forms/register';
-import type { AuthResponseModel, UserRole } from '@shared/types/auth';
-
-interface AuthUserModel {
-  id: number;
-  email: string;
-  name: string;
-  role: UserRole;
-}
+import type { AuthResponseModel, AuthUserModel } from '@shared/types/auth';
 
 interface AuthStateModel {
   token: string | null;
@@ -44,7 +37,11 @@ function decodeToken(token: string): AuthUserModel | null {
     return {
       id: payload.sub ?? 0,
       email: payload.email ?? '',
-      name: payload.name ?? '',
+      firstName: payload.firstName ?? null,
+      lastName: payload.lastName ?? null,
+      nationalCode: payload.nationalCode ?? null,
+      phone: payload.phone ?? null,
+      birthDate: payload.birthDate ?? null,
       role: payload.role ?? 'user',
     };
   } catch {

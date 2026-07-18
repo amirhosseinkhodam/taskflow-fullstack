@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
+import type { AuthUserModel } from '@shared/types/auth';
 
 @Injectable()
 export class ProfileService {
@@ -19,12 +20,11 @@ export class ProfileService {
   }
 
   async getProfile(userId: number) {
-    const result = await this.#db.query<{
-      id: number;
-      email: string;
-      name: string;
-      role: 'user' | 'admin' | 'superAdmin';
-    }>('SELECT id, email, name, role FROM users WHERE id = $1', [userId]);
+    const result = await this.#db.query<AuthUserModel>(
+      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role
+       FROM users WHERE id = $1`,
+      [userId],
+    );
     if (result.rows.length === 0) {
       throw new UnauthorizedException('User not found');
     }
@@ -33,47 +33,69 @@ export class ProfileService {
 
   async updateProfile(
     userId: number,
-    email: string | undefined,
-    currentPassword: string,
+    fields: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      nationalCode?: string;
+      phone?: string;
+      birthDate?: string;
+    },
   ) {
-    const user = await this.#db.query<{
-      id: number;
-      email: string;
-      name: string;
-      role: 'user' | 'admin' | 'superAdmin';
-      password: string;
-    }>('SELECT id, email, name, role, password FROM users WHERE id = $1', [
-      userId,
-    ]);
+    const user = await this.#db.query<AuthUserModel & { password: string }>(
+      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role, password
+       FROM users WHERE id = $1`,
+      [userId],
+    );
     if (user.rows.length === 0) {
       throw new UnauthorizedException('User not found');
     }
 
     const existing = user.rows[0];
-    if (!(await bcrypt.compare(currentPassword, existing.password))) {
-      throw new BadRequestException('Current password is incorrect');
-    }
 
-    if (email && email !== existing.email) {
+    if (fields.email && fields.email !== existing.email) {
       const emailCheck = await this.#db.query<{ id: number }>(
         'SELECT id FROM users WHERE email = $1 AND id != $2',
-        [email, userId],
+        [fields.email, userId],
       );
       if (emailCheck.rows.length > 0) {
         throw new ConflictException('Email already in use');
       }
     }
 
-    const updatedEmail = email ?? existing.email;
+    const updatedEmail = fields.email ?? existing.email;
+    const updatedFirstName =
+      fields.firstName !== undefined ? fields.firstName : existing.firstName;
+    const updatedLastName =
+      fields.lastName !== undefined ? fields.lastName : existing.lastName;
+    const updatedNationalCode =
+      fields.nationalCode !== undefined
+        ? fields.nationalCode
+        : existing.nationalCode;
+    const updatedPhone =
+      fields.phone !== undefined ? fields.phone : existing.phone;
+    const updatedBirthDate =
+      fields.birthDate !== undefined ? fields.birthDate : existing.birthDate;
 
-    const result = await this.#db.query<{
-      id: number;
-      email: string;
-      name: string;
-      role: 'user' | 'admin' | 'superAdmin';
-    }>(
-      'UPDATE users SET email = $1 WHERE id = $2 RETURNING id, email, name, role',
-      [updatedEmail, userId],
+    const result = await this.#db.query<AuthUserModel>(
+      `UPDATE users SET
+        email = $1,
+        "firstName" = $2,
+        "lastName" = $3,
+        "nationalCode" = $4,
+        phone = $5,
+        "birthDate" = $6
+       WHERE id = $7
+       RETURNING id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
+      [
+        updatedEmail,
+        updatedFirstName,
+        updatedLastName,
+        updatedNationalCode,
+        updatedPhone,
+        updatedBirthDate,
+        userId,
+      ],
     );
 
     const updatedUser = result.rows[0];

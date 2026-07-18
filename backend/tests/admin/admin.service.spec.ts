@@ -21,7 +21,18 @@ describe('AdminService', () => {
   describe('findAllUsers', () => {
     it('returns all users ordered by id', async () => {
       mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, email: 'a@test.com', name: 'A', role: 'user' }],
+        rows: [
+          {
+            id: 1,
+            email: 'a@test.com',
+            firstName: 'A',
+            lastName: null,
+            nationalCode: null,
+            phone: null,
+            birthDate: null,
+            role: 'user',
+          },
+        ],
       });
 
       const result = await service.findAllUsers();
@@ -76,7 +87,18 @@ describe('AdminService', () => {
       mockQuery
         .mockResolvedValueOnce({ rows: [{ role: 'user' }] })
         .mockResolvedValueOnce({
-          rows: [{ id: 2, email: 'b@test.com', name: 'B', role: 'admin' }],
+          rows: [
+            {
+              id: 2,
+              email: 'b@test.com',
+              firstName: 'B',
+              lastName: null,
+              nationalCode: null,
+              phone: null,
+              birthDate: null,
+              role: 'admin',
+            },
+          ],
         });
 
       const result = await service.updateUserRole(2, 'admin', 1);

@@ -36,7 +36,6 @@ describe('AuthService', () => {
     const payload = {
       email: 'test@test.com',
       password: 'pass123',
-      name: 'Test',
     };
     service.register(payload).subscribe();
 

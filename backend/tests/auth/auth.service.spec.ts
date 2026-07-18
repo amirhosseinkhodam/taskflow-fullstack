@@ -30,20 +30,31 @@ describe('AuthService', () => {
   describe('register', () => {
     it('success — returns token and user', async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({
-        rows: [{ id: 1, email: 'test@test.com', name: 'Test', role: 'user' }],
+        rows: [
+          {
+            id: 1,
+            email: 'test@test.com',
+            firstName: null,
+            lastName: null,
+            nationalCode: null,
+            phone: null,
+            birthDate: null,
+            role: 'user',
+          },
+        ],
       });
 
-      const result = await service.register(
-        'test@test.com',
-        'password123',
-        'Test',
-      );
+      const result = await service.register('test@test.com', 'password123');
 
       expect(result.token).toBe('fake-jwt-token');
       expect(result.user).toEqual({
         id: 1,
         email: 'test@test.com',
-        name: 'Test',
+        firstName: null,
+        lastName: null,
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
         role: 'user',
       });
       expect(mockJwtService.sign).toHaveBeenCalledWith({
@@ -57,7 +68,7 @@ describe('AuthService', () => {
       mockQuery.mockResolvedValueOnce({ rows: [{ id: 1 }] });
 
       await expect(
-        service.register('existing@test.com', 'password123', 'Test'),
+        service.register('existing@test.com', 'password123'),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -70,7 +81,11 @@ describe('AuthService', () => {
           {
             id: 1,
             email: 'test@test.com',
-            name: 'Test',
+            firstName: null,
+            lastName: null,
+            nationalCode: null,
+            phone: null,
+            birthDate: null,
             role: 'user',
             password: hashedPassword,
           },
@@ -83,7 +98,11 @@ describe('AuthService', () => {
       expect(result.user).toEqual({
         id: 1,
         email: 'test@test.com',
-        name: 'Test',
+        firstName: null,
+        lastName: null,
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
         role: 'user',
       });
     });
@@ -98,7 +117,11 @@ describe('AuthService', () => {
           {
             id: 1,
             email: 'test@test.com',
-            name: 'Test',
+            firstName: null,
+            lastName: null,
+            nationalCode: null,
+            phone: null,
+            birthDate: null,
             role: 'user',
             password: hashedPassword,
           },

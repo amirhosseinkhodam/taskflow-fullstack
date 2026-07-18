@@ -7,7 +7,6 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { AdminPanelComponent } from '../../../../../src/app/features/admin/pages/admin-panel';
 import { AdminStore } from '../../../../../src/app/features/admin/store/admin';
-import { PasswordFormService } from 'frontend/src/app/shared/forms/password';
 import { AuthStore } from '../../../../../src/app/features/auth/store/auth';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ThemeService } from '../../../../../src/app/shared/services/theme';
@@ -33,12 +32,20 @@ describe('AdminPanelComponent', () => {
     user: signal<{
       id: number;
       email: string;
-      name: string;
+      firstName: string | null;
+      lastName: string | null;
+      nationalCode: string | null;
+      phone: string | null;
+      birthDate: string | null;
       role: string;
     } | null>({
       id: 1,
       email: 'admin@test.com',
-      name: 'Admin',
+      firstName: 'Admin',
+      lastName: null,
+      nationalCode: null,
+      phone: null,
+      birthDate: null,
       role: 'admin',
     }),
     isAdmin: signal(true),
@@ -67,7 +74,11 @@ describe('AdminPanelComponent', () => {
     mockAuth.user.set({
       id: 1,
       email: 'admin@test.com',
-      name: 'Admin',
+      firstName: 'Admin',
+      lastName: null,
+      nationalCode: null,
+      phone: null,
+      birthDate: null,
       role: 'admin',
     });
     mockAuth.isAdmin.set(true);
@@ -145,8 +156,26 @@ describe('AdminPanelComponent', () => {
 
   it('should render user rows when users are provided', () => {
     const users: UserModel[] = [
-      { id: 2, email: 'user1@test.com', name: 'User One', role: 'user' },
-      { id: 3, email: 'user2@test.com', name: 'User Two', role: 'admin' },
+      {
+        id: 2,
+        email: 'user1@test.com',
+        firstName: 'User',
+        lastName: 'One',
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'user',
+      },
+      {
+        id: 3,
+        email: 'user2@test.com',
+        firstName: 'User',
+        lastName: 'Two',
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'admin',
+      },
     ];
     mockStore.users.set(users);
     mockStore.userCount.set(users.length);
@@ -178,7 +207,16 @@ describe('AdminPanelComponent', () => {
 
   it('should display users count', () => {
     const users: UserModel[] = [
-      { id: 2, email: 'user1@test.com', name: 'User One', role: 'user' },
+      {
+        id: 2,
+        email: 'user1@test.com',
+        firstName: 'User',
+        lastName: 'One',
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'user',
+      },
     ];
     mockStore.users.set(users);
     mockStore.userCount.set(1);

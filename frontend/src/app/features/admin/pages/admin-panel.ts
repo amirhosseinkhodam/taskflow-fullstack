@@ -86,7 +86,7 @@ import { AdminStore } from '../store/admin';
                     {{ user.email }}
                   </td>
                   <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">
-                    {{ user.name }}
+                    {{ user.firstName }} {{ user.lastName }}
                   </td>
                   <td class="px-4 py-3">
                     <span

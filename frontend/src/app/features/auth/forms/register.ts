@@ -5,7 +5,6 @@ import { FormBuilder, Validators } from '@angular/forms';
 export class RegisterFormService {
   readonly #fb = inject(FormBuilder);
   readonly #form = this.#fb.nonNullable.group({
-    name: ['', Validators.required],
     email: ['', Validators.required],
     password: ['', Validators.required],
   });

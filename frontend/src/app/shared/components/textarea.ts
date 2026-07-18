@@ -53,7 +53,7 @@ export class TextareaComponent implements ControlValueAccessor {
   readonly blur = output<void>({ alias: 'inputBlur' });
   readonly focus = output<void>({ alias: 'inputFocus' });
 
-  @ViewChild('textareaElement', { static: false })
+  @ViewChild('textareaElement', { static: true })
   textareaElement!: ElementRef<HTMLTextAreaElement>;
   #onChange: (value: string) => void = () => {};
   #onTouched: () => void = () => {};

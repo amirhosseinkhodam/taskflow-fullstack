@@ -26,7 +26,18 @@ describe('JwtStrategy', () => {
   it('validate() — user found returns user object', async () => {
     const payload = { sub: 1, email: 'test@test.com', role: 'user' as const };
     mockQuery.mockResolvedValueOnce({
-      rows: [{ id: 1, email: 'test@test.com', name: 'Test', role: 'user' }],
+      rows: [
+        {
+          id: 1,
+          email: 'test@test.com',
+          firstName: null,
+          lastName: null,
+          nationalCode: null,
+          phone: null,
+          birthDate: null,
+          role: 'user',
+        },
+      ],
     });
 
     const result = await strategy.validate(payload);
@@ -34,7 +45,11 @@ describe('JwtStrategy', () => {
     expect(result).toEqual({
       id: 1,
       email: 'test@test.com',
-      name: 'Test',
+      firstName: null,
+      lastName: null,
+      nationalCode: null,
+      phone: null,
+      birthDate: null,
       role: 'user',
     });
   });

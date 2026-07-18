@@ -53,20 +53,12 @@ import {
         }
 
         <app-input
-          type="text"
-          formControlName="name"
-          [placeholder]="t('name')"
-          autocomplete="name"
-          variant="default"
-          [cssClass]="'mt-6'"
-        />
-        <app-input
           type="email"
           formControlName="email"
           [placeholder]="t('email')"
           autocomplete="email"
           variant="default"
-          [cssClass]="'mt-3'"
+          [cssClass]="'mt-6'"
         />
 
         <app-password-input

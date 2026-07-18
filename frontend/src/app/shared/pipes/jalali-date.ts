@@ -3,8 +3,11 @@ import { formatDate } from 'date-fns-jalali';
 
 @Pipe({ name: 'jalaliDate', standalone: true })
 export class JalaliDatePipe implements PipeTransform {
-  transform(value: string | null | undefined): string {
+  transform(
+    value: string | null | undefined,
+    format: string = 'yyyy/MM/dd HH:mm',
+  ): string {
     if (!value) return '';
-    return formatDate(new Date(value), 'yyyy/MM/dd HH:mm');
+    return formatDate(new Date(value), format);
   }
 }

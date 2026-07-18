@@ -58,16 +58,13 @@ describe('RegisterComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders register form with name, email, and password fields', () => {
-    const nameInput: HTMLInputElement =
-      fixture.nativeElement.querySelector('input[type="text"]');
+  it('renders register form with email and password fields', () => {
     const emailInput: HTMLInputElement = fixture.nativeElement.querySelector(
       'input[type="email"]',
     );
     const passwordInput: HTMLInputElement = fixture.nativeElement.querySelector(
       'input[type="password"]',
     );
-    expect(nameInput).toBeTruthy();
     expect(emailInput).toBeTruthy();
     expect(passwordInput).toBeTruthy();
   });

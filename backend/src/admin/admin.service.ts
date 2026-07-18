@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
+import type { AuthUserModel } from '@shared/types/auth';
 
 @Injectable()
 export class AdminService {
@@ -15,12 +16,10 @@ export class AdminService {
   }
 
   async findAllUsers() {
-    const result = await this.#db.query<{
-      id: number;
-      email: string;
-      name: string;
-      role: 'user' | 'admin' | 'superAdmin';
-    }>('SELECT id, email, name, role FROM users ORDER BY id');
+    const result = await this.#db.query<AuthUserModel>(
+      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role
+       FROM users ORDER BY id`,
+    );
     return result.rows;
   }
 
@@ -73,13 +72,9 @@ export class AdminService {
       throw new BadRequestException('Cannot modify superAdmin');
     }
 
-    const result = await this.#db.query<{
-      id: number;
-      email: string;
-      name: string;
-      role: 'user' | 'admin' | 'superAdmin';
-    }>(
-      'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, email, name, role',
+    const result = await this.#db.query<AuthUserModel>(
+      `UPDATE users SET role = $1 WHERE id = $2
+       RETURNING id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
       [role, id],
     );
     if (result.rows.length === 0) {

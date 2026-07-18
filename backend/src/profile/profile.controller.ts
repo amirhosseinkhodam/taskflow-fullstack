@@ -25,11 +25,14 @@ export class ProfileController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateProfileDto,
   ) {
-    return this.#profileService.updateProfile(
-      req.user.id,
-      dto.email,
-      dto.currentPassword,
-    );
+    return this.#profileService.updateProfile(req.user.id, {
+      email: dto.email,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      nationalCode: dto.nationalCode,
+      phone: dto.phone,
+      birthDate: dto.birthDate,
+    });
   }
 
   @Patch('me/password')

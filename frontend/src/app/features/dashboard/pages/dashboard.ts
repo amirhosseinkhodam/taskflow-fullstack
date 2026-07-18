@@ -1,7 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatDialog } from '@angular/material/dialog';
+import {
+  MatBottomSheet,
+  MatBottomSheetModule,
+} from '@angular/material/bottom-sheet';
 import { DashboardStore } from '../store/dashboard';
 import { AuthStore } from '../../auth/store/auth';
 import {
@@ -16,7 +21,9 @@ import { ProjectFilterComponent } from '../components/project-filter';
 import { PaginationComponent } from '../components/pagination';
 import { ProjectListComponent } from '../components/project-list';
 import { ProjectEditDialogComponent } from '../components/project-edit-dialog';
+import { ProjectEditBottomSheetComponent } from '../components/project-edit-bottom-sheet';
 import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
+import { ProjectDeleteConfirmBottomSheetComponent } from '../components/project-delete-confirm-bottom-sheet';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { LanguageService } from '../../../shared/services/language';
@@ -39,6 +46,7 @@ import type { ProjectModel } from '@shared/types/project';
     ProjectFilterComponent,
     PaginationComponent,
     ProjectListComponent,
+    MatBottomSheetModule,
   ],
   template: `
     <main class="mx-auto max-w-4xl p-6">
@@ -187,8 +195,18 @@ export class DashboardComponent {
   readonly auth = inject(AuthStore);
   readonly #router = inject(Router);
   readonly #dialog = inject(MatDialog);
+  readonly #bottomSheet = inject(MatBottomSheet);
+  readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #languageService = inject(LanguageService);
   readonly #dashboardService = inject(DashboardService);
+
+  readonly isPhone = signal(false);
+
+  constructor() {
+    this.#breakpointObserver
+      .observe(['(max-width: 767px)'])
+      .subscribe((result) => this.isPhone.set(result.matches));
+  }
 
   t(key: string): string {
     return this.#languageService.translate(key);
@@ -237,12 +255,20 @@ export class DashboardComponent {
 
   openEditProject(project: ProjectModel): void {
     this.store.startEditProject(project);
-    const dialogRef = this.#dialog.open(ProjectEditDialogComponent, {
-      data: { name: project.name },
-      width: '400px',
-    });
+    const result$ = this.isPhone()
+      ? this.#bottomSheet
+          .open(ProjectEditBottomSheetComponent, {
+            data: { name: project.name },
+          })
+          .afterDismissed()
+      : this.#dialog
+          .open(ProjectEditDialogComponent, {
+            data: { name: project.name },
+            width: '400px',
+          })
+          .afterClosed();
 
-    dialogRef.afterClosed().subscribe((result) => {
+    result$.subscribe((result) => {
       if (!result) {
         this.store.cancelEditProject();
         return;
@@ -259,12 +285,20 @@ export class DashboardComponent {
           (t) => t.status !== 'done',
         ).length;
 
-        const dialogRef = this.#dialog.open(ProjectDeleteConfirmComponent, {
-          data: { undoneCount },
-          width: '400px',
-        });
+        const result$ = this.isPhone()
+          ? this.#bottomSheet
+              .open(ProjectDeleteConfirmBottomSheetComponent, {
+                data: { undoneCount },
+              })
+              .afterDismissed()
+          : this.#dialog
+              .open(ProjectDeleteConfirmComponent, {
+                data: { undoneCount },
+                width: '400px',
+              })
+              .afterClosed();
 
-        dialogRef.afterClosed().subscribe((confirmed) => {
+        result$.subscribe((confirmed) => {
           if (!confirmed) return;
           this.store.deleteProject(project);
         });

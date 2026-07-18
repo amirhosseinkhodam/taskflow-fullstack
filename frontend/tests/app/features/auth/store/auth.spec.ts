@@ -33,9 +33,20 @@ const mockRegisterFormService = {
     invalid: false,
     getRawValue: jest
       .fn()
-      .mockReturnValue({ email: 'a@b.com', password: 'pass', name: 'Test' }),
+      .mockReturnValue({ email: 'a@b.com', password: 'pass' }),
     reset: jest.fn(),
   },
+};
+
+const mockUser = {
+  id: 1,
+  email: 'a@b.com',
+  firstName: null,
+  lastName: null,
+  nationalCode: null,
+  phone: null,
+  birthDate: null,
+  role: 'user' as const,
 };
 
 describe('AuthStore', () => {
@@ -83,21 +94,21 @@ describe('AuthStore', () => {
 
   it('isAdmin should be true when user has admin role', () => {
     patchState(store, {
-      user: { id: 1, email: 'a@b.com', name: 'Admin', role: 'admin' },
+      user: { ...mockUser, role: 'admin' },
     });
     expect(store.isAdmin()).toBe(true);
   });
 
   it('isAdmin should be true when user has superAdmin role', () => {
     patchState(store, {
-      user: { id: 1, email: 'a@b.com', name: 'Super', role: 'superAdmin' },
+      user: { ...mockUser, role: 'superAdmin' },
     });
     expect(store.isAdmin()).toBe(true);
   });
 
   it('isAdmin should be false when user has user role', () => {
     patchState(store, {
-      user: { id: 1, email: 'a@b.com', name: 'User', role: 'user' },
+      user: { ...mockUser },
     });
     expect(store.isAdmin()).toBe(false);
   });
@@ -111,7 +122,7 @@ describe('AuthStore', () => {
   it('logout should clear state and navigate to /login', () => {
     patchState(store, {
       token: 'jwt-token',
-      user: { id: 1, email: 'a@b.com', name: 'Test', role: 'admin' },
+      user: { ...mockUser, role: 'admin' },
       error: 'some error',
       isLoading: true,
     });
@@ -129,7 +140,7 @@ describe('AuthStore', () => {
   it('login should call authService.login', () => {
     const response = {
       token: 'new-token',
-      user: { id: 1, email: 'a@b.com', name: 'Test', role: 'user' as const },
+      user: { ...mockUser },
     };
     mockAuthService.login.mockReturnValue(of(response));
 
@@ -144,7 +155,7 @@ describe('AuthStore', () => {
   it('login should update state on success', () => {
     const response = {
       token: 'new-token',
-      user: { id: 1, email: 'a@b.com', name: 'Test', role: 'user' as const },
+      user: { ...mockUser },
     };
     mockAuthService.login.mockReturnValue(of(response));
 
@@ -195,7 +206,7 @@ describe('AuthStore', () => {
   it('register should update state on success', () => {
     const response = {
       token: 'reg-token',
-      user: { id: 2, email: 'a@b.com', name: 'Test', role: 'user' as const },
+      user: { ...mockUser, id: 2 },
     };
     mockAuthService.register.mockReturnValue(of(response));
 
@@ -231,7 +242,7 @@ describe('AuthStore', () => {
   });
 
   it('restoreSession should restore token and user from localStorage', () => {
-    const payload = { sub: 1, email: 'a@b.com', name: 'Test', role: 'admin' };
+    const payload = { sub: 1, email: 'a@b.com', role: 'admin' };
     const token = `header.${btoa(JSON.stringify(payload))}.signature`;
     (Storage.prototype.getItem as jest.Mock).mockReturnValue(token);
 
@@ -241,7 +252,11 @@ describe('AuthStore', () => {
     expect(store.user()).toEqual({
       id: 1,
       email: 'a@b.com',
-      name: 'Test',
+      firstName: null,
+      lastName: null,
+      nationalCode: null,
+      phone: null,
+      birthDate: null,
       role: 'admin',
     });
   });

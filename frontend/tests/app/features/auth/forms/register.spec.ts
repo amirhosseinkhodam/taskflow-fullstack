@@ -18,9 +18,8 @@ describe('RegisterFormService', () => {
     expect(service.form.valid).toBe(false);
   });
 
-  it('should be valid with name, email and password', () => {
+  it('should be valid with email and password', () => {
     service.form.patchValue({
-      name: 'Alice',
       email: 'alice@example.com',
       password: 'secret',
     });
@@ -29,13 +28,11 @@ describe('RegisterFormService', () => {
 
   it('should reset form values to empty', () => {
     service.form.patchValue({
-      name: 'Alice',
       email: 'alice@example.com',
       password: 'secret',
     });
     service.resetForm();
     expect(service.form.value).toEqual({
-      name: '',
       email: '',
       password: '',
     });

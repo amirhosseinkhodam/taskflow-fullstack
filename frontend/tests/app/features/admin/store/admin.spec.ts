@@ -11,6 +11,28 @@ const mockAdminService = {
   changeUserPassword: jest.fn(),
 };
 
+const mockUserAlice = {
+  id: 1,
+  email: 'a@b.com',
+  firstName: 'Alice',
+  lastName: null,
+  nationalCode: null,
+  phone: null,
+  birthDate: null,
+  role: 'user' as const,
+};
+
+const mockUserBob = {
+  id: 2,
+  email: 'c@d.com',
+  firstName: 'Bob',
+  lastName: null,
+  nationalCode: null,
+  phone: null,
+  birthDate: null,
+  role: 'admin' as const,
+};
+
 describe('AdminStore', () => {
   let store: InstanceType<typeof AdminStore>;
 
@@ -42,10 +64,7 @@ describe('AdminStore', () => {
 
   it('userCount should return correct count', () => {
     patchState(store, {
-      users: [
-        { id: 1, email: 'a@b.com', name: 'Alice', role: 'user' },
-        { id: 2, email: 'c@d.com', name: 'Bob', role: 'admin' },
-      ],
+      users: [mockUserAlice, mockUserBob],
     });
     expect(store.userCount()).toBe(2);
   });
@@ -55,10 +74,7 @@ describe('AdminStore', () => {
   });
 
   it('loadUsers should update users on success', () => {
-    const users = [
-      { id: 1, email: 'a@b.com', name: 'Alice', role: 'user' as const },
-      { id: 2, email: 'c@d.com', name: 'Bob', role: 'admin' as const },
-    ];
+    const users = [mockUserAlice, mockUserBob];
     mockAdminService.getUsers.mockReturnValue(of(users));
 
     TestBed.resetTestingModule();

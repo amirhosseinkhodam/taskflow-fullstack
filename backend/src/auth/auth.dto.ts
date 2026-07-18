@@ -13,12 +13,6 @@ export class RegisterDto {
   @MinLength(6)
   @MaxLength(128)
   readonly password: string = '';
-
-  @ApiProperty({ example: 'John' })
-  @IsString()
-  @MinLength(1)
-  @MaxLength(255)
-  readonly name: string = '';
 }
 
 export class LoginDto {

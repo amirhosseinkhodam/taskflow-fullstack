@@ -65,7 +65,7 @@ export class InputComponent implements ControlValueAccessor {
   readonly focus = output<void>({ alias: 'inputFocus' });
   readonly keydown = output<KeyboardEvent>({ alias: 'inputKeydown' });
 
-  @ViewChild('inputElement', { static: false })
+  @ViewChild('inputElement', { static: true })
   inputElement!: ElementRef<HTMLInputElement>;
   #onChange: (value: string) => void = () => {};
   #onTouched: () => void = () => {};

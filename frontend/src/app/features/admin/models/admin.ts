@@ -1,8 +1,3 @@
-import type { UserRole } from '@shared/types/auth';
+import type { AuthUserModel } from '@shared/types/auth';
 
-export interface UserModel {
-  readonly id: number;
-  readonly email: string;
-  readonly name: string;
-  readonly role: UserRole;
-}
+export type UserModel = AuthUserModel;

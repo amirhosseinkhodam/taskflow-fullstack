@@ -44,12 +44,12 @@ export class UpdateTaskDto {
   readonly description?: string;
 
   @ApiProperty({
-    example: 'completed',
+    example: 'done',
     required: false,
-    enum: ['pending', 'in-progress', 'completed'],
+    enum: ['pending', 'in-progress', 'done'],
   })
   @IsOptional()
-  @IsIn(['pending', 'in-progress', 'completed'])
+  @IsIn(['pending', 'in-progress', 'done'])
   readonly status?: string;
 
   @ApiProperty({

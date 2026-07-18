@@ -8,7 +8,9 @@
   "newTask": "تسک جدید",
   "editTask": "ویرایش تسک",
   "taskTitle": "عنوان تسک",
+  "taskTitlePlaceholder": "عنوان تسک را وارد کنید",
   "description": "توضیحات",
+  "descriptionPlaceholder": "توضیحات تسک را وارد کنید",
   "addTask": "افزودن تسک",
   "save": "ذخیره",
   "cancel": "انصراف",
@@ -109,5 +111,11 @@
   "profileUpdated": "پروفایل با موفقیت به‌روزرسانی شد",
   "couldNotUpdateProfile": "نمی‌توان پروفایل را به‌روزرسانی کرد",
   "incorrectCurrentPassword": "رمز عبور فعلی اشتباه است",
-  "changePasswordDescription": "رمز عبور خود را برای امنیت حساب کاربری به‌روزرسانی کنید."
+  "changePasswordDescription": "رمز عبور خود را برای امنیت حساب کاربری به‌روزرسانی کنید.",
+  "firstName": "نام",
+  "lastName": "نام خانوادگی",
+  "nationalCode": "کد ملی",
+  "phone": "تلفن",
+  "birthDate": "تاریخ تولد",
+  "emailAlreadyInUse": "این ایمیل قبلاً استفاده شده است"
 }

@@ -17,9 +17,11 @@ import {
   PasswordDialogComponent,
 } from '../../../shared/components';
 import { LanguageService } from '../../../shared/services/language';
+import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
 import { AuthStore } from '../../auth/store/auth';
 import { ProfileFormService } from '../forms/profile-form';
 import { ProfileService } from '../services/profile';
+import type { AuthUserModel } from '@shared/types/auth';
 
 @Component({
   selector: 'app-profile',
@@ -34,6 +36,7 @@ import { ProfileService } from '../services/profile';
     FormComponent,
     InputComponent,
     PageHeaderComponent,
+    JalaliDatePipe,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -99,17 +102,48 @@ import { ProfileService } from '../services/profile';
               variant="vertical"
               (ngSubmit)="saveProfile()"
             >
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <app-input
+                  formControlName="firstName"
+                  [placeholder]="t('firstName')"
+                  variant="default"
+                />
+                <app-input
+                  formControlName="lastName"
+                  [placeholder]="t('lastName')"
+                  variant="default"
+                />
+              </div>
               <app-input
                 formControlName="email"
                 [placeholder]="t('email')"
                 variant="default"
-                [cssClass]="'mb-4'"
+                [cssClass]="'mt-4'"
               />
-              <div class="flex gap-2">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <app-input
+                  formControlName="nationalCode"
+                  [placeholder]="t('nationalCode')"
+                  variant="default"
+                />
+                <app-input
+                  formControlName="phone"
+                  [placeholder]="t('phone')"
+                  variant="default"
+                />
+              </div>
+              <app-input
+                formControlName="birthDate"
+                [placeholder]="t('birthDate')"
+                type="date"
+                variant="default"
+                [cssClass]="'mt-4'"
+              />
+              <div class="flex gap-2 mt-4">
                 <app-button
                   variant="primary"
                   type="submit"
-                  [disabled]="profileForm.form.invalid || isSavingProfile()"
+                  [disabled]="isSavingProfile()"
                 >
                   {{ t('save') }}
                 </app-button>
@@ -124,6 +158,28 @@ import { ProfileService } from '../services/profile';
             </app-form>
           } @else {
             <div class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                  >
+                    {{ t('firstName') }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-900 dark:text-white">
+                    {{ profile()?.firstName ?? '-' }}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                  >
+                    {{ t('lastName') }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-900 dark:text-white">
+                    {{ profile()?.lastName ?? '-' }}
+                  </p>
+                </div>
+              </div>
               <div>
                 <p
                   class="text-sm font-medium text-slate-500 dark:text-slate-400"
@@ -131,7 +187,43 @@ import { ProfileService } from '../services/profile';
                   {{ t('email') }}
                 </p>
                 <p class="mt-1 text-sm text-slate-900 dark:text-white">
-                  {{ auth.user()?.email }}
+                  {{ profile()?.email }}
+                </p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                  >
+                    {{ t('nationalCode') }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-900 dark:text-white">
+                    {{ profile()?.nationalCode ?? '-' }}
+                  </p>
+                </div>
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                  >
+                    {{ t('phone') }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-900 dark:text-white">
+                    {{ profile()?.phone ?? '-' }}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p
+                  class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                >
+                  {{ t('birthDate') }}
+                </p>
+                <p class="mt-1 text-sm text-slate-900 dark:text-white">
+                  {{
+                    profile()?.birthDate
+                      ? (profile()!.birthDate! | jalaliDate: 'yyyy/MM/dd')
+                      : '-'
+                  }}
                 </p>
               </div>
               <div>
@@ -141,7 +233,7 @@ import { ProfileService } from '../services/profile';
                   {{ t('role') }}
                 </p>
                 <p class="mt-1 text-sm text-slate-900 dark:text-white">
-                  {{ t(auth.user()?.role ?? '') }}
+                  {{ t(profile()?.role ?? '') }}
                 </p>
               </div>
             </div>
@@ -174,6 +266,7 @@ export class ProfileComponent {
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #breakpointObserver = inject(BreakpointObserver);
 
+  readonly profile = signal<AuthUserModel | null>(null);
   readonly message = signal<string | null>(null);
   readonly isSavingProfile = signal(false);
   readonly isEditing = signal(false);
@@ -191,16 +284,30 @@ export class ProfileComponent {
       .subscribe((result) => this.isPhone.set(result.matches));
   }
 
+  ngOnInit(): void {
+    this.loadProfile();
+  }
+
   t(key: string): string {
     return this.#languageService.translate(key);
   }
 
+  loadProfile(): void {
+    this.#profileService.getMe().subscribe({
+      next: (user) => this.profile.set(user),
+      error: () => {
+        const user = this.auth.user();
+        if (user) this.profile.set(user);
+      },
+    });
+  }
+
   startEdit(): void {
-    const user = this.auth.user();
+    const user = this.profile();
+    this.isEditing.set(true);
     if (user) {
       this.profileForm.patchFromUser(user);
     }
-    this.isEditing.set(true);
   }
 
   cancelEdit(): void {
@@ -216,12 +323,17 @@ export class ProfileComponent {
     const value = this.profileForm.form.getRawValue();
     this.#profileService
       .updateProfile({
-        email: value.email,
-        currentPassword: '',
+        email: value.email || undefined,
+        firstName: value.firstName || undefined,
+        lastName: value.lastName || undefined,
+        nationalCode: value.nationalCode || undefined,
+        phone: value.phone || undefined,
+        birthDate: value.birthDate || undefined,
       })
       .subscribe({
         next: (response) => {
           this.auth.updateSession(response);
+          this.profile.set(response.user);
           this.isSavingProfile.set(false);
           this.isEditing.set(false);
           this.message.set('profileUpdated');
@@ -229,9 +341,7 @@ export class ProfileComponent {
         error: (err) => {
           this.isSavingProfile.set(false);
           this.message.set(
-            err.status === 400
-              ? 'incorrectCurrentPassword'
-              : 'couldNotUpdateProfile',
+            err.status === 409 ? 'emailAlreadyInUse' : 'couldNotUpdateProfile',
           );
         },
       });

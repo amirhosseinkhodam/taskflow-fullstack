@@ -1,28 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { UserRole } from '@shared/types/auth';
+import type { AuthUserModel } from '@shared/types/auth';
+import type {
+  ChangePasswordRequestModel,
+  UpdateProfileRequestModel,
+  UpdateProfileResponseModel,
+} from '../models/profile';
 
-export interface ProfileModel {
-  readonly id: number;
-  readonly email: string;
-  readonly name: string;
-  readonly role: UserRole;
-}
-
-export interface UpdateProfileRequestModel {
-  readonly email?: string;
-  readonly currentPassword: string;
-}
-
-export interface UpdateProfileResponseModel {
-  readonly token: string;
-  readonly user: ProfileModel;
-}
-
-export interface ChangePasswordRequestModel {
-  readonly currentPassword: string;
-  readonly newPassword: string;
-}
+export type { AuthUserModel as ProfileModel };
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
@@ -30,7 +15,7 @@ export class ProfileService {
   readonly #apiBaseUrl = 'http://localhost:3000';
 
   getMe() {
-    return this.#http.get<ProfileModel>(`${this.#apiBaseUrl}/profile/me`);
+    return this.#http.get<AuthUserModel>(`${this.#apiBaseUrl}/profile/me`);
   }
 
   updateProfile(dto: UpdateProfileRequestModel) {

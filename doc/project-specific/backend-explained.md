@@ -128,7 +128,7 @@ This is like your `environment.ts` + `main.ts` combined. It:
 The tables it creates:
 
 ```
-users     → id, email, password, name, role
+users     → id, email, password, firstName, lastName, nationalCode, phone, birthDate, role
 projects  → id, name, createdAt, updatedAt
 tasks     → id, title, description, status, projectId, position, createdAt, updatedAt
 ```
@@ -179,7 +179,7 @@ That's it. The backend is just a **middleman** between your Angular app and the 
 
 ## `backend/src/profile/` — User Profile
 
-Self-service profile management. Users can view their profile, update their email, and change their own password.
+Self-service profile management. Users can view their full profile, update their personal info (firstName, lastName, email, nationalCode, phone, birthDate), and change their own password.
 
 ### `profile.controller.ts` — The Router
 
@@ -189,25 +189,26 @@ Self-service profile management. Users can view their profile, update their emai
 export class ProfileController {
 
   @Get('me')                     // GET  /profile/me         → get own profile
-  @Patch('me')                   // PATCH /profile/me        → update email (returns new JWT)
+  @Patch('me')                   // PATCH /profile/me        → update profile fields
   @Patch('me/password')          // PATCH /profile/me/password → change own password
 }
 ```
 
 ### `profile.service.ts` — The Logic
 
-- `getProfile(userId)` — fetches `{ id, email, name, role }` from the `users` table
-- `updateProfile(userId, email?, currentPassword)` — verifies current password, checks email uniqueness, updates the row, and returns a **new JWT** (because email is embedded in the token)
+- `getProfile(userId)` — fetches `{ id, email, firstName, lastName, nationalCode, phone, birthDate, role }` from the `users` table
+- `updateProfile(userId, fields)` — checks email uniqueness if changing email, updates all provided fields, returns a **new JWT** (because email is embedded in the token)
 - `changePassword(userId, currentPassword, newPassword)` — verifies current password, hashes new one, updates the row
 
 ### `profile.dto.ts` — Request Validation
 
-- `UpdateProfileDto` — `email?`, `currentPassword` (required for security)
+- `UpdateProfileDto` — all fields optional: `email?`, `firstName?`, `lastName?`, `nationalCode?`, `phone?`, `birthDate?`
 - `ChangePasswordDto` — `currentPassword`, `newPassword` (min 6 chars)
 
 ### Key design decisions
 
-- **Current password required** for both profile update and password change — prevents unauthorized changes if a session is compromised
+- **No password required** for profile info changes — users can freely update their name, phone, national code, and birth date
+- **Email uniqueness** — if the user changes their email, uniqueness is checked against other users
 - **New JWT on profile update** — the JWT contains `{ sub, email, role }`, so changing email invalidates the old token. The backend returns a fresh token and the frontend swaps it seamlessly.
 - **No role self-modification** — users cannot change their own role (that's admin-only via `/admin/users/:id/role`)
 
