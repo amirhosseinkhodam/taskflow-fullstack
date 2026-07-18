@@ -52,40 +52,98 @@ import type { ProjectModel } from '@shared/types/project';
     <main class="mx-auto max-w-4xl p-6">
       <app-card variant="default">
         <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100">
+          <div class="min-w-0">
+            <h1
+              class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100"
+            >
               TaskFlow
             </h1>
-            <p class="mt-2 text-slate-600 dark:text-slate-400">
+            <p
+              class="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400"
+            >
               {{ t('createProjectAddTasks') }}
             </p>
           </div>
-          <div class="flex items-center gap-2 flex-wrap justify-end">
+          <div class="flex items-center gap-2 flex-shrink-0">
             <app-theme-toggle></app-theme-toggle>
             <app-language-toggle></app-language-toggle>
-            <app-button
-              variant="secondary"
-              type="button"
-              (buttonClick)="goToProfile()"
-            >
-              {{ t('profile') }}
-            </app-button>
-            @if (isAdmin()) {
+            @if (!isPhone()) {
               <app-button
                 variant="secondary"
                 type="button"
-                (buttonClick)="goToAdmin()"
+                (buttonClick)="goToProfile()"
               >
-                {{ t('adminPanel') }}
+                {{ t('profile') }}
               </app-button>
+              @if (isAdmin()) {
+                <app-button
+                  variant="secondary"
+                  type="button"
+                  (buttonClick)="goToAdmin()"
+                >
+                  {{ t('adminPanel') }}
+                </app-button>
+              }
+              <app-button
+                variant="secondary"
+                type="button"
+                (buttonClick)="logout()"
+              >
+                {{ t('logout') }}
+              </app-button>
+            } @else {
+              <div class="relative">
+                <app-button
+                  variant="secondary"
+                  type="button"
+                  (buttonClick)="menuOpen.set(!menuOpen())"
+                  [ariaLabel]="t('menu')"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </app-button>
+                @if (menuOpen()) {
+                  <div
+                    class="absolute right-0 mt-2 w-48 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg z-50"
+                  >
+                    <div class="py-1">
+                      <button
+                        class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        (click)="goToProfile(); menuOpen.set(false)"
+                      >
+                        {{ t('profile') }}
+                      </button>
+                      @if (isAdmin()) {
+                        <button
+                          class="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                          (click)="goToAdmin(); menuOpen.set(false)"
+                        >
+                          {{ t('adminPanel') }}
+                        </button>
+                      }
+                      <button
+                        class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        (click)="logout()"
+                      >
+                        {{ t('logout') }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
             }
-            <app-button
-              variant="secondary"
-              type="button"
-              (buttonClick)="logout()"
-            >
-              {{ t('logout') }}
-            </app-button>
           </div>
         </div>
 
@@ -201,11 +259,15 @@ export class DashboardComponent {
   readonly #dashboardService = inject(DashboardService);
 
   readonly isPhone = signal(false);
+  readonly menuOpen = signal(false);
 
   constructor() {
     this.#breakpointObserver
       .observe(['(max-width: 767px)'])
-      .subscribe((result) => this.isPhone.set(result.matches));
+      .subscribe((result) => {
+        this.isPhone.set(result.matches);
+        if (!result.matches) this.menuOpen.set(false);
+      });
   }
 
   t(key: string): string {

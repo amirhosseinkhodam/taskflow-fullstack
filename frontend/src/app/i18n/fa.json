@@ -117,5 +117,8 @@
   "nationalCode": "کد ملی",
   "phone": "تلفن",
   "birthDate": "تاریخ تولد",
-  "emailAlreadyInUse": "این ایمیل قبلاً استفاده شده است"
+  "emailAlreadyInUse": "این ایمیل قبلاً استفاده شده است",
+  "menu": "منو",
+  "promoteShort": "ارتقا",
+  "demoteShort": "تنزل"
 }

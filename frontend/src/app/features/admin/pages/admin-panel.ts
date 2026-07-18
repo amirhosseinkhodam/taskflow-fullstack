@@ -48,9 +48,9 @@ import { AdminStore } from '../store/admin';
         </div>
 
         <div
-          class="overflow-hidden rounded-card border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+          class="overflow-x-auto rounded-card border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
         >
-          <table class="w-full">
+          <table class="w-full min-w-[640px]">
             <thead
               class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700"
             >
@@ -61,7 +61,7 @@ import { AdminStore } from '../store/admin';
                   {{ t('email') }}
                 </th>
                 <th
-                  class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell"
                 >
                   {{ t('name') }}
                 </th>
@@ -85,7 +85,9 @@ import { AdminStore } from '../store/admin';
                   <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">
                     {{ user.email }}
                   </td>
-                  <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td
+                    class="px-4 py-3 text-sm text-slate-900 dark:text-white hidden md:table-cell"
+                  >
                     {{ user.firstName }} {{ user.lastName }}
                   </td>
                   <td class="px-4 py-3">
@@ -104,7 +106,9 @@ import { AdminStore } from '../store/admin';
                     </span>
                   </td>
                   <td class="px-4 py-3 text-right">
-                    <div class="flex items-center justify-end gap-2">
+                    <div
+                      class="flex items-center justify-end gap-1 sm:gap-2 flex-wrap"
+                    >
                       <app-button
                         variant="ghost"
                         [cssClass]="
@@ -117,18 +121,28 @@ import { AdminStore } from '../store/admin';
                         "
                         (buttonClick)="toggleRole(user)"
                       >
-                        {{
+                        <span class="hidden sm:inline">{{
                           user.role === 'user'
                             ? t('promoteToAdmin')
                             : t('demoteToUser')
-                        }}
+                        }}</span>
+                        <span class="sm:hidden text-xs">{{
+                          user.role === 'user'
+                            ? t('promoteShort')
+                            : t('demoteShort')
+                        }}</span>
                       </app-button>
                       <app-button
                         variant="ghost"
                         [disabled]="isSuperAdminUser(user)"
                         (buttonClick)="openPasswordChange(user)"
                       >
-                        {{ t('changePassword') }}
+                        <span class="hidden sm:inline">{{
+                          t('changePassword')
+                        }}</span>
+                        <span class="sm:hidden text-xs">{{
+                          t('password')
+                        }}</span>
                       </app-button>
                       <app-button
                         variant="destructive"
@@ -137,7 +151,10 @@ import { AdminStore } from '../store/admin';
                         "
                         (buttonClick)="confirmDeleteUser(user)"
                       >
-                        {{ t('deleteUser') }}
+                        <span class="hidden sm:inline">{{
+                          t('deleteUser')
+                        }}</span>
+                        <span class="sm:hidden text-xs">{{ t('delete') }}</span>
                       </app-button>
                     </div>
                   </td>
