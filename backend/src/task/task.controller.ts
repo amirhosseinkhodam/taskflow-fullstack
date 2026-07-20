@@ -58,6 +58,7 @@ export class TaskController {
       dto.description ?? '',
       dto.projectId,
       req.user.id,
+      dto.assigneeEmail,
     );
   }
 
@@ -75,6 +76,7 @@ export class TaskController {
       dto.description,
       dto.status,
       dto.projectId,
+      dto.assigneeEmail,
     );
   }
 

@@ -5,6 +5,7 @@ export type UserRole = 'user' | 'admin' | 'superAdmin';
 export interface AuthUserModel {
   readonly id: number;
   readonly email: string;
+  // readonly name: string;
   readonly firstName: string | null;
   readonly lastName: string | null;
   readonly nationalCode: string | null;

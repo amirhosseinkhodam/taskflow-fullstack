@@ -6,16 +6,32 @@ export class TaskFormService {
   readonly #fb = inject(FormBuilder);
   readonly #form = this.#fb.nonNullable.group({
     title: ['', Validators.required],
-    projectId: [0, Validators.required],
     description: [''],
+    projectId: [0, Validators.required],
+    assigneeEmail: ['', Validators.email],
   });
 
-  patchForEdit(title: string, projectId: number, description: string) {
-    this.#form.patchValue({ title, projectId, description });
+  resetForm(projectId?: number) {
+    this.#form.reset({
+      title: '',
+      description: '',
+      projectId: projectId ?? 0,
+      assigneeEmail: '',
+    });
   }
 
-  resetForm(projectId: number) {
-    this.#form.reset({ title: '', projectId, description: '' });
+  patchForEdit(
+    title: string,
+    projectId: number,
+    description: string,
+    assigneeEmail?: string,
+  ) {
+    this.#form.patchValue({
+      title,
+      projectId,
+      description,
+      assigneeEmail: assigneeEmail ?? '',
+    });
   }
 
   get form() {

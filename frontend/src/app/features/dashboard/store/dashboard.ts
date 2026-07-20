@@ -208,6 +208,7 @@ export const DashboardStore = signalStore(
       title: string;
       description: string;
       projectId: number;
+      assigneeEmail?: string;
     }>(
       pipe(
         tap(() => patchState(store, { isLoading: true })),
@@ -220,6 +221,7 @@ export const DashboardStore = signalStore(
               .updateTask(store.editingTaskId()!, {
                 title: value.title,
                 description: value.description,
+                assigneeEmail: value.assigneeEmail,
               })
               .pipe(
                 tapResponse({
@@ -258,6 +260,7 @@ export const DashboardStore = signalStore(
               title: value.title,
               description: value.description ?? '',
               projectId: value.projectId,
+              assigneeEmail: value.assigneeEmail,
             })
             .pipe(
               tapResponse({

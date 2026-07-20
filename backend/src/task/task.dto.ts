@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
+  IsEmail,
   IsIn,
   IsInt,
   IsOptional,
@@ -28,6 +29,15 @@ export class CreateTaskDto {
   @IsInt()
   @IsPositive()
   readonly projectId: number = 0;
+
+  @ApiProperty({
+    example: 'user@example.com',
+    required: false,
+    description: 'Admin-only: assign task to user by email',
+  })
+  @IsOptional()
+  @IsEmail()
+  readonly assigneeEmail?: string;
 }
 
 export class UpdateTaskDto {
@@ -61,6 +71,15 @@ export class UpdateTaskDto {
   @IsInt()
   @IsPositive()
   readonly projectId?: number;
+
+  @ApiProperty({
+    example: 'user@example.com',
+    required: false,
+    description: 'Admin-only: reassign task to user by email',
+  })
+  @IsOptional()
+  @IsEmail()
+  readonly assigneeEmail?: string;
 }
 
 export class ReorderTaskDto {

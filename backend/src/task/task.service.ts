@@ -15,13 +15,14 @@ export class TaskService {
     this.#db = db;
   }
 
-  readonly #taskColumns = `t.id, t.title, t.description, t.status, t."projectId", t."position", t."createdAt", t."updatedAt", t."userId", u.name as "creatorName"`;
+  readonly #taskColumns = `t.id, t.title, t.description, t.status, t."projectId", t."position", t."createdAt", t."updatedAt", t."userId", u.name as "creatorName", t."assigneeId", u2.name as "assigneeName"`;
 
   async create(
     title: string,
     description: string,
     projectId: number,
     userId: number,
+    assigneeEmail?: string,
   ): Promise<TaskModel> {
     const projectCheck = await this.#db.query<{ id: number }>(
       `SELECT id FROM projects WHERE id = $1`,
@@ -31,6 +32,18 @@ export class TaskService {
       throw new NotFoundException('Project not found');
     }
 
+    let assigneeId: number | null = null;
+    if (assigneeEmail) {
+      const userCheck = await this.#db.query<{ id: number }>(
+        `SELECT id FROM users WHERE email = $1`,
+        [assigneeEmail],
+      );
+      if (userCheck.rows.length === 0) {
+        throw new NotFoundException('Assignee not found');
+      }
+      assigneeId = userCheck.rows[0].id;
+    }
+
     const posResult = await this.#db.query<{ max: number | null }>(
       `SELECT MAX("position") as max FROM tasks WHERE "projectId" = $1`,
       [projectId],
@@ -38,10 +51,10 @@ export class TaskService {
     const nextPos = (posResult.rows[0]?.max ?? -1) + 1;
 
     const result = await this.#db.query<{ id: number }>(
-      `INSERT INTO tasks (title, description, "projectId", "position", "userId")
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO tasks (title, description, "projectId", "position", "userId", "assigneeId")
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
-      [title, description, projectId, nextPos, userId],
+      [title, description, projectId, nextPos, userId, assigneeId],
     );
     const id = result.rows[0]?.id;
 
@@ -98,7 +111,10 @@ export class TaskService {
     dataParams.push(offset);
 
     const result = await this.#db.query<TaskModel>(
-      `SELECT ${this.#taskColumns} FROM tasks t LEFT JOIN users u ON t."userId" = u.id${whereClause}
+      `SELECT ${this.#taskColumns} FROM tasks t
+       LEFT JOIN users u ON t."userId" = u.id
+       LEFT JOIN users u2 ON t."assigneeId" = u2.id
+       ${whereClause}
        ORDER BY t."position" ASC, t.id ASC
        LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}`,
       dataParams,
@@ -118,6 +134,7 @@ export class TaskService {
       `SELECT ${this.#taskColumns}
        FROM tasks t
        LEFT JOIN users u ON t."userId" = u.id
+       LEFT JOIN users u2 ON t."assigneeId" = u2.id
        WHERE t.id = $1`,
       [id],
     );
@@ -133,19 +150,44 @@ export class TaskService {
     description?: string,
     status?: string,
     projectId?: number,
+    assigneeEmail?: string,
   ): Promise<boolean> {
     const taskResult = await this.#db.query<{
       id: number;
-      userId: number | null;
-    }>(`SELECT id, "userId" FROM tasks WHERE id = $1`, [id]);
+      userId: number;
+      assigneeId: number | null;
+    }>(`SELECT id, "userId", "assigneeId" FROM tasks WHERE id = $1`, [id]);
     const task = taskResult.rows[0];
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
     const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
-    if (!isAdmin && task.userId !== requesterId) {
-      throw new ForbiddenException('You can only update your own tasks');
+    const isCreator = task.userId === requesterId;
+    const isAssignee = task.assigneeId === requesterId;
+    if (!isAdmin && !isCreator && !isAssignee) {
+      throw new ForbiddenException(
+        'You can only update your own tasks or tasks assigned to you',
+      );
+    }
+
+    let assigneeId: number | null = task.assigneeId;
+    if (assigneeEmail !== undefined) {
+      if (!isAdmin) {
+        throw new ForbiddenException('Only admins can reassign tasks');
+      }
+      if (assigneeEmail === '') {
+        assigneeId = null;
+      } else {
+        const userCheck = await this.#db.query<{ id: number }>(
+          `SELECT id FROM users WHERE email = $1`,
+          [assigneeEmail],
+        );
+        if (userCheck.rows.length === 0) {
+          throw new NotFoundException('Assignee not found');
+        }
+        assigneeId = userCheck.rows[0].id;
+      }
     }
 
     if (projectId !== undefined && !isAdmin) {
@@ -165,7 +207,7 @@ export class TaskService {
     }
 
     const fields: string[] = [];
-    const params: (string | number)[] = [];
+    const params: (string | number | null)[] = [];
 
     if (title !== undefined) {
       params.push(title);
@@ -185,6 +227,11 @@ export class TaskService {
     if (projectId !== undefined) {
       params.push(projectId);
       fields.push(`"projectId" = $${params.length}`);
+    }
+
+    if (assigneeEmail !== undefined) {
+      params.push(assigneeId);
+      fields.push(`"assigneeId" = $${params.length}`);
     }
 
     if (!fields.length) {
@@ -220,9 +267,11 @@ export class TaskService {
       id: number;
       projectId: number;
       userId: number | null;
-    }>(`SELECT id, "projectId", "userId" FROM tasks WHERE id = ANY($1)`, [
-      uniqueIds,
-    ]);
+      assigneeId: number | null;
+    }>(
+      `SELECT id, "projectId", "userId", "assigneeId" FROM tasks WHERE id = ANY($1)`,
+      [uniqueIds],
+    );
 
     if (result.rows.length !== uniqueIds.length) {
       throw new BadRequestException('One or more task IDs do not exist');
@@ -238,10 +287,12 @@ export class TaskService {
     const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
     if (!isAdmin) {
       const unauthorizedTask = result.rows.find(
-        (r) => r.userId !== requesterId,
+        (r) => r.userId !== requesterId && r.assigneeId !== requesterId,
       );
       if (unauthorizedTask) {
-        throw new ForbiddenException('You can only reorder your own tasks');
+        throw new ForbiddenException(
+          'You can only reorder your own tasks or tasks assigned to you',
+        );
       }
     }
 
@@ -270,16 +321,21 @@ export class TaskService {
   ): Promise<boolean> {
     const taskResult = await this.#db.query<{
       id: number;
-      userId: number | null;
-    }>(`SELECT id, "userId" FROM tasks WHERE id = $1`, [id]);
+      userId: number;
+      assigneeId: number | null;
+    }>(`SELECT id, "userId", "assigneeId" FROM tasks WHERE id = $1`, [id]);
     const task = taskResult.rows[0];
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
     const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
-    if (!isAdmin && task.userId !== requesterId) {
-      throw new ForbiddenException('You can only delete your own tasks');
+    const isCreator = task.userId === requesterId;
+    const isAssignee = task.assigneeId === requesterId;
+    if (!isAdmin && !isCreator && !isAssignee) {
+      throw new ForbiddenException(
+        'You can only delete your own tasks or tasks assigned to you',
+      );
     }
 
     const result = await this.#db.query(`DELETE FROM tasks WHERE id = $1`, [

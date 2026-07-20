@@ -90,6 +90,22 @@ async function ensureTables(pool: Pool): Promise<void> {
     ALTER TABLE tasks
     ADD COLUMN IF NOT EXISTS "userId" INTEGER
   `);
+
+  await pool.query(`
+    ALTER TABLE tasks
+    ADD COLUMN IF NOT EXISTS "assigneeId" INTEGER REFERENCES users(id)
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS task_comments (
+      id SERIAL PRIMARY KEY,
+      "taskId" INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      "userId" INTEGER NOT NULL REFERENCES users(id),
+      content TEXT NOT NULL,
+      "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
 
 async function wait(ms: number): Promise<void> {

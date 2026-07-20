@@ -36,11 +36,13 @@ export class AuthService {
     }
 
     const hashed = await bcrypt.hash(password, 10);
+    // Use email prefix as default name since users table has NOT NULL name column
+    const defaultName = email.split('@')[0];
     const result = await this.#db.query<AuthUserModel>(
-      `INSERT INTO users (email, password)
-       VALUES ($1, $2)
-       RETURNING id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
-      [email, hashed],
+      `INSERT INTO users (email, password, name)
+       VALUES ($1, $2, $3)
+       RETURNING id, email, name, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
+      [email, hashed, defaultName],
     );
     const user = result.rows[0];
     const token = this.#signToken(user);
@@ -50,7 +52,7 @@ export class AuthService {
 
   async login(email: string, password: string) {
     const result = await this.#db.query<AuthUserModel & { password: string }>(
-      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role, password
+      `SELECT id, email, name, "firstName", "lastName", "nationalCode", phone, "birthDate", role, password
        FROM users WHERE email = $1`,
       [email],
     );
