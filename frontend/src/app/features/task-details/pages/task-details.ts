@@ -1,9 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 import {
+  ButtonComponent,
   TaskFormComponent,
   CardComponent,
   PageHeaderComponent,
@@ -21,6 +28,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
     TaskFormComponent,
     CardComponent,
     PageHeaderComponent,
+    ButtonComponent,
     CommentListComponent,
   ],
   template: `
@@ -63,10 +71,14 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                   (toggled)="onToggled($event)"
                   (deleted)="onDeleted()"
                 />
-                
+
                 <!-- Comments Section -->
-                <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+                <div
+                  class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700"
+                >
+                  <h3
+                    class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4"
+                  >
                     {{ t('comments') }}
                   </h3>
                   <app-comment-list
@@ -86,7 +98,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                       <app-button
                         variant="primary"
                         size="sm"
-                        (buttonClick)="onAddCommentClick($event)"
+                        (buttonClick)="onAddCommentClick()"
                       >
                         {{ t('addComment') }}
                       </app-button>
@@ -125,6 +137,8 @@ export class TaskDetailsPageComponent {
     }[]
   >([]);
   readonly currentUserId = signal<number>(0);
+  readonly commentInput =
+    viewChild<ElementRef<HTMLTextAreaElement>>('commentInput');
 
   readonly #taskId: number;
 
@@ -169,17 +183,16 @@ export class TaskDetailsPageComponent {
     });
   }
 
-  onAddCommentClick($event: Event): void {
-    $event.preventDefault();
-    const input = document.querySelector<HTMLTextAreaElement>('#commentInput');
-    if (!input) return;
-    const content = input.value.trim();
+  onAddCommentClick(): void {
+    const el = this.commentInput()?.nativeElement;
+    if (!el) return;
+    const content = el.value.trim();
     if (!content) return;
 
     this.#dashboardService.createComment(this.#taskId, content).subscribe({
       next: (comment) => {
         this.comments.update((c) => [...c, comment]);
-        input.value = '';
+        el.value = '';
       },
       error: (err) => console.error('Failed to add comment:', err),
     });
