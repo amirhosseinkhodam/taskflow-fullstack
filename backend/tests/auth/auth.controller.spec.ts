@@ -44,13 +44,16 @@ describe('AuthController', () => {
     };
     await controller.register(dto);
 
-    expect(authService.register).toHaveBeenCalledWith(dto.email, dto.password);
+    expect(authService['register']).toHaveBeenCalledWith(
+      dto.email,
+      dto.password,
+    );
   });
 
   it('login() delegates to AuthService.login()', async () => {
     const dto = { email: 'test@test.com', password: 'password123' };
     await controller.login(dto);
 
-    expect(authService.login).toHaveBeenCalledWith(dto.email, dto.password);
+    expect(authService['login']).toHaveBeenCalledWith(dto.email, dto.password);
   });
 });

@@ -30,27 +30,27 @@ describe('AdminController', () => {
 
   it('getUsers() — delegates to findAllUsers()', async () => {
     await controller.getUsers();
-    expect(adminService.findAllUsers).toHaveBeenCalledTimes(1);
+    expect(adminService['findAllUsers']).toHaveBeenCalledTimes(1);
   });
 
   it('deleteUser() — delegates with id + req.user.id', async () => {
     const req = { user: { id: 1 } } as any;
     await controller.deleteUser(2, req);
-    expect(adminService.deleteUser).toHaveBeenCalledWith(2, 1);
+    expect(adminService['deleteUser']).toHaveBeenCalledWith(2, 1);
   });
 
   it('updateUserRole() — delegates with id, role, req.user.id', async () => {
     const dto = { role: 'admin' as const };
     const req = { user: { id: 1 } } as any;
     await controller.updateUserRole(2, dto, req);
-    expect(adminService.updateUserRole).toHaveBeenCalledWith(2, 'admin', 1);
+    expect(adminService['updateUserRole']).toHaveBeenCalledWith(2, 'admin', 1);
   });
 
   it('changeUserPassword() — delegates with id, password, req.user.id', async () => {
     const dto = { password: 'newpass123' };
     const req = { user: { id: 1 } } as any;
     await controller.changeUserPassword(2, dto, req);
-    expect(adminService.updateUserPassword).toHaveBeenCalledWith(
+    expect(adminService['updateUserPassword']).toHaveBeenCalledWith(
       2,
       'newpass123',
       1,

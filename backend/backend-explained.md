@@ -21,6 +21,12 @@ Auto-creates tables on startup via `database.provider.ts`. No migrations.
 | **ProfileModule** | `src/profile/profile.module.ts` | Current user profile |
 | **DatabaseModule** | `src/shared/database/database.module.ts` | `pg` Pool provider (`DATABASE` token) |
 
+### Shared Utilities
+| File | Purpose |
+|------|---------|
+| `src/shared/password-validation.ts` | Password complexity validation (8+ chars, uppercase, lowercase, number, special char) |
+| `src/filters/all-exceptions.filter.ts` | Global exception filter — returns generic error messages, logs details server-side |
+
 ---
 
 ## Database Schema
@@ -76,7 +82,7 @@ task_comments (
 ## Auth & RBAC
 
 - **JWT** via `@nestjs/jwt` + `passport-jwt`
-- **Payload**: `{ sub, email, role }` where `role ∈ ('user','admin','superAdmin')`
+- **Payload**: `{ sub, email, firstName, lastName, nationalCode, phone, birthDate, role }` where `role ∈ ('user','admin','superAdmin')`
 - **Guards**: `JwtAuthGuard` (authenticates), `RolesGuard` (authorizes via `@Roles()` decorator)
 - **Roles**: `user` (default), `admin`, `superAdmin`
 - **Admin-only endpoints**: Project create/update/delete, Admin user management
@@ -139,9 +145,30 @@ Comment edit/delete allowed for: comment author, task assignee, or admin.
 ### Profile
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/profile` | Current user profile |
-| PUT | `/profile` | Update profile |
-| POST | `/profile/change-password` | Change own password |
+| GET | `/profile/me` | Current user profile |
+| PATCH | `/profile/me` | Update profile (email, firstName, lastName, nationalCode, phone, birthDate) |
+| PATCH | `/profile/me/password` | Change own password |
+
+---
+
+## Security
+
+### Password Policy
+- Minimum 8 characters, maximum 128
+- Requires uppercase, lowercase, number, and special character
+- Rejects common passwords
+- Validation in `shared/password-validation.ts`, used by both AdminService and ProfileService
+
+### Rate Limiting
+- Global: 30 requests per 60 seconds per IP
+- Auth register: 5 requests per 60 seconds
+- Auth login: 10 requests per 60 seconds
+- Configured via `@nestjs/throttler` in `AppModule`
+
+### Error Handling
+- Global exception filter in `filters/all-exceptions.filter.ts`
+- Returns generic error messages without exposing internals
+- Logs detailed errors server-side only
 
 ---
 

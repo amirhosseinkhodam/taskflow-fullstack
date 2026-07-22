@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
 import { AuthService } from '../../src/auth/auth.service';
 
 const mockQuery = jest.fn();
@@ -75,7 +76,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('success — returns token and user', async () => {
-      const hashedPassword = await require('bcryptjs').hash('password123', 10);
+      const hashedPassword = await bcrypt.hash('password123', 10);
       mockQuery.mockResolvedValueOnce({
         rows: [
           {
@@ -108,10 +109,7 @@ describe('AuthService', () => {
     });
 
     it('failure — wrong password throws UnauthorizedException', async () => {
-      const hashedPassword = await require('bcryptjs').hash(
-        'correctpassword',
-        10,
-      );
+      const hashedPassword = await bcrypt.hash('correctpassword', 10);
       mockQuery.mockResolvedValueOnce({
         rows: [
           {

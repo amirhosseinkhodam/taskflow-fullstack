@@ -26,11 +26,11 @@ describe('AppController', () => {
 
   it('getHealth() delegates to AppService.getHealth()', () => {
     expect(controller.getHealth()).toEqual({ status: 'ok' });
-    expect(service.getHealth).toHaveBeenCalledTimes(1);
+    expect(service['getHealth']).toHaveBeenCalledTimes(1);
   });
 
   it('getHello() delegates to AppService.getHello()', () => {
     expect(controller.getHello()).toBe('Hello World!');
-    expect(service.getHello).toHaveBeenCalledTimes(1);
+    expect(service['getHello']).toHaveBeenCalledTimes(1);
   });
 });

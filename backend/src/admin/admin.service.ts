@@ -7,6 +7,7 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
 import type { AuthUserModel } from '@shared/types/auth';
+import { validatePassword } from '../shared/password-validation';
 
 @Injectable()
 export class AdminService {
@@ -92,9 +93,7 @@ export class AdminService {
       throw new BadRequestException('Cannot change your own password here');
     }
 
-    if (!newPassword || newPassword.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters');
-    }
+    validatePassword(newPassword);
 
     const target = await this.#db.query<{ role: string }>(
       'SELECT role FROM users WHERE id = $1',
