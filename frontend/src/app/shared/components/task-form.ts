@@ -42,6 +42,13 @@ import {
           [cssClass]="'mt-3'"
         />
       }
+      <app-input
+        formControlName="assigneeEmail"
+        [placeholder]="t('assigneeEmailPlaceholder')"
+        type="email"
+        variant="default"
+        [cssClass]="'mt-3'"
+      />
       <app-textarea
         formControlName="description"
         [placeholder]="t('descriptionPlaceholder')"
@@ -78,6 +85,7 @@ export class TaskFormComponent {
     title: string;
     description: string;
     projectId: number;
+    assigneeEmail?: string;
   }>();
   readonly cancelEdit = output<void>();
 
@@ -107,6 +115,7 @@ export class TaskFormComponent {
           task.title,
           task.projectId,
           task.description,
+          undefined,
         );
       }
     });

@@ -10,20 +10,6 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
   standalone: true,
   imports: [DragDropModule, TaskItemComponent],
   template: `
-    <!-- <div class="flex items-center justify-between gap-4">
-      <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        {{ t('tasks') }}
-      </h2> -->
-    <!-- Manual fallback — reloads tasks from the API. Useful when auto-refresh doesn't fire (e.g. after task complete/delete on a different view) or after server-side changes. -->
-    <!-- <button
-        class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-        type="button"
-        (click)="refresh.emit()"
-      >
-        {{ t('refresh') }}
-      </button>
-    </div> -->
-
     <div cdkDropList class="space-y-3" (cdkDropListDropped)="onDrop($event)">
       @for (task of tasks(); track task.id) {
         <article
@@ -36,6 +22,8 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
             [projects]="projects()"
             [showDetailLink]="true"
             [showEditButton]="true"
+            [showCreatorBadge]="true"
+            [showAssigneeBadge]="true"
             (edit)="editTask.emit($event)"
             (toggled)="refresh.emit()"
             (deleted)="refresh.emit()"

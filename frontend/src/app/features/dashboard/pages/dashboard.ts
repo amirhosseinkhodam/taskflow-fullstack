@@ -168,7 +168,7 @@ import type { ProjectModel } from '@shared/types/project';
         >
           <app-card
             variant="default"
-            class="flex flex-col h-98 overflow-auto"
+            class="flex flex-col h-112 overflow-auto"
             padding="md"
           >
             <app-project-list
@@ -180,7 +180,7 @@ import type { ProjectModel } from '@shared/types/project';
             />
           </app-card>
 
-          <app-card variant="default" class="flex flex-col h-98" padding="md">
+          <app-card variant="default" class="flex flex-col h-112" padding="md">
             <app-task-form
               class="flex-1 flex flex-col"
               [projects]="store.projects()"

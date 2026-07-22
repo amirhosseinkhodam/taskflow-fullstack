@@ -1,6 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { TaskController } from '../../src/task/task.controller';
 import { TaskService } from '../../src/task/task.service';
+import { Test, TestingModule } from '@nestjs/testing';
+import { JwtAuthGuard } from '../../src/auth/jwt-auth.guard';
 
 describe('TaskController', () => {
   let controller: TaskController;
@@ -20,7 +21,7 @@ describe('TaskController', () => {
               limit: 5,
               totalPages: 1,
             }),
-            findOne: jest.fn().mockResolvedValue(null),
+            findOne: jest.fn().mockResolvedValue({ id: 1 }),
             create: jest.fn().mockResolvedValue({ id: 1 }),
             update: jest.fn().mockResolvedValue(true),
             reorder: jest.fn().mockResolvedValue(undefined),
@@ -28,7 +29,10 @@ describe('TaskController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(TaskController);
     taskService = module.get(TaskService);
@@ -59,7 +63,13 @@ describe('TaskController', () => {
     const dto = { title: 'Test', description: 'desc', projectId: 1 };
     const req = { user: { id: 1 } } as any;
     await controller.create(dto, req);
-    expect(taskService.create).toHaveBeenCalledWith('Test', 'desc', 1, 1);
+    expect(taskService.create).toHaveBeenCalledWith(
+      'Test',
+      'desc',
+      1,
+      1,
+      undefined,
+    );
   });
 
   it('update() — delegates with all fields', async () => {
@@ -79,6 +89,7 @@ describe('TaskController', () => {
       'Desc',
       'done',
       2,
+      undefined,
     );
   });
 

@@ -42,7 +42,14 @@ import type { ProjectModel } from '@shared/types/project';
                   <span
                     class="inline-block rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 text-xs text-indigo-600 dark:text-indigo-300"
                   >
-                    {{ task.creatorName }}
+                    {{ t('createdBy') }}: {{ task.creatorName }}
+                  </span>
+                }
+                @if (showAssigneeBadge() && task.assigneeName) {
+                  <span
+                    class="inline-block rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs text-green-600 dark:text-green-300"
+                  >
+                    {{ t('assignedTo') }}: {{ task.assigneeName }}
                   </span>
                 }
               </div>
@@ -53,7 +60,7 @@ import type { ProjectModel } from '@shared/types/project';
             <p
               class="mt-1 text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500"
             >
-              {{ task.status }}
+              {{ t('status') }}: {{ task.status }}
             </p>
             <div
               class="mt-1 flex flex-wrap gap-x-3 text-xs text-slate-400 dark:text-slate-500"
@@ -163,6 +170,7 @@ export class TaskItemComponent {
   readonly projects = input.required<ProjectModel[]>();
   readonly showDetailLink = input(true);
   readonly showCreatorBadge = input(false);
+  readonly showAssigneeBadge = input(false);
   readonly showEditButton = input(false);
 
   readonly edit = output<TaskModel>();

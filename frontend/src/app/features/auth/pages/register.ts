@@ -27,10 +27,11 @@ import {
   template: `
     <main class="mx-auto flex min-h-screen max-w-md items-center p-6">
       <app-form
+        class="w-full"
         [formGroup]="registerForm.form"
         (ngSubmit)="auth.register()"
         variant="default"
-        [cssClass]="'w-full rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
+        [cssClass]="'rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
       >
         <div class="flex items-center justify-between mb-6">
           <div>
