@@ -40,12 +40,32 @@ export class AdminService {
       throw new BadRequestException('Cannot delete superAdmin');
     }
 
-    const result = await this.#db.query('DELETE FROM users WHERE id = $1', [
-      id,
-    ]);
-    if (result.rowCount === 0) {
-      throw new NotFoundException('User not found');
+    const client = await this.#db.connect();
+    try {
+      await client.query('BEGIN');
+
+      await client.query(
+        'UPDATE tasks SET "assigneeId" = NULL WHERE "assigneeId" = $1',
+        [id],
+      );
+
+      await client.query('DELETE FROM task_comments WHERE "userId" = $1', [id]);
+
+      const result = await client.query('DELETE FROM users WHERE id = $1', [
+        id,
+      ]);
+      if (result.rowCount === 0) {
+        throw new NotFoundException('User not found');
+      }
+
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
+
     return { success: true };
   }
 

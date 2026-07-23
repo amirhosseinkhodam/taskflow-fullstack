@@ -138,7 +138,7 @@ Comment edit/delete allowed for: comment author, task assignee, or admin.
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/admin/users` | List all users |
-| DELETE | `/admin/users/:id` | Delete user (no self-delete, no superAdmin) |
+| DELETE | `/admin/users/:id` | Delete user (no self-delete, no superAdmin). Unassigns tasks, removes comments, then deletes in a transaction. |
 | PATCH | `/admin/users/:id/role` | Change role (user/admin, no self, no superAdmin) |
 | POST | `/admin/users/:id/change-password` | Admin changes user password |
 

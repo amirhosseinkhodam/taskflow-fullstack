@@ -11,6 +11,7 @@ export interface TaskModel {
   readonly creatorName?: string;
   readonly assigneeId: number | null;
   readonly assigneeName: string | null;
+  readonly assigneeEmail?: string | null;
 }
 
 export interface CommentModel {

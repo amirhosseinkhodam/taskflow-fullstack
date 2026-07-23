@@ -178,9 +178,13 @@ import { AdminStore } from '../store/admin';
             class="mt-4 rounded-lg px-4 py-3 text-sm"
             [ngClass]="{
               'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300':
-                !store.message().startsWith('couldNot'),
+                store.message() === 'passwordChanged' ||
+                store.message() === 'roleUpdated' ||
+                store.message() === 'userDeleted',
               'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300':
-                store.message().startsWith('couldNot'),
+                store.message() !== 'passwordChanged' &&
+                store.message() !== 'roleUpdated' &&
+                store.message() !== 'userDeleted',
             }"
           >
             {{ t(store.message()) }}
@@ -233,8 +237,22 @@ export class AdminPanelComponent implements OnInit {
   confirmDeleteUser(user: UserModel): void {
     if (user.id === this.currentUserId()) return;
     const confirmed$ = this.isPhone()
-      ? this.#bottomSheet.open(ConfirmBottomSheetComponent).afterDismissed()
-      : this.#dialog.open(ConfirmDialogComponent).afterClosed();
+      ? this.#bottomSheet
+          .open(ConfirmBottomSheetComponent, {
+            data: {
+              title: 'confirmDeleteUser',
+              message: 'confirmDeleteUserMessage',
+            },
+          })
+          .afterDismissed()
+      : this.#dialog
+          .open(ConfirmDialogComponent, {
+            data: {
+              title: 'confirmDeleteUser',
+              message: 'confirmDeleteUserMessage',
+            },
+          })
+          .afterClosed();
 
     confirmed$.subscribe((confirmed) => {
       if (!confirmed) return;

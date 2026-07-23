@@ -217,12 +217,19 @@ export const DashboardStore = signalStore(
             return [];
           }
           if (store.editingTaskId()) {
+            const updatePayload: {
+              title: string;
+              description: string;
+              assigneeEmail?: string;
+            } = {
+              title: value.title,
+              description: value.description,
+            };
+            if (value.assigneeEmail) {
+              updatePayload.assigneeEmail = value.assigneeEmail;
+            }
             return dashboardService
-              .updateTask(store.editingTaskId()!, {
-                title: value.title,
-                description: value.description,
-                assigneeEmail: value.assigneeEmail,
-              })
+              .updateTask(store.editingTaskId()!, updatePayload)
               .pipe(
                 tapResponse({
                   next: () => {

@@ -88,9 +88,7 @@ export const AuthStore = signalStore(
                   patchState(store, {
                     isLoading: false,
                     error:
-                      err.status === 401
-                        ? 'Invalid credentials'
-                        : 'Login failed',
+                      err.status === 401 ? 'invalidCredentials' : 'loginFailed',
                   });
                 },
               }),
@@ -121,8 +119,8 @@ export const AuthStore = signalStore(
                     isLoading: false,
                     error:
                       err.status === 409
-                        ? 'Email already registered'
-                        : 'Registration failed',
+                        ? 'emailAlreadyRegistered'
+                        : 'registrationFailed',
                   });
                 },
               }),

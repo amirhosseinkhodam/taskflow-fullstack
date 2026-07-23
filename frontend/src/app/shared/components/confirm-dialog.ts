@@ -1,5 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { LanguageService } from '../services/language';
 import { ButtonComponent } from './button';
 
@@ -8,9 +12,9 @@ import { ButtonComponent } from './button';
   standalone: true,
   imports: [MatDialogModule, ButtonComponent],
   template: `
-    <h2 mat-dialog-title>{{ t('confirmDeleteTask') }}</h2>
+    <h2 mat-dialog-title>{{ t(data.title) }}</h2>
     <mat-dialog-content>
-      {{ t('confirmDeleteMessage') }}
+      {{ t(data.message) }}
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="gap-2">
       <app-button variant="primary" (buttonClick)="onCancel()">
@@ -25,6 +29,10 @@ import { ButtonComponent } from './button';
 export class ConfirmDialogComponent {
   readonly #dialogRef = inject(MatDialogRef<ConfirmDialogComponent>);
   readonly #languageService = inject(LanguageService);
+  readonly data = inject(MAT_DIALOG_DATA, { optional: true }) ?? {
+    title: 'confirmDeleteTask',
+    message: 'confirmDeleteMessage',
+  };
 
   t(key: string): string {
     return this.#languageService.translate(key);

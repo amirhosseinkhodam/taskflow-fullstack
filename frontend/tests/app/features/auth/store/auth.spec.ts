@@ -176,7 +176,7 @@ describe('AuthStore', () => {
 
     store.login();
 
-    expect(store.error()).toBe('Invalid credentials');
+    expect(store.error()).toBe('invalidCredentials');
     expect(store.isLoading()).toBe(false);
     expect(store.token()).toBeNull();
   });
@@ -188,7 +188,7 @@ describe('AuthStore', () => {
 
     store.login();
 
-    expect(store.error()).toBe('Login failed');
+    expect(store.error()).toBe('loginFailed');
     expect(store.isLoading()).toBe(false);
   });
 
@@ -226,7 +226,7 @@ describe('AuthStore', () => {
 
     store.register();
 
-    expect(store.error()).toBe('Email already registered');
+    expect(store.error()).toBe('emailAlreadyRegistered');
     expect(store.isLoading()).toBe(false);
   });
 
@@ -237,7 +237,7 @@ describe('AuthStore', () => {
 
     store.register();
 
-    expect(store.error()).toBe('Registration failed');
+    expect(store.error()).toBe('registrationFailed');
     expect(store.isLoading()).toBe(false);
   });
 

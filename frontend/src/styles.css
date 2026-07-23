@@ -24,6 +24,10 @@ app-status-filter {
   width: 100%;
 }
 
+app-status-filter mat-chip-option {
+  cursor: pointer;
+}
+
 @media (max-width: 639px) {
   app-status-filter .mat-mdc-chip-listbox,
   app-status-filter .mdc-evolution-chip-set__chips {

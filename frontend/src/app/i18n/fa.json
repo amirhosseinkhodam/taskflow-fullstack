@@ -139,5 +139,14 @@
   "couldNotUpdateComment": "نمی‌توان نظر را به‌روزرسانی کرد.",
   "couldNotDeleteComment": "نمی‌توان نظر را حذف کرد.",
   "userNotFound": "کاربر یافت نشد.",
-  "unknownUser": "کاربر ناشناس"
+  "unknownUser": "کاربر ناشناس",
+  "passwordTooShort8": "رمز عبور باید حداقل ۸ کاراکتر باشد",
+  "passwordTooLong": "رمز عبور باید حداکثر ۱۲۸ کاراکتر باشد",
+  "passwordNeedsUppercase": "رمز عبور باید حداقل شامل یک حرف بزرگ باشد",
+  "passwordNeedsLowercase": "رمز عبور باید حداقل شامل یک حرف کوچک باشد",
+  "passwordNeedsNumber": "رمز عبور باید حداقل شامل یک عدد باشد",
+  "passwordNeedsSpecialChar": "رمز عبور باید حداقل شامل یک کاراکتر خاص باشد",
+  "passwordTooCommon": "رمز عبور بیش از حد رایج است",
+  "cannotChangeOwnPassword": "نمی‌توانید رمز عبور خودتان را اینجا تغییر دهید",
+  "loginFailed": "ورود ناموفق بود"
 }

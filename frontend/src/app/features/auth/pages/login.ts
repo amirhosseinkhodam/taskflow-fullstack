@@ -49,7 +49,7 @@ import {
           <p
             class="mt-4 rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-2 text-sm text-red-700 dark:text-red-300"
           >
-            {{ auth.error() }}
+            {{ t(auth.error()!) }}
           </p>
         }
 
