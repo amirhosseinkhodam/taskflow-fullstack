@@ -1,4 +1,4 @@
-import { Component, input, output, forwardRef } from '@angular/core';
+import { Component, input, output, forwardRef, signal } from '@angular/core';
 import {
   FormsModule,
   ControlValueAccessor,
@@ -30,7 +30,7 @@ export interface SelectOption {
       [placeholder]="placeholder() || ''"
       [disabled]="disabled()"
       [class]="computedClasses()"
-      [ngModel]="value()"
+      [ngModel]="innerValue()"
       (change)="onChange($event)"
       (blur)="onBlur()"
       (focus)="onFocus()"
@@ -50,7 +50,7 @@ export interface SelectOption {
 export class SelectComponent implements ControlValueAccessor {
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
-  readonly clearable = input<boolean>(false);
+  readonly clearable = input<boolean>(true);
   readonly searchable = input<boolean>(false);
   readonly variant = input<'default' | 'error' | 'disabled'>('default');
   readonly value = input<number | string | null>(null);
@@ -65,9 +65,11 @@ export class SelectComponent implements ControlValueAccessor {
 
   #onChange: (value: number | string | null) => void = () => {};
   #onTouched: () => void = () => {};
+  readonly innerValue = signal<number | string | null>(null);
 
   onChange(event: SelectOption | null) {
     const value = event?.value ?? null;
+    this.innerValue.set(value);
     this.#onChange(value);
     this.change.emit(value);
   }
@@ -81,8 +83,8 @@ export class SelectComponent implements ControlValueAccessor {
     this.focus.emit();
   }
 
-  writeValue(): void {
-    // Handled by ng-select via [ngModel]
+  writeValue(value: number | string | null): void {
+    this.innerValue.set(value);
   }
 
   registerOnChange(fn: (value: number | string | null) => void): void {

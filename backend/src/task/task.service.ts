@@ -15,7 +15,7 @@ export class TaskService {
     this.#db = db;
   }
 
-  readonly #taskColumns = `t.id, t.title, t.description, t.status, t."projectId", t."position", t."createdAt", t."updatedAt", t."userId", u.name as "creatorName", t."assigneeId", u2.name as "assigneeName"`;
+  readonly #taskColumns = `t.id, t.title, t.description, t.status, t."projectId", t."position", t."createdAt", t."updatedAt", t."userId", u.name as "creatorName", t."assigneeId", u2.name as "assigneeName", u2.email as "assigneeEmail"`;
 
   async create(
     title: string,

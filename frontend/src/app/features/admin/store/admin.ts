@@ -12,6 +12,7 @@ import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { AdminService } from '../services/admin';
 import type { UserModel } from '../models/admin';
+import { mapPasswordError } from '../../../shared/utils/password-error';
 
 interface AdminStateModel {
   users: UserModel[];
@@ -95,8 +96,10 @@ export const AdminStore = signalStore(
               next: () => {
                 patchState(store, { message: 'passwordChanged' });
               },
-              error: () =>
-                patchState(store, { message: 'couldNotChangePassword' }),
+              error: (err: { error?: { message?: string } }) =>
+                patchState(store, {
+                  message: mapPasswordError(err.error?.message ?? ''),
+                }),
             }),
           ),
         ),

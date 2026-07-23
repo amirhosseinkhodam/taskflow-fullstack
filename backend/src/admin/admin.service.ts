@@ -7,6 +7,7 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
 import type { AuthUserModel } from '@shared/types/auth';
+import { validatePassword } from '../shared/password-validation';
 
 @Injectable()
 export class AdminService {
@@ -39,12 +40,32 @@ export class AdminService {
       throw new BadRequestException('Cannot delete superAdmin');
     }
 
-    const result = await this.#db.query('DELETE FROM users WHERE id = $1', [
-      id,
-    ]);
-    if (result.rowCount === 0) {
-      throw new NotFoundException('User not found');
+    const client = await this.#db.connect();
+    try {
+      await client.query('BEGIN');
+
+      await client.query(
+        'UPDATE tasks SET "assigneeId" = NULL WHERE "assigneeId" = $1',
+        [id],
+      );
+
+      await client.query('DELETE FROM task_comments WHERE "userId" = $1', [id]);
+
+      const result = await client.query('DELETE FROM users WHERE id = $1', [
+        id,
+      ]);
+      if (result.rowCount === 0) {
+        throw new NotFoundException('User not found');
+      }
+
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
+
     return { success: true };
   }
 
@@ -92,9 +113,7 @@ export class AdminService {
       throw new BadRequestException('Cannot change your own password here');
     }
 
-    if (!newPassword || newPassword.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters');
-    }
+    validatePassword(newPassword);
 
     const target = await this.#db.query<{ role: string }>(
       'SELECT role FROM users WHERE id = $1',

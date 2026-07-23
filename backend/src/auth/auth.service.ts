@@ -22,8 +22,13 @@ export class AuthService {
     return this.#jwtService.sign({
       sub: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nationalCode: user.nationalCode,
+      phone: user.phone,
+      birthDate: user.birthDate,
       role: user.role,
-    });
+    }) as string;
   }
 
   async register(email: string, password: string) {
@@ -63,6 +68,7 @@ export class AuthService {
     }
 
     const token = this.#signToken(user);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...userWithoutPassword } = user;
     return { token, user: userWithoutPassword };
   }

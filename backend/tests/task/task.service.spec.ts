@@ -273,7 +273,9 @@ describe('TaskService', () => {
       await service.reorder([1, 2], 1, 'admin');
 
       expect(mockConnect).toHaveBeenCalled();
-      const clientQueries = mockClient.query.mock.calls.map((c: any[]) => c[0]);
+      const clientQueries = mockClient.query.mock.calls.map(
+        (c: unknown[]) => (c as unknown[][])[0],
+      );
       expect(clientQueries).toContain('BEGIN');
       expect(clientQueries).toContain('COMMIT');
       expect(mockRelease).toHaveBeenCalled();
@@ -289,7 +291,9 @@ describe('TaskService', () => {
         'DB error',
       );
 
-      const clientQueries = mockClient.query.mock.calls.map((c: any[]) => c[0]);
+      const clientQueries = mockClient.query.mock.calls.map(
+        (c: unknown[]) => (c as unknown[][])[0],
+      );
       expect(clientQueries).toContain('ROLLBACK');
       expect(mockRelease).toHaveBeenCalled();
     });

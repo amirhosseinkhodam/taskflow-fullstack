@@ -29,26 +29,26 @@ describe('ProjectController', () => {
 
   it('getProjects() — delegates to findAll()', async () => {
     await controller.getProjects();
-    expect(projectService.findAll).toHaveBeenCalledTimes(1);
+    expect(projectService['findAll']).toHaveBeenCalledTimes(1);
   });
 
   it('findOneProject() — delegates with id', async () => {
     await controller.findOneProject(5);
-    expect(projectService.findOne).toHaveBeenCalledWith(5);
+    expect(projectService['findOne']).toHaveBeenCalledWith(5);
   });
 
   it('createProject() — delegates with body.name', async () => {
     await controller.createProject({ name: 'New' });
-    expect(projectService.create).toHaveBeenCalledWith('New');
+    expect(projectService['create']).toHaveBeenCalledWith('New');
   });
 
   it('updateProject() — delegates with id + body.name', async () => {
     await controller.updateProject(3, { name: 'Updated' });
-    expect(projectService.update).toHaveBeenCalledWith(3, 'Updated');
+    expect(projectService['update']).toHaveBeenCalledWith(3, 'Updated');
   });
 
   it('deleteProject() — delegates with id', async () => {
     await controller.deleteProject(3);
-    expect(projectService.delete).toHaveBeenCalledWith(3);
+    expect(projectService['delete']).toHaveBeenCalledWith(3);
   });
 });

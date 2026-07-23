@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
 import type { AuthUserModel } from '@shared/types/auth';
+import { validatePassword } from '../shared/password-validation';
 
 @Injectable()
 export class ProfileService {
@@ -102,6 +103,11 @@ export class ProfileService {
     const token = this.#jwtService.sign({
       sub: updatedUser.id,
       email: updatedUser.email,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      nationalCode: updatedUser.nationalCode,
+      phone: updatedUser.phone,
+      birthDate: updatedUser.birthDate,
       role: updatedUser.role,
     });
 
@@ -124,6 +130,8 @@ export class ProfileService {
     if (!(await bcrypt.compare(currentPassword, user.rows[0].password))) {
       throw new BadRequestException('Current password is incorrect');
     }
+
+    validatePassword(newPassword);
 
     const hashed = await bcrypt.hash(newPassword, 10);
     await this.#db.query('UPDATE users SET password = $1 WHERE id = $2', [

@@ -115,7 +115,7 @@ export class TaskFormComponent {
           task.title,
           task.projectId,
           task.description,
-          undefined,
+          task.assigneeEmail ?? undefined,
         );
       }
     });

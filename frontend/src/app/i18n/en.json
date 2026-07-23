@@ -139,5 +139,14 @@
   "couldNotUpdateComment": "Could not update comment.",
   "couldNotDeleteComment": "Could not delete comment.",
   "userNotFound": "User not found.",
-  "unknownUser": "Unknown User"
+  "unknownUser": "Unknown User",
+  "passwordTooShort8": "Password must be at least 8 characters",
+  "passwordTooLong": "Password must be at most 128 characters",
+  "passwordNeedsUppercase": "Password must contain at least one uppercase letter",
+  "passwordNeedsLowercase": "Password must contain at least one lowercase letter",
+  "passwordNeedsNumber": "Password must contain at least one number",
+  "passwordNeedsSpecialChar": "Password must contain at least one special character",
+  "passwordTooCommon": "Password is too common",
+  "cannotChangeOwnPassword": "Cannot change your own password here",
+  "loginFailed": "Login failed"
 }

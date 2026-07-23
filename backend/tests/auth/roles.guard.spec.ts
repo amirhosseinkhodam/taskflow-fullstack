@@ -11,14 +11,14 @@ describe('RolesGuard', () => {
     guard = new RolesGuard(reflector);
   });
 
-  function mockContext(user?: { role: string }) {
+  function mockContext(user?: { role: string }): ExecutionContext {
     return {
       switchToHttp: () => ({
         getRequest: () => ({ user }),
       }),
       getHandler: jest.fn(),
       getClass: jest.fn(),
-    } as unknown as ExecutionContext;
+    };
   }
 
   it('returns false when no roles required', () => {

@@ -3,7 +3,13 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from '../../src/admin/admin.service';
 
 const mockQuery = jest.fn();
-const mockPool = { query: mockQuery } as any;
+const mockClientQuery = jest.fn();
+const mockRelease = jest.fn();
+const mockConnect = jest.fn().mockResolvedValue({
+  query: mockClientQuery,
+  release: mockRelease,
+});
+const mockPool = { query: mockQuery, connect: mockConnect } as any;
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -43,12 +49,17 @@ describe('AdminService', () => {
 
   describe('deleteUser', () => {
     it('success — returns { success: true }', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ role: 'user' }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'user' }] });
+      mockClientQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // UPDATE tasks
+        .mockResolvedValueOnce({}) // DELETE comments
+        .mockResolvedValueOnce({ rowCount: 1 }) // DELETE users
+        .mockResolvedValueOnce({}); // COMMIT
 
       const result = await service.deleteUser(2, 1);
       expect(result).toEqual({ success: true });
+      expect(mockRelease).toHaveBeenCalled();
     });
 
     it('self-delete throws BadRequestException', async () => {
@@ -74,11 +85,15 @@ describe('AdminService', () => {
     });
 
     it('delete returns rowCount=0 throws NotFoundException', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ role: 'user' }] })
-        .mockResolvedValueOnce({ rowCount: 0 });
+      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'user' }] });
+      mockClientQuery
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // UPDATE tasks
+        .mockResolvedValueOnce({}) // DELETE comments
+        .mockResolvedValueOnce({ rowCount: 0 }); // DELETE users — rowCount 0
 
       await expect(service.deleteUser(2, 1)).rejects.toThrow(NotFoundException);
+      expect(mockRelease).toHaveBeenCalled();
     });
   });
 
@@ -140,13 +155,13 @@ describe('AdminService', () => {
         .mockResolvedValueOnce({ rows: [{ role: 'user' }] })
         .mockResolvedValueOnce({ rowCount: 1 });
 
-      const result = await service.updateUserPassword(2, 'newpass123', 1);
+      const result = await service.updateUserPassword(2, 'NewPass123!', 1);
       expect(result).toEqual({ success: true });
     });
 
     it('self-change throws BadRequestException', async () => {
       await expect(
-        service.updateUserPassword(1, 'newpass123', 1),
+        service.updateUserPassword(1, 'NewPass123!', 1),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -166,7 +181,7 @@ describe('AdminService', () => {
       mockQuery.mockResolvedValueOnce({ rows: [{ role: 'superAdmin' }] });
 
       await expect(
-        service.updateUserPassword(2, 'newpass123', 1),
+        service.updateUserPassword(2, 'NewPass123!', 1),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -174,7 +189,7 @@ describe('AdminService', () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
       await expect(
-        service.updateUserPassword(999, 'newpass123', 1),
+        service.updateUserPassword(999, 'NewPass123!', 1),
       ).rejects.toThrow(NotFoundException);
     });
   });

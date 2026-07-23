@@ -180,7 +180,7 @@ import type { ProjectModel } from '@shared/types/project';
             />
           </app-card>
 
-          <app-card variant="default" class="flex flex-col h-112" padding="md">
+          <app-card variant="default" class="flex flex-col" padding="md">
             <app-task-form
               class="flex-1 flex flex-col"
               [projects]="store.projects()"

@@ -22,6 +22,7 @@ import { AuthStore } from '../../auth/store/auth';
 import { ProfileFormService } from '../forms/profile-form';
 import { ProfileService } from '../services/profile';
 import type { AuthUserModel } from '@shared/types/auth';
+import { mapPasswordError } from '../../../shared/utils/password-error';
 
 @Component({
   selector: 'app-profile',
@@ -245,9 +246,11 @@ import type { AuthUserModel } from '@shared/types/auth';
             class="rounded-lg px-4 py-3 text-sm"
             [ngClass]="{
               'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300':
-                !message()!.startsWith('couldNot'),
+                message() === 'profileUpdated' ||
+                message() === 'passwordChanged',
               'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300':
-                message()!.startsWith('couldNot'),
+                message() !== 'profileUpdated' &&
+                message() !== 'passwordChanged',
             }"
           >
             {{ t(message()!) }}
@@ -369,11 +372,11 @@ export class ProfileComponent {
             this.message.set('passwordChanged');
           },
           error: (err) => {
-            this.message.set(
+            const msg =
               err.status === 400
-                ? 'incorrectCurrentPassword'
-                : 'couldNotChangePassword',
-            );
+                ? mapPasswordError(err.error?.message ?? '')
+                : 'couldNotChangePassword';
+            this.message.set(msg);
           },
         });
     });

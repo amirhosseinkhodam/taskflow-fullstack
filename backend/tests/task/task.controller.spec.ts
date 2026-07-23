@@ -40,12 +40,12 @@ describe('TaskController', () => {
 
   it('findAll() — no query params', async () => {
     await controller.findAll();
-    expect(taskService.findAll).toHaveBeenCalledWith({});
+    expect(taskService['findAll']).toHaveBeenCalledWith({});
   });
 
   it('findAll() — with all query params', async () => {
     await controller.findAll('1', 'pending', 'foo', '2', '10');
-    expect(taskService.findAll).toHaveBeenCalledWith({
+    expect(taskService['findAll']).toHaveBeenCalledWith({
       projectId: 1,
       status: 'pending',
       searchTerm: 'foo',
@@ -56,14 +56,14 @@ describe('TaskController', () => {
 
   it('findOne() — delegates with parsed id', async () => {
     await controller.findOne(5);
-    expect(taskService.findOne).toHaveBeenCalledWith(5);
+    expect(taskService['findOne']).toHaveBeenCalledWith(5);
   });
 
   it('create() — delegates with body + user id', async () => {
     const dto = { title: 'Test', description: 'desc', projectId: 1 };
     const req = { user: { id: 1 } } as any;
     await controller.create(dto, req);
-    expect(taskService.create).toHaveBeenCalledWith(
+    expect(taskService['create']).toHaveBeenCalledWith(
       'Test',
       'desc',
       1,
@@ -81,7 +81,7 @@ describe('TaskController', () => {
     };
     const req = { user: { id: 1, role: 'admin' } } as any;
     await controller.update(5, dto, req);
-    expect(taskService.update).toHaveBeenCalledWith(
+    expect(taskService['update']).toHaveBeenCalledWith(
       5,
       1,
       'admin',
@@ -97,12 +97,12 @@ describe('TaskController', () => {
     const dto = { taskIds: [3, 1, 2] };
     const req = { user: { id: 1, role: 'admin' } } as any;
     await controller.reorder(dto, req);
-    expect(taskService.reorder).toHaveBeenCalledWith([3, 1, 2], 1, 'admin');
+    expect(taskService['reorder']).toHaveBeenCalledWith([3, 1, 2], 1, 'admin');
   });
 
   it('delete() — delegates with id', async () => {
     const req = { user: { id: 1, role: 'admin' } } as any;
     await controller.delete(5, req);
-    expect(taskService.delete).toHaveBeenCalledWith(5, 1, 'admin');
+    expect(taskService['delete']).toHaveBeenCalledWith(5, 1, 'admin');
   });
 });
