@@ -23,4 +23,4 @@ All documentation specific to the TaskFlow Fullstack project. These docs describ
 - **Frontend**: Angular 19 standalone. SignalStore for state. Custom element library. Tailwind-only styling.
 - **Monorepo**: Single `package.json` at root. Shared types in `shared/types/`.
 
-For the full rules and conventions, see the root `AGENTS.md`.
+For project-specific rules and commands, see the root `AGENTS.md`. For general coding conventions, see `~/.config/opencode/AGENTS.md`.
