@@ -1,7 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../shared/services/language';
-import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { ButtonComponent } from '../../../shared/components/button';
 import { FormsModule } from '@angular/forms';
 import type { CommentModel } from '@shared/types/task';
@@ -9,7 +9,7 @@ import type { CommentModel } from '@shared/types/task';
 @Component({
   selector: 'app-comment-list',
   standalone: true,
-  imports: [CommonModule, JalaliDatePipe, ButtonComponent, FormsModule],
+  imports: [CommonModule, LocalizedDatePipe, ButtonComponent, FormsModule],
   template: `
     <div class="space-y-3">
       @if (comments().length === 0) {
@@ -27,7 +27,7 @@ import type { CommentModel } from '@shared/types/task';
                   {{ comment.userName || t('unknownUser') }}
                 </span>
                 <span class="text-xs text-slate-400 dark:text-slate-500">
-                  {{ comment.createdAt | jalaliDate }}
+                  {{ comment.createdAt | localizedDate }}
                 </span>
               </div>
               <p

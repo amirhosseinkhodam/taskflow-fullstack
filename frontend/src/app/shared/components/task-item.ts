@@ -7,7 +7,7 @@ import {
   MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
 import { LanguageService } from '../services/language';
-import { JalaliDatePipe } from '../pipes/jalali-date';
+import { LocalizedDatePipe } from '../pipes/localized-date';
 import { DashboardService } from '../../features/dashboard/services/dashboard';
 import { ConfirmDialogComponent } from './confirm-dialog';
 import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
@@ -18,7 +18,7 @@ import type { ProjectModel } from '@shared/types/project';
 @Component({
   selector: 'app-task-item',
   standalone: true,
-  imports: [JalaliDatePipe, ButtonComponent, MatBottomSheetModule],
+  imports: [LocalizedDatePipe, ButtonComponent, MatBottomSheetModule],
   template: `
     @if (task(); as task) {
       <div class="flex items-start gap-3 w-full">
@@ -65,10 +65,13 @@ import type { ProjectModel } from '@shared/types/project';
             <div
               class="mt-1 flex flex-wrap gap-x-3 text-xs text-slate-400 dark:text-slate-500"
             >
-              <span>{{ t('created') }}: {{ task.createdAt | jalaliDate }}</span>
+              <span
+                >{{ t('created') }}: {{ task.createdAt | localizedDate }}</span
+              >
               @if (task.updatedAt !== task.createdAt) {
                 <span
-                  >{{ t('modified') }}: {{ task.updatedAt | jalaliDate }}</span
+                  >{{ t('modified') }}:
+                  {{ task.updatedAt | localizedDate }}</span
                 >
               }
             </div>

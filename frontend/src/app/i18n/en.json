@@ -148,5 +148,7 @@
   "passwordNeedsSpecialChar": "Password must contain at least one special character",
   "passwordTooCommon": "Password is too common",
   "cannotChangeOwnPassword": "Cannot change your own password here",
-  "loginFailed": "Login failed"
+  "loginFailed": "Login failed",
+  "selectDate": "Select date",
+  "today": "Today"
 }

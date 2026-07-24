@@ -15,7 +15,7 @@ import {
   template: `
     <div class="relative mt-3">
       <input
-        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pr-10 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pe-10 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
         [type]="showPassword() ? 'text' : 'password'"
         [formControlName]="controlName()"
         [placeholder]="placeholderValue()"
@@ -23,7 +23,7 @@ import {
       />
       <button
         type="button"
-        class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 dark:text-slate-500"
+        class="absolute inset-y-0 end-0 flex items-center pe-3 text-slate-400 dark:text-slate-500"
         (click)="showPassword.set(!showPassword())"
       >
         @if (showPassword()) {

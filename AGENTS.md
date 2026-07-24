@@ -53,7 +53,7 @@ Test files live in `backend/tests/` and `frontend/tests/`, mirroring the `src/` 
 ## Third-party library preference
 
 - **Always prefer well-maintained third-party libraries over hand-rolling utility code** for common tasks like date handling, crypto, validation, etc.
-- Currently installed: `date-fns-jalali` for Jalali/Persian date formatting (use `formatDate` from `date-fns-jalali`).
+- Currently installed: `date-fns-jalali` for Jalali/Persian date formatting (use `formatDate` from `date-fns-jalali`) and `date-fns` for Gregorian/English date formatting (use `format` from `date-fns`). The `LocalizedDatePipe` (`localizedDate` in templates) automatically switches between the two based on the current language.
 - **Never write custom calendar converters, date parsers, or formatting utilities** when a library already exists. If you need date manipulation, use `date-fns` / `date-fns-jalali`. If you need something else (e.g. UUID generation, deep cloning), install a dedicated library instead of reimplementing it.
 - When adding a new third-party utility library, install it at root `package.json` and document it in this section.
 - **Use existing libraries first.** Before creating any utility, check if a well-maintained library already does it. Search npm, check GitHub stars, last publish date. Only build custom if nothing suitable exists.

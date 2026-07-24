@@ -148,5 +148,7 @@
   "passwordNeedsSpecialChar": "رمز عبور باید حداقل شامل یک کاراکتر خاص باشد",
   "passwordTooCommon": "رمز عبور بیش از حد رایج است",
   "cannotChangeOwnPassword": "نمی‌توانید رمز عبور خودتان را اینجا تغییر دهید",
-  "loginFailed": "ورود ناموفق بود"
+  "loginFailed": "ورود ناموفق بود",
+  "selectDate": "انتخاب تاریخ",
+  "today": "امروز"
 }

@@ -1,7 +1,7 @@
 import { Component, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
-import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import type { ProjectModel } from '@shared/types/project';
 import {
   InputComponent,
@@ -14,7 +14,7 @@ import {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    JalaliDatePipe,
+    LocalizedDatePipe,
     InputComponent,
     ButtonComponent,
     FormComponent,
@@ -59,12 +59,12 @@ import {
               >
                 <span
                   >{{ t('created') }}:
-                  {{ project.createdAt | jalaliDate }}</span
+                  {{ project.createdAt | localizedDate }}</span
                 >
                 @if (project.updatedAt !== project.createdAt) {
                   <span
                     >{{ t('modified') }}:
-                    {{ project.updatedAt | jalaliDate }}</span
+                    {{ project.updatedAt | localizedDate }}</span
                   >
                 }
               </div>

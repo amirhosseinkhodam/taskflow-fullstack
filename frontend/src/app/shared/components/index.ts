@@ -2,6 +2,7 @@ export { ButtonComponent } from './button';
 export { CardComponent } from './card';
 export { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
 export { ConfirmDialogComponent } from './confirm-dialog';
+export { DatePickerComponent } from './date-picker';
 export { FormComponent } from './form';
 export { InputComponent } from './input';
 export { LanguageToggleComponent } from './language-toggle';

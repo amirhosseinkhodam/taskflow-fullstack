@@ -10,6 +10,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {
   ButtonComponent,
   CardComponent,
+  DatePickerComponent,
   FormComponent,
   InputComponent,
   PageHeaderComponent,
@@ -17,7 +18,7 @@ import {
   PasswordDialogComponent,
 } from '../../../shared/components';
 import { LanguageService } from '../../../shared/services/language';
-import { JalaliDatePipe } from '../../../shared/pipes/jalali-date';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { AuthStore } from '../../auth/store/auth';
 import { ProfileFormService } from '../forms/profile-form';
 import { ProfileService } from '../services/profile';
@@ -34,10 +35,11 @@ import { mapPasswordError } from '../../../shared/utils/password-error';
     MatBottomSheetModule,
     ButtonComponent,
     CardComponent,
+    DatePickerComponent,
     FormComponent,
     InputComponent,
     PageHeaderComponent,
-    JalaliDatePipe,
+    LocalizedDatePipe,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -133,11 +135,9 @@ import { mapPasswordError } from '../../../shared/utils/password-error';
                   variant="default"
                 />
               </div>
-              <app-input
+              <app-date-picker
                 formControlName="birthDate"
                 [placeholder]="t('birthDate')"
-                type="date"
-                variant="default"
                 [cssClass]="'mt-4'"
               />
               <div class="flex gap-2 mt-4">
@@ -222,7 +222,7 @@ import { mapPasswordError } from '../../../shared/utils/password-error';
                 <p class="mt-1 text-sm text-slate-900 dark:text-white">
                   {{
                     profile()?.birthDate
-                      ? (profile()!.birthDate! | jalaliDate: 'yyyy/MM/dd')
+                      ? (profile()!.birthDate! | localizedDate: 'yyyy/MM/dd')
                       : '-'
                   }}
                 </p>
