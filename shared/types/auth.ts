@@ -6,11 +6,11 @@ export interface AuthUserModel {
   readonly id: number;
   readonly email: string;
   // readonly name: string;
-  readonly firstName: string | null;
-  readonly lastName: string | null;
-  readonly nationalCode: string | null;
-  readonly phone: string | null;
-  readonly birthDate: string | null;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly nationalCode: string;
+  readonly phone: string;
+  readonly birthDate: string;
   readonly role: UserRole;
 }
 

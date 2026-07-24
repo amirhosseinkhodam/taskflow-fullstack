@@ -18,26 +18,7 @@ export class ProfileFormService {
 
   patchFromUser(user: AuthUserModel) {
     this.#originalEmail = user.email;
-    this.#form.patchValue({
-      firstName: user.firstName ?? '',
-      lastName: user.lastName ?? '',
-      email: user.email,
-      nationalCode: user.nationalCode ?? '',
-      phone: user.phone ?? '',
-      birthDate: user.birthDate ?? '',
-    });
-  }
-
-  resetForm() {
-    this.#originalEmail = '';
-    this.#form.reset({
-      firstName: '',
-      lastName: '',
-      email: '',
-      nationalCode: '',
-      phone: '',
-      birthDate: '',
-    });
+    this.#form.patchValue(user);
   }
 
   get originalEmail() {
