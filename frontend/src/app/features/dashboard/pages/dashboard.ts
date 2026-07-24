@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Router } from '@angular/router';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
@@ -260,6 +261,7 @@ export class DashboardComponent {
 
   readonly isPhone = signal(false);
   readonly menuOpen = signal(false);
+  readonly #searchTerm$ = new Subject<string>();
 
   constructor() {
     this.#breakpointObserver
@@ -267,6 +269,13 @@ export class DashboardComponent {
       .subscribe((result) => {
         this.isPhone.set(result.matches);
         if (!result.matches) this.menuOpen.set(false);
+      });
+
+    this.#searchTerm$
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchTerm) => {
+        const current = this.store.filter();
+        this.store.setFilter({ ...current, searchTerm });
       });
   }
 
@@ -303,8 +312,7 @@ export class DashboardComponent {
   }
 
   onSearchChange(searchTerm: string): void {
-    const current = this.store.filter();
-    this.store.setFilter({ ...current, searchTerm });
+    this.#searchTerm$.next(searchTerm);
   }
 
   onProjectFilter(projectId: number): void {
