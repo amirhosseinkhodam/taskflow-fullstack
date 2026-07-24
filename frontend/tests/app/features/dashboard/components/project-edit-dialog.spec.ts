@@ -41,8 +41,9 @@ describe('ProjectEditDialogComponent', () => {
     fixture.detectChanges();
 
     const saveButton: HTMLButtonElement = fixture.nativeElement.querySelector(
-      'button[mat-raised-button]',
+      'app-button:last-of-type button',
     );
+    expect(saveButton).toBeTruthy();
     expect(saveButton.disabled).toBe(true);
   });
 

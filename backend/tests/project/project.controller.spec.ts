@@ -28,27 +28,32 @@ describe('ProjectController', () => {
   });
 
   it('getProjects() — delegates to findAll()', async () => {
+    const spy = jest.spyOn(projectService, 'findAll');
     await controller.getProjects();
-    expect(projectService['findAll']).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('findOneProject() — delegates with id', async () => {
+    const spy = jest.spyOn(projectService, 'findOne');
     await controller.findOneProject(5);
-    expect(projectService['findOne']).toHaveBeenCalledWith(5);
+    expect(spy).toHaveBeenCalledWith(5);
   });
 
   it('createProject() — delegates with body.name', async () => {
+    const spy = jest.spyOn(projectService, 'create');
     await controller.createProject({ name: 'New' });
-    expect(projectService['create']).toHaveBeenCalledWith('New');
+    expect(spy).toHaveBeenCalledWith('New');
   });
 
   it('updateProject() — delegates with id + body.name', async () => {
+    const spy = jest.spyOn(projectService, 'update');
     await controller.updateProject(3, { name: 'Updated' });
-    expect(projectService['update']).toHaveBeenCalledWith(3, 'Updated');
+    expect(spy).toHaveBeenCalledWith(3, 'Updated');
   });
 
   it('deleteProject() — delegates with id', async () => {
+    const spy = jest.spyOn(projectService, 'delete');
     await controller.deleteProject(3);
-    expect(projectService['delete']).toHaveBeenCalledWith(3);
+    expect(spy).toHaveBeenCalledWith(3);
   });
 });

@@ -5,7 +5,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['eslint.config.mjs'] },
+  { ignores: ['eslint.config.mjs', '**/const/**', '**/const/*.ts'] },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
@@ -47,6 +47,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      // DRY: Ban duplicate imports from the same module
+      'no-duplicate-imports': 'error',
       // Ban `private` keyword — use `#` prefix instead
       'no-restricted-syntax': [
         'error',
@@ -65,7 +67,26 @@ export default tseslint.config(
           message:
             'Use a # class field + parameter assignment instead of a constructor private parameter.',
         },
+        // DRY: Prevent repeated magic strings (common patterns)
+        {
+          selector: "Literal[value=/^(GET|POST|PUT|DELETE|PATCH)$/]",
+          message:
+            'Extract HTTP method strings to a constant or use an enum.',
+        },
+        // DRY: Prevent repeated CSS class strings in templates
+        {
+          selector:
+            "JSXAttribute[name.name='className'] TemplateLiteral",
+          message:
+            'Extract repeated CSS classes to a constant or use a shared component.',
+        },
       ],
+      // Enforce immutable patterns
+      'prefer-const': 'error',
+      'no-var': 'error',
+      // Prevent duplicate variable/function names in same scope
+      'no-shadow': 'off',
+      '@typescript-eslint/no-shadow': 'warn',
     },
   },
 );

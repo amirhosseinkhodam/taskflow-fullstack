@@ -4,15 +4,14 @@ import { By } from '@angular/platform-browser';
 import { ButtonComponent } from '../../../../src/app/shared/components/button';
 
 @Component({
-  template: `<button
-    appButton
+  template: `<app-button
     [variant]="variant()"
     [disabled]="disabled()"
     [type]="type()"
     (buttonClick)="onClick()"
   >
     Click
-  </button>`,
+  </app-button>`,
   standalone: true,
   imports: [ButtonComponent],
 })

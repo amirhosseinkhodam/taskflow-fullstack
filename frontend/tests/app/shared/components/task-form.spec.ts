@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -15,6 +16,7 @@ describe('TaskFormComponent', () => {
 
   const mockLanguageService = {
     translate: jest.fn().mockImplementation((key: string) => key),
+    currentLanguage: signal<'en' | 'fa'>('en'),
   };
 
   beforeEach(async () => {
@@ -31,16 +33,16 @@ describe('TaskFormComponent', () => {
 
   it('renders form with title, project select, description, and submit button', () => {
     const titleInput = fixture.nativeElement.querySelector(
-      'input[formcontrolname="title"]',
+      'app-input[formcontrolname="title"]',
     );
     const select = fixture.nativeElement.querySelector(
-      'select[formcontrolname="projectId"]',
+      'app-select[formcontrolname="projectId"]',
     );
     const textarea = fixture.nativeElement.querySelector(
-      'textarea[formcontrolname="description"]',
+      'app-textarea[formcontrolname="description"]',
     );
     const submitBtn = fixture.nativeElement.querySelector(
-      'button[type="submit"]',
+      'app-button[type="submit"]',
     );
 
     expect(titleInput).toBeTruthy();
@@ -54,7 +56,7 @@ describe('TaskFormComponent', () => {
     fixture.detectChanges();
 
     const select = fixture.nativeElement.querySelector(
-      'select[formcontrolname="projectId"]',
+      'app-select[formcontrolname="projectId"]',
     );
     expect(select).toBeFalsy();
   });
@@ -65,6 +67,7 @@ describe('TaskFormComponent', () => {
           title: string;
           description: string;
           projectId: number;
+          assigneeEmail?: string;
         }
       | undefined;
     fixture.componentInstance.submitTask.subscribe((v) => (emittedValue = v));
@@ -77,7 +80,7 @@ describe('TaskFormComponent', () => {
     fixture.detectChanges();
 
     const submitBtn = fixture.nativeElement.querySelector(
-      'button[type="submit"]',
+      'app-button[type="submit"] button',
     );
     submitBtn.click();
     fixture.detectChanges();
@@ -86,6 +89,7 @@ describe('TaskFormComponent', () => {
       title: 'New Task',
       projectId: 1,
       description: 'Some description',
+      assigneeEmail: '',
     });
   });
 
@@ -97,7 +101,7 @@ describe('TaskFormComponent', () => {
     fixture.componentInstance.cancelEdit.subscribe(() => (cancelled = true));
 
     const cancelBtn = fixture.nativeElement.querySelector(
-      'button[type="button"]',
+      'app-button[type="button"] button',
     );
     cancelBtn.click();
     fixture.detectChanges();

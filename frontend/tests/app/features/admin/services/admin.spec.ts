@@ -4,6 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { AdminService } from '../../../../../src/app/features/admin/services/admin';
+import { HTTP_METHODS } from '../../../../../src/app/shared/const/http-methods';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -27,7 +28,7 @@ describe('AdminService', () => {
     service.getUsers().subscribe();
 
     const req = httpMock.expectOne(`${API}/admin/users`);
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe(HTTP_METHODS.GET);
     req.flush([]);
   });
 
@@ -35,7 +36,7 @@ describe('AdminService', () => {
     service.deleteUser(1).subscribe();
 
     const req = httpMock.expectOne(`${API}/admin/users/1`);
-    expect(req.request.method).toBe('DELETE');
+    expect(req.request.method).toBe(HTTP_METHODS.DELETE);
     req.flush(null);
   });
 
@@ -43,7 +44,7 @@ describe('AdminService', () => {
     service.updateUserRole(1, 'admin').subscribe();
 
     const req = httpMock.expectOne(`${API}/admin/users/1/role`);
-    expect(req.request.method).toBe('PATCH');
+    expect(req.request.method).toBe(HTTP_METHODS.PATCH);
     expect(req.request.body).toEqual({ role: 'admin' });
     req.flush({ id: 1, role: 'admin' });
   });
@@ -52,7 +53,7 @@ describe('AdminService', () => {
     service.changeUserPassword(1, 'newpass').subscribe();
 
     const req = httpMock.expectOne(`${API}/admin/users/1/change-password`);
-    expect(req.request.method).toBe('POST');
+    expect(req.request.method).toBe(HTTP_METHODS.POST);
     expect(req.request.body).toEqual({ password: 'newpass' });
     req.flush(null);
   });

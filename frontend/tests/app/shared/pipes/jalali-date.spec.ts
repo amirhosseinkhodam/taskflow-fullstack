@@ -1,10 +1,22 @@
-import { JalaliDatePipe } from '../../../../src/app/shared/pipes/jalali-date';
+import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { LocalizedDatePipe } from '../../../../src/app/shared/pipes/localized-date';
+import { LanguageService } from '../../../../src/app/shared/services/language';
 
-describe('JalaliDatePipe', () => {
-  let pipe: JalaliDatePipe;
+describe('LocalizedDatePipe', () => {
+  let pipe: LocalizedDatePipe;
+
+  const mockLanguageService = {
+    translate: (key: string) => key,
+    currentLanguage: signal<'en' | 'fa'>('en'),
+  };
 
   beforeEach(() => {
-    pipe = new JalaliDatePipe();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: LanguageService, useValue: mockLanguageService }],
+    });
+    pipe = TestBed.runInInjectionContext(() => new LocalizedDatePipe());
   });
 
   it('returns empty string for null', () => {
@@ -12,7 +24,7 @@ describe('JalaliDatePipe', () => {
   });
 
   it('returns empty string for undefined', () => {
-    expect(pipe.transform(undefined)).toBe('');
+    expect(pipe.transform(undefined as unknown as string)).toBe('');
   });
 
   it('formats a valid date string', () => {

@@ -1,10 +1,15 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { of, throwError } from 'rxjs';
 import { TaskDetailsPageComponent } from '../../../../../src/app/features/task-details/pages/task-details';
 import { DashboardService } from '../../../../../src/app/features/dashboard/services/dashboard';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
+import { ThemeService } from '../../../../../src/app/shared/services/theme';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 
@@ -34,10 +39,19 @@ describe('TaskDetailsPageComponent', () => {
     updateTask: jest.fn().mockReturnValue(of(mockTask)),
     updateTaskStatus: jest.fn().mockReturnValue(of({})),
     deleteTask: jest.fn().mockReturnValue(of(undefined)),
+    getComments: jest.fn().mockReturnValue(of([])),
+    createComment: jest.fn().mockReturnValue(of({})),
+    updateComment: jest.fn().mockReturnValue(of({})),
+    deleteComment: jest.fn().mockReturnValue(of(undefined)),
   };
 
   const mockLanguageService = {
     translate: jest.fn().mockImplementation((key: string) => key),
+    currentLanguage: signal<'en' | 'fa'>('en'),
+    languages: [],
+    toggle: jest.fn(),
+    getCurrentLanguageOption: jest.fn(),
+    getLanguageOption: jest.fn(),
   };
 
   const mockActivatedRoute = {
@@ -48,11 +62,17 @@ describe('TaskDetailsPageComponent', () => {
     },
   };
 
+  const mockThemeService = {
+    isDark: signal(false),
+    toggle: jest.fn(),
+  };
+
   beforeEach(async () => {
     TestBed.resetTestingModule();
     mockDashboardService.getProjects.mockClear();
     mockDashboardService.getTask.mockClear();
     mockDashboardService.updateTask.mockClear();
+    mockDashboardService.getComments.mockClear();
     mockActivatedRoute.snapshot.paramMap.get.mockReturnValue('1');
 
     await TestBed.configureTestingModule({
@@ -62,6 +82,15 @@ describe('TaskDetailsPageComponent', () => {
         { provide: DashboardService, useValue: mockDashboardService },
         { provide: LanguageService, useValue: mockLanguageService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: ThemeService, useValue: mockThemeService },
+        { provide: MatDialog, useValue: { open: jest.fn() } },
+        { provide: MatBottomSheet, useValue: { open: jest.fn() } },
+        {
+          provide: BreakpointObserver,
+          useValue: {
+            observe: jest.fn().mockReturnValue(of({ matches: false })),
+          },
+        },
       ],
     }).compileComponents();
 

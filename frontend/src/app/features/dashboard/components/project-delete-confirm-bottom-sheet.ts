@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import {
+  MAT_BOTTOM_SHEET_DATA,
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';

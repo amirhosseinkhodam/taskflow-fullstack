@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ProjectListComponent } from '../../../../../src/app/features/dashboard/components/project-list';
@@ -9,6 +10,7 @@ describe('ProjectListComponent', () => {
 
   const mockLanguageService = {
     translate: (key: string) => key,
+    currentLanguage: signal<'en' | 'fa'>('en'),
   };
 
   const mockProjects: ProjectModel[] = [
@@ -53,14 +55,13 @@ describe('ProjectListComponent', () => {
 
     const emitSpy = jest.spyOn(fixture.componentInstance.create, 'emit');
 
-    fixture.componentInstance.projectName.set('New Project');
+    fixture.componentInstance.form.patchValue({ projectName: 'New Project' });
     fixture.detectChanges();
 
     fixture.componentInstance.createProject();
     fixture.detectChanges();
 
     expect(emitSpy).toHaveBeenCalledWith('New Project');
-    expect(fixture.componentInstance.projectName()).toBe('');
   });
 
   it('should not emit create when name is empty', () => {

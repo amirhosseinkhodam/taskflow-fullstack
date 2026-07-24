@@ -4,6 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { AuthService } from '../../../../../src/app/features/auth/services/auth';
+import { HTTP_METHODS } from '../../../../../src/app/shared/const/http-methods';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -27,7 +28,7 @@ describe('AuthService', () => {
     service.login(payload).subscribe();
 
     const req = httpMock.expectOne('http://localhost:3000/auth/login');
-    expect(req.request.method).toBe('POST');
+    expect(req.request.method).toBe(HTTP_METHODS.POST);
     expect(req.request.body).toEqual(payload);
     req.flush({ token: 'jwt', user: { id: 1 } });
   });
@@ -40,7 +41,7 @@ describe('AuthService', () => {
     service.register(payload).subscribe();
 
     const req = httpMock.expectOne('http://localhost:3000/auth/register');
-    expect(req.request.method).toBe('POST');
+    expect(req.request.method).toBe(HTTP_METHODS.POST);
     expect(req.request.body).toEqual(payload);
     req.flush({ token: 'jwt', user: { id: 1 } });
   });

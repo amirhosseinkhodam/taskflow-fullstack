@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,6 +14,7 @@ describe('TaskListComponent', () => {
 
   const mockLanguageService = {
     translate: (key: string) => key,
+    currentLanguage: signal<'en' | 'fa'>('en'),
   };
 
   const mockDashboardService = {

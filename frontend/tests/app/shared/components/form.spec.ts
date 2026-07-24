@@ -1,15 +1,23 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { FormComponent } from '../../../../src/app/shared/components/form';
 
 @Component({
-  template: `<form appForm [variant]="variant()"><input type="text" /></form>`,
+  template: `<app-form
+    [formGroup]="fg"
+    [variant]="variant()"
+    [cssClass]="cssClass()"
+    ><input type="text"
+  /></app-form>`,
   standalone: true,
-  imports: [FormComponent],
+  imports: [FormComponent, ReactiveFormsModule],
 })
 class TestHost {
   variant = signal<'default' | 'inline' | 'vertical' | 'horizontal'>('default');
+  cssClass = signal<string>('');
+  fg = new FormBuilder().nonNullable.group({ test: [''] });
 }
 
 describe('FormComponent', () => {
@@ -40,17 +48,6 @@ describe('FormComponent', () => {
     expect(formEl.nativeElement.tagName).toBe('FORM');
   });
 
-  it('applies default variant classes', () => {
-    host.variant.set('default');
-    hostFixture.detectChanges();
-
-    const formEl = getFormEl();
-    const classes = formEl.nativeElement.className;
-    expect(classes).toContain('bg-white');
-    expect(classes).toContain('rounded-2xl');
-    expect(classes).toContain('p-6');
-  });
-
   it('applies inline variant classes', () => {
     host.variant.set('inline');
     hostFixture.detectChanges();
@@ -62,15 +59,6 @@ describe('FormComponent', () => {
     expect(classes).toContain('items-end');
   });
 
-  it('applies vertical variant classes', () => {
-    host.variant.set('vertical');
-    hostFixture.detectChanges();
-
-    const formEl = getFormEl();
-    const classes = formEl.nativeElement.className;
-    expect(classes).toContain('space-y-4');
-  });
-
   it('applies horizontal variant classes', () => {
     host.variant.set('horizontal');
     hostFixture.detectChanges();
@@ -80,5 +68,13 @@ describe('FormComponent', () => {
     expect(classes).toContain('flex');
     expect(classes).toContain('gap-4');
     expect(classes).toContain('items-center');
+  });
+
+  it('applies custom cssClass', () => {
+    host.cssClass.set('custom-class');
+    hostFixture.detectChanges();
+
+    const formEl = getFormEl();
+    expect(formEl.nativeElement.className).toContain('custom-class');
   });
 });

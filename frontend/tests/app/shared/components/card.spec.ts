@@ -12,10 +12,10 @@ describe('CardComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardComponent);
+    fixture.detectChanges();
   });
 
   it('renders a container div', () => {
-    fixture.detectChanges();
     const divEl = fixture.debugElement.query(By.css('div'));
     expect(divEl).toBeTruthy();
   });
@@ -41,11 +41,11 @@ describe('CardComponent', () => {
     expect(classes).toContain('p-6');
   });
 
-  it('always includes rounded-2xl shadow base classes', () => {
+  it('always includes rounded-card shadow-card base classes', () => {
     const divEl = fixture.debugElement.query(By.css('div'));
     const classes = divEl.nativeElement.className;
-    expect(classes).toContain('rounded-2xl');
-    expect(classes).toContain('shadow');
+    expect(classes).toContain('rounded-card');
+    expect(classes).toContain('shadow-card');
   });
 
   it('projects content inside the div', async () => {

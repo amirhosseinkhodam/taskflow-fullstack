@@ -4,6 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { DashboardService } from '../../../../../src/app/features/dashboard/services/dashboard';
+import { HTTP_METHODS } from '../../../../../src/app/shared/const/http-methods';
 
 describe('DashboardService', () => {
   let service: DashboardService;
@@ -27,7 +28,7 @@ describe('DashboardService', () => {
     service.getHealth().subscribe();
 
     const req = httpMock.expectOne(`${API}/api/health`);
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe(HTTP_METHODS.GET);
     req.flush({ status: 'ok' });
   });
 
@@ -35,7 +36,7 @@ describe('DashboardService', () => {
     service.getTask(42).subscribe();
 
     const req = httpMock.expectOne(`${API}/tasks/42`);
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe(HTTP_METHODS.GET);
     req.flush({ id: 42, title: 'T' });
   });
 
@@ -43,7 +44,7 @@ describe('DashboardService', () => {
     service.getProjects().subscribe();
 
     const req = httpMock.expectOne(`${API}/projects`);
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe(HTTP_METHODS.GET);
     req.flush([]);
   });
 
@@ -51,7 +52,7 @@ describe('DashboardService', () => {
     service.getTasks().subscribe();
 
     const req = httpMock.expectOne(`${API}/tasks`);
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe(HTTP_METHODS.GET);
     req.flush({ data: [], total: 0, page: 1, limit: 5, totalPages: 1 });
   });
 
@@ -63,7 +64,7 @@ describe('DashboardService', () => {
     const req = httpMock.expectOne(
       `${API}/tasks?projectId=5&status=pending&search=foo`,
     );
-    expect(req.request.method).toBe('GET');
+    expect(req.request.method).toBe(HTTP_METHODS.GET);
     req.flush({ data: [], total: 0, page: 1, limit: 5, totalPages: 1 });
   });
 
@@ -71,7 +72,7 @@ describe('DashboardService', () => {
     service.createProject('My Project').subscribe();
 
     const req = httpMock.expectOne(`${API}/projects`);
-    expect(req.request.method).toBe('POST');
+    expect(req.request.method).toBe(HTTP_METHODS.POST);
     expect(req.request.body).toEqual({ name: 'My Project' });
     req.flush({ id: 1, name: 'My Project' });
   });
@@ -80,7 +81,7 @@ describe('DashboardService', () => {
     service.updateProject(1, { name: 'New Name' }).subscribe();
 
     const req = httpMock.expectOne(`${API}/projects/1`);
-    expect(req.request.method).toBe('PUT');
+    expect(req.request.method).toBe(HTTP_METHODS.PUT);
     expect(req.request.body).toEqual({ name: 'New Name' });
     req.flush({ id: 1, name: 'New Name' });
   });
@@ -89,7 +90,7 @@ describe('DashboardService', () => {
     service.deleteProject(1).subscribe();
 
     const req = httpMock.expectOne(`${API}/projects/1`);
-    expect(req.request.method).toBe('DELETE');
+    expect(req.request.method).toBe(HTTP_METHODS.DELETE);
     req.flush(true);
   });
 
@@ -98,7 +99,7 @@ describe('DashboardService', () => {
     service.createTask(payload).subscribe();
 
     const req = httpMock.expectOne(`${API}/tasks`);
-    expect(req.request.method).toBe('POST');
+    expect(req.request.method).toBe(HTTP_METHODS.POST);
     expect(req.request.body).toEqual(payload);
     req.flush({ id: 1, ...payload });
   });
@@ -107,7 +108,7 @@ describe('DashboardService', () => {
     service.updateTask(1, { title: 'Updated' }).subscribe();
 
     const req = httpMock.expectOne(`${API}/tasks/1`);
-    expect(req.request.method).toBe('PUT');
+    expect(req.request.method).toBe(HTTP_METHODS.PUT);
     expect(req.request.body).toEqual({ title: 'Updated' });
     req.flush({ id: 1, title: 'Updated' });
   });
@@ -116,7 +117,7 @@ describe('DashboardService', () => {
     service.reorderTasks([3, 1, 2]).subscribe();
 
     const req = httpMock.expectOne(`${API}/tasks/reorder`);
-    expect(req.request.method).toBe('PATCH');
+    expect(req.request.method).toBe(HTTP_METHODS.PATCH);
     expect(req.request.body).toEqual({ taskIds: [3, 1, 2] });
     req.flush(null);
   });
@@ -125,7 +126,7 @@ describe('DashboardService', () => {
     service.deleteTask(1).subscribe();
 
     const req = httpMock.expectOne(`${API}/tasks/1`);
-    expect(req.request.method).toBe('DELETE');
+    expect(req.request.method).toBe(HTTP_METHODS.DELETE);
     req.flush(null);
   });
 });

@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { TaskFormService } from '../../src/app/shared/forms/task';
+import { TaskFormService } from '../../../../src/app/shared/forms/task';
 
 describe('TaskFormService', () => {
   let service: TaskFormService;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: [TaskFormService] });
     service = TestBed.inject(TaskFormService);
   });

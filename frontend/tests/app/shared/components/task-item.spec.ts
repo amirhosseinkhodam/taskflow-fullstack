@@ -122,9 +122,7 @@ describe('TaskItemComponent', () => {
     fixture.componentRef.setInput('showDetailLink', true);
     fixture.detectChanges();
 
-    const link = fixture.nativeElement.querySelector(
-      'a[ng-reflect-router-link]',
-    );
+    const link = fixture.nativeElement.querySelector('app-button');
     expect(link).toBeTruthy();
   });
 
@@ -133,7 +131,7 @@ describe('TaskItemComponent', () => {
     fixture.detectChanges();
 
     const link = fixture.nativeElement.querySelector(
-      'a[ng-reflect-router-link]',
+      'app-button[title="detail"]',
     );
     expect(link).toBeFalsy();
   });

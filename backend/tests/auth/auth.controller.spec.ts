@@ -38,22 +38,21 @@ describe('AuthController', () => {
   });
 
   it('register() delegates to AuthService.register()', async () => {
+    const spy = jest.spyOn(authService, 'register');
     const dto = {
       email: 'test@test.com',
       password: 'password123',
     };
     await controller.register(dto);
 
-    expect(authService['register']).toHaveBeenCalledWith(
-      dto.email,
-      dto.password,
-    );
+    expect(spy).toHaveBeenCalledWith(dto.email, dto.password);
   });
 
   it('login() delegates to AuthService.login()', async () => {
+    const spy = jest.spyOn(authService, 'login');
     const dto = { email: 'test@test.com', password: 'password123' };
     await controller.login(dto);
 
-    expect(authService['login']).toHaveBeenCalledWith(dto.email, dto.password);
+    expect(spy).toHaveBeenCalledWith(dto.email, dto.password);
   });
 });
