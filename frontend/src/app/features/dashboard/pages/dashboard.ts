@@ -211,7 +211,7 @@ import type { ProjectModel } from '@shared/types/project';
               {{ t('tasks') }}
             </h2>
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <div class="w-full sm:w-auto min-w-[212px]">
+              <div class="w-full sm:w-auto min-w-[178px]">
                 <app-project-filter
                   [projects]="store.projects()"
                   [selectedProjectId]="store.filter().projectId ?? 0"

@@ -1,1 +1,1 @@
-export type TaskStatus = 'pending' | 'done';
+export type TaskStatus = 'pending' | 'in-progress' | 'done';

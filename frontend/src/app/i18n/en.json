@@ -97,6 +97,7 @@
   "detail": "Detail",
   "all": "All",
   "pending": "Pending",
+  "inProgress": "In Progress",
   "done": "Done",
   "searchTasks": "Search tasks...",
   "markAsDone": "Mark as Done",

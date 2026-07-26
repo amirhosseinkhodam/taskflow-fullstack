@@ -1,4 +1,11 @@
-import { Component, input, output, forwardRef, signal } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  forwardRef,
+  signal,
+  effect,
+} from '@angular/core';
 import {
   FormsModule,
   ControlValueAccessor,
@@ -66,6 +73,13 @@ export class SelectComponent implements ControlValueAccessor {
   #onChange: (value: number | string | null) => void = () => {};
   #onTouched: () => void = () => {};
   readonly innerValue = signal<number | string | null>(null);
+
+  constructor() {
+    effect(() => {
+      const val = this.value();
+      this.innerValue.set(val);
+    });
+  }
 
   onChange(event: SelectOption | null) {
     const value = event?.value ?? null;

@@ -14,6 +14,7 @@ import { DashboardService } from '../services/dashboard';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel, TaskFilterModel } from '@shared/types/task';
 import type { UpdateProjectRequestModel } from '../../../shared/models/api';
+import type { TaskStatus } from '../../../shared/models/task';
 
 interface DashboardStateModel {
   projects: ProjectModel[];
@@ -322,31 +323,26 @@ export const DashboardStore = signalStore(
       ),
     );
 
-    const toggleTask = rxMethod<TaskModel>(
+    const toggleTask = rxMethod<{ task: TaskModel; status: string }>(
       pipe(
-        switchMap((task) =>
-          dashboardService
-            .updateTaskStatus(
-              task.id,
-              task.status === 'done' ? 'pending' : 'done',
-            )
-            .pipe(
-              tapResponse({
-                next: () =>
-                  dashboardService.getTasks(store.currentFilters()).subscribe({
-                    next: (response) =>
-                      patchState(store, { tasks: response.data }),
-                    error: () =>
-                      patchState(store, {
-                        message: 'couldNotLoadTasks',
-                      }),
-                  }),
-                error: () =>
-                  patchState(store, {
-                    message: 'couldNotUpdateTaskStatus',
-                  }),
-              }),
-            ),
+        switchMap(({ task, status }) =>
+          dashboardService.updateTaskStatus(task.id, status as TaskStatus).pipe(
+            tapResponse({
+              next: () =>
+                dashboardService.getTasks(store.currentFilters()).subscribe({
+                  next: (response) =>
+                    patchState(store, { tasks: response.data }),
+                  error: () =>
+                    patchState(store, {
+                      message: 'couldNotLoadTasks',
+                    }),
+                }),
+              error: () =>
+                patchState(store, {
+                  message: 'couldNotUpdateTaskStatus',
+                }),
+            }),
+          ),
         ),
       ),
     );

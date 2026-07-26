@@ -12,9 +12,9 @@ html.dark {
   color-scheme: dark;
 }
 
-html[dir="rtl"] input,
-html[dir="rtl"] textarea,
-html[dir="rtl"] select {
+html[dir='rtl'] input,
+html[dir='rtl'] textarea,
+html[dir='rtl'] select {
   text-align: right;
 }
 
@@ -26,6 +26,18 @@ app-status-filter {
 
 app-status-filter mat-chip-option {
   cursor: pointer;
+}
+
+app-status-filter .mat-mdc-chip-action {
+  padding: 15px !important;
+}
+
+app-status-filter .mat-mdc-chip-graphic {
+  display: none;
+}
+
+app-status-filter .mdc-evolution-chip__cell{
+  justify-content: center;
 }
 
 @media (max-width: 639px) {

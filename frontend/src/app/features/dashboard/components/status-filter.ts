@@ -29,6 +29,7 @@ export class StatusFilterComponent {
   readonly statusOptions = [
     { value: 'all', labelKey: 'all' },
     { value: 'pending', labelKey: 'pending' },
+    { value: 'in-progress', labelKey: 'inProgress' },
     { value: 'done', labelKey: 'done' },
   ];
 
