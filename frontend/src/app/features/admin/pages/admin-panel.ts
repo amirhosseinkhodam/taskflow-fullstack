@@ -10,10 +10,8 @@ import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
 import { PasswordBottomSheetComponent } from '../../../shared/components/password-bottom-sheet';
 import { PasswordDialogComponent } from '../../../shared/components/password-dialog';
-import {
-  ButtonComponent,
-  PageHeaderComponent,
-} from '../../../shared/components';
+import { ButtonComponent } from '../../../shared/components/button';
+import { PageHeaderComponent } from '../../../shared/components/page-header';
 import { LanguageService } from '../../../shared/services/language';
 import { AuthStore } from '../../auth/store/auth';
 import type { UserModel } from '../models/admin';

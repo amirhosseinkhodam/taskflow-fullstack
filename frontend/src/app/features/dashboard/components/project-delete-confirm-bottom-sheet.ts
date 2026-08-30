@@ -5,7 +5,7 @@ import {
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
 import { LanguageService } from '../../../shared/services/language';
-import { ButtonComponent } from '../../../shared/components';
+import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-project-delete-confirm-bottom-sheet',

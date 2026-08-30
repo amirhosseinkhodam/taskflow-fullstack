@@ -1,7 +1,7 @@
 import { Component, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
-import { InputComponent } from '../../../shared/components';
+import { InputComponent } from '../../../shared/components/input';
 
 @Component({
   selector: 'app-search-input',

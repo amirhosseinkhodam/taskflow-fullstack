@@ -6,7 +6,8 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { LanguageService } from '../../../shared/services/language';
-import { InputComponent, ButtonComponent } from '../../../shared/components';
+import { InputComponent } from '../../../shared/components/input';
+import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-project-edit-dialog',

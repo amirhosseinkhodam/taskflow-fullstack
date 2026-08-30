@@ -1,6 +1,9 @@
 import { Component, inject, input, output } from '@angular/core';
 import { LanguageService } from '../../../shared/services/language';
-import { SelectComponent, type SelectOption } from '../../../shared/components';
+import {
+  SelectComponent,
+  type SelectOption,
+} from '../../../shared/components/select';
 import type { ProjectModel } from '@shared/types/project';
 
 @Component({

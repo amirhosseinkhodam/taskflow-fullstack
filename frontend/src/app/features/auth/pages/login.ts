@@ -6,11 +6,9 @@ import { LoginFormService } from '../forms/login';
 import { LanguageService } from '../../../shared/services/language';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { PasswordInputComponent } from '../components/password-input';
-import {
-  InputComponent,
-  ButtonComponent,
-  FormComponent,
-} from '../../../shared/components';
+import { InputComponent } from '../../../shared/components/input';
+import { ButtonComponent } from '../../../shared/components/button';
+import { FormComponent } from '../../../shared/components/form';
 
 @Component({
   selector: 'app-login',

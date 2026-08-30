@@ -16,7 +16,7 @@
             "browser": "frontend/src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.frontend.app.json",
-            "styles": ["frontend/src/styles.css"]
+            "styles": ["frontend/src/styles.scss"]
           }
         },
         "serve": {

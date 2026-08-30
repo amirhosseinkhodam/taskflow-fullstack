@@ -7,16 +7,14 @@ import {
   MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import {
-  ButtonComponent,
-  CardComponent,
-  DatePickerComponent,
-  FormComponent,
-  InputComponent,
-  PageHeaderComponent,
-  PasswordBottomSheetComponent,
-  PasswordDialogComponent,
-} from '../../../shared/components';
+import { ButtonComponent } from '../../../shared/components/button';
+import { CardComponent } from '../../../shared/components/card';
+import { DatePickerComponent } from '../../../shared/components/date-picker';
+import { FormComponent } from '../../../shared/components/form';
+import { InputComponent } from '../../../shared/components/input';
+import { PageHeaderComponent } from '../../../shared/components/page-header';
+import { PasswordBottomSheetComponent } from '../../../shared/components/password-bottom-sheet';
+import { PasswordDialogComponent } from '../../../shared/components/password-dialog';
 import { LanguageService } from '../../../shared/services/language';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { AuthStore } from '../../auth/store/auth';

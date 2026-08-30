@@ -1,6 +1,12 @@
 import { Request } from 'express';
 
-export type UserRole = 'user' | 'admin' | 'superAdmin';
+export const USER_ROLES = {
+  USER: 'user',
+  ADMIN: 'admin',
+  SUPER_ADMIN: 'superAdmin',
+} as const;
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 
 export interface AuthUserModel {
   readonly id: number;

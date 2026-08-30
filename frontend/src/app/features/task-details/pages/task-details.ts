@@ -1,20 +1,13 @@
-import {
-  Component,
-  ElementRef,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
-import {
-  ButtonComponent,
-  TaskFormComponent,
-  CardComponent,
-  PageHeaderComponent,
-} from '../../../shared/components';
+import { ButtonComponent } from '../../../shared/components/button';
+import { TaskFormComponent } from '../../../shared/components/task-form';
+import { CardComponent } from '../../../shared/components/card';
+import { PageHeaderComponent } from '../../../shared/components/page-header';
+import { TextareaComponent } from '../../../shared/components/textarea';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import { switchMap } from 'rxjs';
@@ -30,6 +23,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
     PageHeaderComponent,
     ButtonComponent,
     CommentListComponent,
+    TextareaComponent,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -88,12 +82,12 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                     (onUpdate)="updateComment($event)"
                   />
                   <div class="mt-4">
-                    <textarea
+                    <app-textarea
                       #commentInput
-                      placeholder="{{ t('commentPlaceholder') }}"
-                      class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows="3"
-                    ></textarea>
+                      [placeholder]="t('commentPlaceholder')"
+                      [rows]="3"
+                      (inputChange)="commentContent = $event"
+                    />
                     <div class="mt-2 flex justify-end">
                       <app-button
                         variant="primary"
@@ -137,8 +131,7 @@ export class TaskDetailsPageComponent {
     }[]
   >([]);
   readonly currentUserId = signal<number>(0);
-  readonly commentInput =
-    viewChild<ElementRef<HTMLTextAreaElement>>('commentInput');
+  commentContent = '';
 
   readonly #taskId: number;
 
@@ -184,15 +177,13 @@ export class TaskDetailsPageComponent {
   }
 
   onAddCommentClick(): void {
-    const el = this.commentInput()?.nativeElement;
-    if (!el) return;
-    const content = el.value.trim();
+    const content = this.commentContent.trim();
     if (!content) return;
 
     this.#dashboardService.createComment(this.#taskId, content).subscribe({
       next: (comment) => {
         this.comments.update((c) => [...c, comment]);
-        el.value = '';
+        this.commentContent = '';
       },
       error: (err) => console.error('Failed to add comment:', err),
     });

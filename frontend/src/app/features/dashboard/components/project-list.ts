@@ -3,11 +3,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import type { ProjectModel } from '@shared/types/project';
-import {
-  InputComponent,
-  ButtonComponent,
-  FormComponent,
-} from '../../../shared/components';
+import { InputComponent } from '../../../shared/components/input';
+import { ButtonComponent } from '../../../shared/components/button';
+import { FormComponent } from '../../../shared/components/form';
 
 @Component({
   selector: 'app-project-list',

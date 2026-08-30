@@ -1,15 +1,14 @@
 import { Component, inject, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../../shared/services/language';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { ButtonComponent } from '../../../shared/components/button';
-import { FormsModule } from '@angular/forms';
+import { InputComponent } from '../../../shared/components/input';
 import type { CommentModel } from '@shared/types/task';
 
 @Component({
   selector: 'app-comment-list',
   standalone: true,
-  imports: [CommonModule, LocalizedDatePipe, ButtonComponent, FormsModule],
+  imports: [LocalizedDatePipe, ButtonComponent, InputComponent],
   template: `
     <div class="space-y-3">
       @if (comments().length === 0) {
@@ -37,13 +36,18 @@ import type { CommentModel } from '@shared/types/task';
               </p>
               @if (isEditing(comment.id)) {
                 <div class="mt-2 flex gap-2">
-                  <input
+                  <app-input
                     type="text"
                     [value]="editContent[comment.id] || comment.content"
-                    (input)="editContent[comment.id] = $event.target.value"
-                    class="flex-1 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                    (keydown.enter)="saveEdit(comment.id)"
-                    (keydown.escape)="cancelEdit(comment.id)"
+                    (inputChange)="editContent[comment.id] = $event"
+                    (inputKeydown)="
+                      $event.key === 'Enter'
+                        ? saveEdit(comment.id)
+                        : $event.key === 'Escape'
+                          ? cancelEdit(comment.id)
+                          : null
+                    "
+                    cssClass="flex-1"
                   />
                   <app-button
                     variant="primary"

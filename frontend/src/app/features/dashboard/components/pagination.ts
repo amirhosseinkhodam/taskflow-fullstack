@@ -1,6 +1,6 @@
 import { Component, inject, input, output } from '@angular/core';
 import { LanguageService } from '../../../shared/services/language';
-import { ButtonComponent } from '../../../shared/components';
+import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-pagination',

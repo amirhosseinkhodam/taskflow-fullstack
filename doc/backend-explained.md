@@ -38,7 +38,6 @@ users (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
-  name TEXT NOT NULL DEFAULT '',
   "firstName" TEXT,
   "lastName" TEXT,
   "nationalCode" TEXT,
@@ -203,11 +202,15 @@ Available at `http://localhost:3000/api`
 ## Running
 
 ```bash
-npm run start:dev      # Backend on :3000
-npm run start:frontend # Frontend on :4200
-npm run build          # Build both
-npm run test           # All tests
-npm run lint           # ESLint
+npm run setup           # First-time: create DB + seed admin user
+npm run dev             # Start backend + frontend together
+npm run start:dev       # Backend only on :3000
+npm run start:frontend  # Frontend only on :4200
+npm run db:setup        # Create taskflow database if missing
+npm run db:seed         # Seed admin user (admin@taskflow.com / admin123)
+npm run build           # Build both
+npm run test            # All tests
+npm run lint            # ESLint
 ```
 
 ---

@@ -5,7 +5,7 @@ import {
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { LanguageService } from '../../../shared/services/language';
-import { ButtonComponent } from '../../../shared/components';
+import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-project-delete-confirm',

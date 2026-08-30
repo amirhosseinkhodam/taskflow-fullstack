@@ -41,15 +41,13 @@ export class CommentService {
 
     // Fetch with user name
     const userResult = await this.#db.query<{
-      name: string;
       firstName: string | null;
       lastName: string | null;
-    }>(`SELECT name, "firstName", "lastName" FROM users WHERE id = $1`, [
-      userId,
-    ]);
+    }>(`SELECT "firstName", "lastName" FROM users WHERE id = $1`, [userId]);
     const user = userResult.rows[0];
-    const userName =
-      user?.name ?? [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+    const userName = [user?.firstName, user?.lastName]
+      .filter(Boolean)
+      .join(' ');
 
     return {
       ...comment,
@@ -60,13 +58,12 @@ export class CommentService {
   async findByTask(taskId: number): Promise<CommentModel[]> {
     const result = await this.#db.query<
       CommentModel & {
-        name: string;
         firstName: string | null;
         lastName: string | null;
       }
     >(
       `SELECT c.id, c."taskId", c."userId", c.content, c."createdAt", c."updatedAt",
-              u.name, u."firstName", u."lastName"
+              u."firstName", u."lastName"
        FROM task_comments c
        LEFT JOIN users u ON c."userId" = u.id
        WHERE c."taskId" = $1
@@ -78,8 +75,7 @@ export class CommentService {
       id: row.id,
       taskId: row.taskId,
       userId: row.userId,
-      userName:
-        row.name ?? [row.firstName, row.lastName].filter(Boolean).join(' '),
+      userName: [row.firstName, row.lastName].filter(Boolean).join(' '),
       content: row.content,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -132,15 +128,15 @@ export class CommentService {
 
     // Fetch user name
     const userResult = await this.#db.query<{
-      name: string;
       firstName: string | null;
       lastName: string | null;
-    }>(`SELECT name, "firstName", "lastName" FROM users WHERE id = $1`, [
+    }>(`SELECT "firstName", "lastName" FROM users WHERE id = $1`, [
       comment.userId,
     ]);
     const user = userResult.rows[0];
-    const userName =
-      user?.name ?? [user?.firstName, user?.lastName].filter(Boolean).join(' ');
+    const userName = [user?.firstName, user?.lastName]
+      .filter(Boolean)
+      .join(' ');
 
     return {
       ...updatedComment,

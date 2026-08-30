@@ -1,7 +1,36 @@
 import { Pool } from 'pg';
+import * as bcrypt from 'bcryptjs';
 
 const RETRIES = 10;
 const RETRY_DELAY_MS = 2000;
+
+const SUPER_ADMIN_EMAIL = 'amirhosseinkhodam@gmail.com';
+const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
+
+async function ensureSuperAdmin(pool: Pool): Promise<void> {
+  const existing = await pool.query(
+    'SELECT id, role FROM users WHERE email = $1',
+    [SUPER_ADMIN_EMAIL],
+  );
+  if (existing.rows.length > 0) {
+    if (existing.rows[0].role !== 'superAdmin') {
+      await pool.query(
+        `UPDATE users SET role = 'superAdmin' WHERE email = $1`,
+        [SUPER_ADMIN_EMAIL],
+      );
+      console.log(`Super admin role corrected: ${SUPER_ADMIN_EMAIL}`);
+    }
+    return;
+  }
+
+  const hashed = await bcrypt.hash(SUPER_ADMIN_PASSWORD, 10);
+  await pool.query(
+    `INSERT INTO users (email, password, "firstName", "lastName", role)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [SUPER_ADMIN_EMAIL, hashed, 'Amirhossein', 'Khodam', 'superAdmin'],
+  );
+  console.log(`Super admin seeded: ${SUPER_ADMIN_EMAIL}`);
+}
 
 async function ensureTables(pool: Pool): Promise<void> {
   await pool.query(`
@@ -137,6 +166,7 @@ export const databaseProvider = {
         const client = await pool.connect();
         client.release();
         await ensureTables(pool);
+        await ensureSuperAdmin(pool);
         console.log('Database connected and tables ensured');
         return pool;
       } catch (err) {

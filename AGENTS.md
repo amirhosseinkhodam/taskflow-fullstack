@@ -10,11 +10,15 @@ Monorepo with a **NestJS 11 backend** (`backend/`) and an **Angular 19 standalon
 
 | Command | Action |
 |---|---|
+| `npm run setup` | Create database + seed admin user (run once on first setup) |
+| `npm run dev` | Start both backend + frontend in dev mode |
 | `npm run start:dev` | Backend dev server (watch mode) on `localhost:3000` |
 | `npm run start:frontend` | Angular dev server on `localhost:4200` |
 | `npm run build` | Build both: `nest build && ng build` |
 | `npm run build:backend` | `nest build` |
 | `npm run build:frontend` | `ng build` |
+| `npm run db:setup` | Create `taskflow` database if it doesn't exist |
+| `npm run db:seed` | Seed admin user (`admin@taskflow.com` / `admin123`) |
 | `npm run lint` | ESLint — checks `backend/src/**/*.ts`, `backend/tests/**/*.ts`, `frontend/src/**/*.ts`, `frontend/tests/**/*.ts` |
 | `npm run format` | Prettier — writes `backend/src`, `backend/tests`, `frontend/src`, `frontend/tests` |
 | `npm run test` | Run all tests (backend + frontend) |
@@ -40,6 +44,7 @@ Test files live in `backend/tests/` and `frontend/tests/`, mirroring the `src/` 
 - Copy `.env` (or create from scratch) — `DATABASE_URL` or individual `PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE` env vars.
 - Backend loads env via `import 'dotenv/config'` at the top of `main.ts`.
 - Database tables auto-create on first startup via `ensureTables()` — no migrations to run.
+- **First-time setup**: Run `npm run setup` to create the `taskflow` database and seed an admin user (`admin@taskflow.com` / `admin123`).
 - A PostgreSQL 16 instance (extracted from a deb, `/tmp/pg/usr/lib/postgresql/16/bin/`) is running for this session. In production or a clean environment, you need your own PostgreSQL.
 
 ## Notable quirks

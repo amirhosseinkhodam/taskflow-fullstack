@@ -4,13 +4,10 @@ import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
 import { TaskFormService } from '../forms/task';
 import { LanguageService } from '../services/language';
-import {
-  ButtonComponent,
-  InputComponent,
-  SelectComponent,
-  TextareaComponent,
-  type SelectOption,
-} from './';
+import { ButtonComponent } from './button';
+import { InputComponent } from './input';
+import { SelectComponent, type SelectOption } from './select';
+import { TextareaComponent } from './textarea';
 
 @Component({
   selector: 'app-task-form',
