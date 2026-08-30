@@ -1,5 +1,4 @@
-import { signal } from '@angular/core';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -239,8 +238,8 @@ describe('AdminPanelComponent', () => {
   it('should render back to dashboard button', () => {
     const buttons: HTMLButtonElement[] =
       fixture.nativeElement.querySelectorAll('button');
-    const backButton = Array.from(buttons).find(
-      (b) => b.textContent?.includes('backToDashboard'),
+    const backButton = Array.from(buttons).find((b) =>
+      b.textContent?.includes('backToDashboard'),
     );
     expect(backButton).toBeTruthy();
   });
