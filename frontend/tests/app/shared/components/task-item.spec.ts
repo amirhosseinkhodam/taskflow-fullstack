@@ -4,9 +4,9 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 import { of } from 'rxjs';
 import { TaskItemComponent } from '../../../../src/app/shared/components/task-item';
-import { DashboardService } from '../../../../src/app/features/dashboard/services/dashboard';
 import { LanguageService } from '../../../../src/app/shared/services/language';
 import { MatDialog } from '@angular/material/dialog';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 
@@ -30,12 +30,6 @@ describe('TaskItemComponent', () => {
     { id: 1, name: 'Project A', createdAt: '', updatedAt: '' },
   ];
 
-  const mockDashboardService = {
-    updateTaskStatus: jest.fn().mockReturnValue(of({})),
-    getTask: jest.fn().mockReturnValue(of(mockTask)),
-    deleteTask: jest.fn().mockReturnValue(of(undefined)),
-  };
-
   const mockLanguageService = {
     translate: jest.fn().mockImplementation((key: string) => key),
     currentLanguage: signal('en'),
@@ -48,20 +42,21 @@ describe('TaskItemComponent', () => {
     }),
   };
 
+  const mockBreakpointObserver = {
+    observe: jest.fn().mockReturnValue(of({ matches: false })),
+  };
+
   beforeEach(async () => {
     TestBed.resetTestingModule();
-    mockDashboardService.updateTaskStatus.mockClear();
-    mockDashboardService.getTask.mockClear();
-    mockDashboardService.deleteTask.mockClear();
     mockDialog.open.mockClear();
 
     await TestBed.configureTestingModule({
       imports: [TaskItemComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
-        { provide: DashboardService, useValue: mockDashboardService },
         { provide: LanguageService, useValue: mockLanguageService },
         { provide: MatDialog, useValue: mockDialog },
+        { provide: BreakpointObserver, useValue: mockBreakpointObserver },
       ],
     }).compileComponents();
 
@@ -164,16 +159,23 @@ describe('TaskItemComponent', () => {
     expect(emittedTask).toEqual(mockTask);
   });
 
-  it('toggle button calls dashboardService.updateTaskStatus', () => {
-    const buttons = fixture.nativeElement.querySelectorAll('button');
-    const toggleBtn = Array.from(buttons).find((b: Element) =>
-      b.textContent?.includes('toggle'),
-    ) as HTMLButtonElement;
-    toggleBtn.click();
+  it('emits statusChanged when status is changed via select', () => {
+    let emitted: { task: TaskModel; status: string } | undefined;
+    fixture.componentInstance.statusChanged.subscribe((e) => (emitted = e));
 
-    expect(mockDashboardService.updateTaskStatus).toHaveBeenCalledWith(
-      1,
-      'done',
-    );
+    fixture.componentInstance.onStatusChange('done');
+    fixture.detectChanges();
+
+    expect(emitted).toEqual({ task: mockTask, status: 'done' });
+  });
+
+  it('does not emit statusChanged when same status is selected', () => {
+    let emitted = false;
+    fixture.componentInstance.statusChanged.subscribe(() => (emitted = true));
+
+    fixture.componentInstance.onStatusChange('pending');
+    fixture.detectChanges();
+
+    expect(emitted).toBe(false);
   });
 });

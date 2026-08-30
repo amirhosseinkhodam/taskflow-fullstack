@@ -239,6 +239,7 @@ import type { ProjectModel } from '@shared/types/project';
             (reorder)="onReorder($event)"
             (editTask)="store.startEdit($event)"
             (refresh)="store.loadTasks()"
+            (statusChanged)="store.toggleTask($event)"
           />
           <app-pagination
             [currentPage]="store.page()"

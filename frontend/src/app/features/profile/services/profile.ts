@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { ApiService } from '@core/services/api';
 import type { AuthUserModel } from '@shared/types/auth';
 import type {
   ChangePasswordRequestModel,
@@ -11,24 +11,17 @@ export type { AuthUserModel as ProfileModel };
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  readonly #http = inject(HttpClient);
-  readonly #apiBaseUrl = 'http://localhost:3000';
+  readonly #api = inject(ApiService);
 
   getMe() {
-    return this.#http.get<AuthUserModel>(`${this.#apiBaseUrl}/profile/me`);
+    return this.#api.get<AuthUserModel>('/profile/me');
   }
 
   updateProfile(dto: UpdateProfileRequestModel) {
-    return this.#http.patch<UpdateProfileResponseModel>(
-      `${this.#apiBaseUrl}/profile/me`,
-      dto,
-    );
+    return this.#api.patch<UpdateProfileResponseModel>('/profile/me', dto);
   }
 
   changePassword(dto: ChangePasswordRequestModel) {
-    return this.#http.patch<{ success: boolean }>(
-      `${this.#apiBaseUrl}/profile/me/password`,
-      dto,
-    );
+    return this.#api.patch<{ success: boolean }>('/profile/me/password', dto);
   }
 }

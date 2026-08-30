@@ -17,6 +17,16 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.frontend.app.json",
             "styles": ["frontend/src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "frontend/src/environments/environment.ts",
+                  "with": "frontend/src/environments/environment.prod.ts"
+                }
+              ]
+            }
           }
         },
         "serve": {

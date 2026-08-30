@@ -1,24 +1,17 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { ApiService } from '@core/services/api';
 import type { AuthResponseModel } from '@shared/types/auth';
 import type { AuthPayloadModel } from '../models/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  readonly #http = inject(HttpClient);
-  readonly #apiBaseUrl = 'http://localhost:3000';
+  readonly #api = inject(ApiService);
 
   login(value: AuthPayloadModel) {
-    return this.#http.post<AuthResponseModel>(
-      `${this.#apiBaseUrl}/auth/login`,
-      value,
-    );
+    return this.#api.post<AuthResponseModel>('/auth/login', value);
   }
 
   register(value: AuthPayloadModel) {
-    return this.#http.post<AuthResponseModel>(
-      `${this.#apiBaseUrl}/auth/register`,
-      value,
-    );
+    return this.#api.post<AuthResponseModel>('/auth/register', value);
   }
 }

@@ -10,10 +10,7 @@ import { PasswordFormService } from '../forms/password';
 import { ButtonComponent } from './button';
 import { InputComponent } from './input';
 import { FormComponent } from './form';
-
-interface PasswordDialogData {
-  requireCurrentPassword: boolean;
-}
+import type { PasswordDialogData } from '../models/password';
 
 @Component({
   selector: 'app-password-dialog',

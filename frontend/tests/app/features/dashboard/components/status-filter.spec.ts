@@ -25,11 +25,11 @@ describe('StatusFilterComponent', () => {
     fixture.detectChanges();
   }
 
-  it('should render 3 chip options', () => {
+  it('should render 4 chip options', () => {
     setInput('activeStatus', 'all');
 
     const chips = fixture.nativeElement.querySelectorAll('mat-chip-option');
-    expect(chips.length).toBe(3);
+    expect(chips.length).toBe(4);
   });
 
   it('should set active status to match activeStatus input', () => {

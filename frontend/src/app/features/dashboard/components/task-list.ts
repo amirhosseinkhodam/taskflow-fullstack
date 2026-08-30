@@ -2,6 +2,7 @@ import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { Component, inject, input, output } from '@angular/core';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
+import type { TaskStatus } from '../../../shared/models/task';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 
@@ -27,6 +28,7 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
             (edit)="editTask.emit($event)"
             (toggled)="refresh.emit()"
             (deleted)="refresh.emit()"
+            (statusChanged)="statusChanged.emit($event)"
           >
             <span
               cdkDragHandle
@@ -62,6 +64,7 @@ export class TaskListComponent {
   readonly reorder = output<{ previousIndex: number; currentIndex: number }>();
   readonly editTask = output<TaskModel>();
   readonly refresh = output<void>();
+  readonly statusChanged = output<{ task: TaskModel; status: TaskStatus }>();
 
   readonly #languageService = inject(LanguageService);
 

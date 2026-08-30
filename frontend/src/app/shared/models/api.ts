@@ -4,10 +4,6 @@ export interface HealthResponseModel {
   readonly status: string;
 }
 
-export interface CreateProjectRequestModel {
-  readonly name: string;
-}
-
 export interface CreateTaskRequestModel {
   readonly title: string;
   readonly description: string;

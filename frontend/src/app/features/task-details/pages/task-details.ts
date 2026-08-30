@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
+import { CommentService } from '../../comments/services/comment';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 import { ButtonComponent } from '../../../shared/components/button';
@@ -8,8 +9,10 @@ import { TaskFormComponent } from '../../../shared/components/task-form';
 import { CardComponent } from '../../../shared/components/card';
 import { PageHeaderComponent } from '../../../shared/components/page-header';
 import { TextareaComponent } from '../../../shared/components/textarea';
+import { AuthStore } from '../../auth/store/auth';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
+import type { TaskStatus } from '../../../shared/models/task';
 import { switchMap } from 'rxjs';
 import { CommentListComponent } from '../../comments/components/comment-list';
 
@@ -27,7 +30,11 @@ import { CommentListComponent } from '../../comments/components/comment-list';
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <app-page-header [title]="t('taskDetails')" [showBackButton]="true" />
+      <app-page-header
+        [title]="t('taskDetails')"
+        [showBackButton]="true"
+        (logout)="onLogout()"
+      />
 
       <main class="mx-auto max-w-2xl p-6">
         <app-card>
@@ -64,6 +71,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                   (edit)="startEdit($event)"
                   (toggled)="onToggled($event)"
                   (deleted)="onDeleted()"
+                  (statusChanged)="onStatusChanged($event)"
                 />
 
                 <!-- Comments Section -->
@@ -111,6 +119,8 @@ export class TaskDetailsPageComponent {
   readonly #route = inject(ActivatedRoute);
   readonly #router = inject(Router);
   readonly #dashboardService = inject(DashboardService);
+  readonly #commentService = inject(CommentService);
+  readonly #auth = inject(AuthStore);
   readonly #languageService = inject(LanguageService);
 
   readonly task = signal<TaskModel | null>(null);
@@ -170,7 +180,7 @@ export class TaskDetailsPageComponent {
   }
 
   loadComments(): void {
-    this.#dashboardService.getComments(this.#taskId).subscribe({
+    this.#commentService.getComments(this.#taskId).subscribe({
       next: (comments) => this.comments.set(comments),
       error: (err) => console.error('Failed to load comments:', err),
     });
@@ -180,7 +190,7 @@ export class TaskDetailsPageComponent {
     const content = this.commentContent.trim();
     if (!content) return;
 
-    this.#dashboardService.createComment(this.#taskId, content).subscribe({
+    this.#commentService.createComment(this.#taskId, content).subscribe({
       next: (comment) => {
         this.comments.update((c) => [...c, comment]);
         this.commentContent = '';
@@ -190,7 +200,7 @@ export class TaskDetailsPageComponent {
   }
 
   updateComment({ id, content }: { id: number; content: string }): void {
-    this.#dashboardService.updateComment(id, content).subscribe({
+    this.#commentService.updateComment(id, content).subscribe({
       next: (updated) => {
         this.comments.update((c) =>
           c.map((comment) => (comment.id === id ? updated : comment)),
@@ -201,7 +211,7 @@ export class TaskDetailsPageComponent {
   }
 
   deleteComment(id: number): void {
-    this.#dashboardService.deleteComment(id).subscribe({
+    this.#commentService.deleteComment(id).subscribe({
       next: () => {
         this.comments.update((c) => c.filter((comment) => comment.id !== id));
       },
@@ -252,7 +262,23 @@ export class TaskDetailsPageComponent {
     this.task.set(updated);
   }
 
+  onStatusChanged(event: { task: TaskModel; status: TaskStatus }): void {
+    this.#dashboardService
+      .updateTaskStatus(event.task.id, event.status)
+      .subscribe({
+        next: () => {
+          this.#dashboardService.getTask(event.task.id).subscribe((updated) => {
+            this.task.set(updated);
+          });
+        },
+      });
+  }
+
   onDeleted(): void {
     this.#router.navigate(['/']);
+  }
+
+  onLogout(): void {
+    this.#auth.logout();
   }
 }

@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npx eslint "backend/src/**/*.ts" "backend/tests/**/*.ts" "frontend/src/**/*.ts" "frontend/tests/**/*.ts"
+
+      - name: Backend tests
+        run: npx jest --config backend/jest.config.ts
+
+      - name: Frontend tests
+        run: npx jest --config frontend/jest.config.ts
+
+      - name: Build backend
+        run: npx nest build
+
+      - name: Build frontend
+        run: npx ng build

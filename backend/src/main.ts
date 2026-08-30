@@ -7,9 +7,9 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 
 async function bootstrap() {
-  if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  if (!process.env.JWT_SECRET) {
     console.error(
-      'FATAL: JWT_SECRET environment variable is required in production',
+      'FATAL: JWT_SECRET environment variable is required. Set it in your .env file.',
     );
     process.exit(1);
   }
@@ -27,9 +27,10 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({
-    origin: ['http://localhost:4200'],
-  });
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : ['http://localhost:4200'];
+  app.enableCors({ origin: corsOrigins });
 
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()

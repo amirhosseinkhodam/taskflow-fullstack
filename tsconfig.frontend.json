@@ -15,6 +15,8 @@
     "module": "ES2022",
     "lib": ["ES2022", "dom"],
     "paths": {
+      "@core/*": ["frontend/src/app/core/*"],
+      "@env/*": ["frontend/src/environments/*"],
       "@models/*": ["frontend/src/app/models/*"],
       "@shared/*": ["shared/*"]
     }

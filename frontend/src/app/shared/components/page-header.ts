@@ -1,7 +1,14 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthStore } from '../../features/auth/store/auth';
 import { LanguageService } from '../services/language';
 import { ButtonComponent } from './button';
 import { LanguageToggleComponent } from './language-toggle';
@@ -10,7 +17,12 @@ import { ThemeToggleComponent } from './theme-toggle';
 @Component({
   selector: 'app-page-header',
   standalone: true,
-  imports: [ButtonComponent, LanguageToggleComponent, ThemeToggleComponent],
+  imports: [
+    NgClass,
+    ButtonComponent,
+    LanguageToggleComponent,
+    ThemeToggleComponent,
+  ],
   template: `
     <header
       class="sticky top-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700"
@@ -51,7 +63,7 @@ import { ThemeToggleComponent } from './theme-toggle';
                   {{ t('profile') }}
                 </app-button>
               }
-              <app-button variant="secondary" (buttonClick)="logout()">
+              <app-button variant="secondary" (buttonClick)="onLogout()">
                 {{ t('logout') }}
               </app-button>
             } @else {
@@ -115,7 +127,7 @@ import { ThemeToggleComponent } from './theme-toggle';
                       <app-button
                         variant="destructive"
                         cssClass="w-full justify-start"
-                        (buttonClick)="logout()"
+                        (buttonClick)="onLogout()"
                       >
                         {{ t('logout') }}
                       </app-button>
@@ -135,10 +147,10 @@ export class PageHeaderComponent {
   readonly roleBadge = input<string>();
   readonly showBackButton = input<boolean>(true);
   readonly showProfileButton = input<boolean>(true);
+  readonly logoutEvent = output<void>({ alias: 'logout' });
 
   readonly #languageService = inject(LanguageService);
   readonly #router = inject(Router);
-  readonly #auth = inject(AuthStore);
   readonly #breakpointObserver = inject(BreakpointObserver);
 
   readonly isMobile = signal(false);
@@ -176,8 +188,8 @@ export class PageHeaderComponent {
     this.#router.navigate(['/profile']);
   }
 
-  logout(): void {
-    this.#auth.logout();
+  onLogout(): void {
+    this.logoutEvent.emit();
     this.#router.navigate(['/login']);
   }
 }

@@ -26,11 +26,7 @@ export class PasswordFormService {
   );
 
   resetForm() {
-    this.#form.reset({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
+    this.#form.reset();
   }
 
   get form() {

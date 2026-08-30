@@ -10,6 +10,8 @@
     "strict": true,
     "target": "ES2022",
     "paths": {
+      "@core/*": ["frontend/src/app/core/*"],
+      "@env/*": ["frontend/src/environments/*"],
       "@models/*": ["frontend/src/app/models/*"],
       "@shared/*": ["shared/*"]
     }

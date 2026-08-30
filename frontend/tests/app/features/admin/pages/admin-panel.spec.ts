@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
@@ -11,6 +12,9 @@ import { AuthStore } from '../../../../../src/app/features/auth/store/auth';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ThemeService } from '../../../../../src/app/shared/services/theme';
 import type { UserModel } from '../../../../../src/app/features/admin/models/admin';
+
+@Component({ selector: 'app-dummy', template: '' })
+class DummyComponent {}
 
 describe('AdminPanelComponent', () => {
   let fixture: ComponentFixture<AdminPanelComponent>;
@@ -92,7 +96,10 @@ describe('AdminPanelComponent', () => {
         MatBottomSheetModule,
       ],
       providers: [
-        provideRouter([]),
+        provideRouter([
+          { path: 'login', component: DummyComponent },
+          { path: 'profile', component: DummyComponent },
+        ]),
         { provide: AuthStore, useValue: mockAuth },
         {
           provide: LanguageService,
@@ -230,8 +237,10 @@ describe('AdminPanelComponent', () => {
   });
 
   it('should render back to dashboard button', () => {
-    const backButton: HTMLButtonElement = fixture.nativeElement.querySelector(
-      'button[routerLink="/"]',
+    const buttons: HTMLButtonElement[] =
+      fixture.nativeElement.querySelectorAll('button');
+    const backButton = Array.from(buttons).find(
+      (b) => b.textContent?.includes('backToDashboard'),
     );
     expect(backButton).toBeTruthy();
   });

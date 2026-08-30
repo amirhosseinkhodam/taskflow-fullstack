@@ -1,0 +1,15 @@
+node_modules
+dist
+.angular
+.git
+coverage
+.nyc_output
+*.log
+.env
+.env.*
+!.env.example
+*.md
+doc/
+docs/
+backend/tests
+frontend/tests

@@ -53,7 +53,7 @@ export const passwordStrengthValidator: ValidatorFn = (
   if (!/[0-9]/.test(control.value)) {
     errors['passwordNeedsNumber'] = true;
   }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(control.value)) {
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(control.value)) {
     errors['passwordNeedsSpecialChar'] = true;
   }
 

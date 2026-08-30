@@ -8,7 +8,6 @@ import {
 } from '@angular/material/bottom-sheet';
 import { LanguageService } from '../services/language';
 import { LocalizedDatePipe } from '../pipes/localized-date';
-import { DashboardService } from '../../features/dashboard/services/dashboard';
 import { ConfirmDialogComponent } from './confirm-dialog';
 import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
 import { ButtonComponent } from './button';
@@ -175,8 +174,8 @@ export class TaskItemComponent {
   readonly edit = output<TaskModel>();
   readonly toggled = output<TaskModel>();
   readonly deleted = output<TaskModel>();
+  readonly statusChanged = output<{ task: TaskModel; status: TaskStatus }>();
 
-  readonly #dashboardService = inject(DashboardService);
   readonly #languageService = inject(LanguageService);
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
@@ -223,16 +222,7 @@ export class TaskItemComponent {
   onStatusChange(newStatus: number | string | null): void {
     const task = this.task();
     if (!task || !newStatus || newStatus === task.status) return;
-
-    this.#dashboardService
-      .updateTaskStatus(task.id, newStatus as TaskStatus)
-      .subscribe({
-        next: () => {
-          this.#dashboardService.getTask(task.id).subscribe((updated) => {
-            this.toggled.emit(updated);
-          });
-        },
-      });
+    this.statusChanged.emit({ task, status: newStatus as TaskStatus });
   }
 
   confirmDelete(): void {
@@ -244,9 +234,7 @@ export class TaskItemComponent {
       if (!confirmed) return;
       const task = this.task();
       if (!task) return;
-      this.#dashboardService.deleteTask(task.id).subscribe({
-        next: () => this.deleted.emit(task),
-      });
+      this.deleted.emit(task);
     });
   }
 }

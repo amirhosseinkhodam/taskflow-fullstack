@@ -1,11 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { ApiService } from '@core/services/api';
 import type { TaskStatus } from '../../../shared/models/task';
 import type {
   TaskModel,
   TaskFilterModel,
   PaginatedResponseModel,
-  CommentModel,
 } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import type {
@@ -17,21 +16,18 @@ import type {
 
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
-  readonly #http = inject(HttpClient);
-  readonly #apiBaseUrl = 'http://localhost:3000';
+  readonly #api = inject(ApiService);
 
   getHealth() {
-    return this.#http.get<HealthResponseModel>(
-      `${this.#apiBaseUrl}/api/health`,
-    );
+    return this.#api.get<HealthResponseModel>('/api/health');
   }
 
   getTask(id: number) {
-    return this.#http.get<TaskModel>(`${this.#apiBaseUrl}/tasks/${id}`);
+    return this.#api.get<TaskModel>(`/tasks/${id}`);
   }
 
   getProjects() {
-    return this.#http.get<ProjectModel[]>(`${this.#apiBaseUrl}/projects`);
+    return this.#api.get<ProjectModel[]>('/projects');
   }
 
   getTasks(filters?: TaskFilterModel) {
@@ -43,34 +39,29 @@ export class DashboardService {
     if (filters?.page) params.set('page', String(filters.page));
     if (filters?.limit) params.set('limit', String(filters.limit));
     const query = params.toString();
-    return this.#http.get<PaginatedResponseModel<TaskModel>>(
-      `${this.#apiBaseUrl}/tasks${query ? '?' + query : ''}`,
+    return this.#api.get<PaginatedResponseModel<TaskModel>>(
+      `/tasks${query ? '?' + query : ''}`,
     );
   }
 
   createProject(name: string) {
-    return this.#http.post<ProjectModel>(`${this.#apiBaseUrl}/projects`, {
-      name,
-    });
+    return this.#api.post<ProjectModel>('/projects', { name });
   }
 
   updateProject(id: number, value: UpdateProjectRequestModel) {
-    return this.#http.put<ProjectModel>(
-      `${this.#apiBaseUrl}/projects/${id}`,
-      value,
-    );
+    return this.#api.put<ProjectModel>(`/projects/${id}`, value);
   }
 
   deleteProject(id: number) {
-    return this.#http.delete<boolean>(`${this.#apiBaseUrl}/projects/${id}`);
+    return this.#api.delete<boolean>(`/projects/${id}`);
   }
 
   createTask(value: CreateTaskRequestModel) {
-    return this.#http.post<TaskModel>(`${this.#apiBaseUrl}/tasks`, value);
+    return this.#api.post<TaskModel>('/tasks', value);
   }
 
   updateTask(id: number, value: UpdateTaskRequestModel) {
-    return this.#http.put<TaskModel>(`${this.#apiBaseUrl}/tasks/${id}`, value);
+    return this.#api.put<TaskModel>(`/tasks/${id}`, value);
   }
 
   updateTaskStatus(id: number, status: TaskStatus) {
@@ -78,37 +69,10 @@ export class DashboardService {
   }
 
   reorderTasks(taskIds: number[]) {
-    return this.#http.patch<void>(`${this.#apiBaseUrl}/tasks/reorder`, {
-      taskIds,
-    });
+    return this.#api.patch<void>('/tasks/reorder', { taskIds });
   }
 
   deleteTask(id: number) {
-    return this.#http.delete<void>(`${this.#apiBaseUrl}/tasks/${id}`);
-  }
-
-  // Comment methods
-  getComments(taskId: number) {
-    return this.#http.get<CommentModel[]>(
-      `${this.#apiBaseUrl}/tasks/${taskId}/comments`,
-    );
-  }
-
-  createComment(taskId: number, content: string) {
-    return this.#http.post<CommentModel>(
-      `${this.#apiBaseUrl}/tasks/${taskId}/comments`,
-      { content },
-    );
-  }
-
-  updateComment(id: number, content: string) {
-    return this.#http.put<CommentModel>(
-      `${this.#apiBaseUrl}/tasks/comments/${id}`,
-      { content },
-    );
-  }
-
-  deleteComment(id: number) {
-    return this.#http.delete<void>(`${this.#apiBaseUrl}/tasks/comments/${id}`);
+    return this.#api.delete<void>(`/tasks/${id}`);
   }
 }

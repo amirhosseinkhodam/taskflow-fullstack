@@ -8,6 +8,8 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { of, throwError } from 'rxjs';
 import { TaskDetailsPageComponent } from '../../../../../src/app/features/task-details/pages/task-details';
 import { DashboardService } from '../../../../../src/app/features/dashboard/services/dashboard';
+import { CommentService } from '../../../../../src/app/features/comments/services/comment';
+import { AuthStore } from '../../../../../src/app/features/auth/store/auth';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ThemeService } from '../../../../../src/app/shared/services/theme';
 import type { TaskModel } from '@shared/types/task';
@@ -39,6 +41,9 @@ describe('TaskDetailsPageComponent', () => {
     updateTask: jest.fn().mockReturnValue(of(mockTask)),
     updateTaskStatus: jest.fn().mockReturnValue(of({})),
     deleteTask: jest.fn().mockReturnValue(of(undefined)),
+  };
+
+  const mockCommentService = {
     getComments: jest.fn().mockReturnValue(of([])),
     createComment: jest.fn().mockReturnValue(of({})),
     updateComment: jest.fn().mockReturnValue(of({})),
@@ -50,7 +55,12 @@ describe('TaskDetailsPageComponent', () => {
     currentLanguage: signal<'en' | 'fa'>('en'),
     languages: [],
     toggle: jest.fn(),
-    getCurrentLanguageOption: jest.fn(),
+    getCurrentLanguageOption: jest.fn().mockReturnValue({
+      code: 'en',
+      name: 'English',
+      nativeName: 'English',
+      rtl: false,
+    }),
     getLanguageOption: jest.fn(),
   };
 
@@ -67,12 +77,20 @@ describe('TaskDetailsPageComponent', () => {
     toggle: jest.fn(),
   };
 
+  const mockAuth = {
+    token: signal<string | null>(null),
+    user: signal<unknown>(null),
+    isLoggedIn: signal(false),
+    isAdmin: signal(false),
+    logout: jest.fn(),
+  };
+
   beforeEach(async () => {
     TestBed.resetTestingModule();
     mockDashboardService.getProjects.mockClear();
     mockDashboardService.getTask.mockClear();
     mockDashboardService.updateTask.mockClear();
-    mockDashboardService.getComments.mockClear();
+    mockCommentService.getComments.mockClear();
     mockActivatedRoute.snapshot.paramMap.get.mockReturnValue('1');
 
     await TestBed.configureTestingModule({
@@ -80,7 +98,9 @@ describe('TaskDetailsPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: DashboardService, useValue: mockDashboardService },
+        { provide: CommentService, useValue: mockCommentService },
         { provide: LanguageService, useValue: mockLanguageService },
+        { provide: AuthStore, useValue: mockAuth },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: ThemeService, useValue: mockThemeService },
         { provide: MatDialog, useValue: { open: jest.fn() } },

@@ -8,12 +8,14 @@ const config: Config = {
   transform: {
     '^.+\\.(ts|js|mjs|html|svg)$': [
       'jest-preset-angular',
-      { tsconfig: '<rootDir>/tsconfig.frontend.spec.json' },
+      { tsconfig: '<rootDir>/../tsconfig.frontend.spec.json' },
     ],
   },
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/../shared/$1',
     '^@models/(.*)$': '<rootDir>/src/app/models/$1',
+    '^@core/(.*)$': '<rootDir>/src/app/core/$1',
+    '^@env/(.*)$': '<rootDir>/src/environments/$1',
   },
   coverageDirectory: './coverage',
   collectCoverageFrom: [
