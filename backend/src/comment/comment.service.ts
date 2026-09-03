@@ -50,7 +50,7 @@ export class CommentService {
     const user = userResult.rows[0];
     const userName =
       [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-      user?.email?.split('@')[0] ||
+      user?.email ||
       'Unknown';
 
     return {
@@ -82,7 +82,7 @@ export class CommentService {
       userId: row.userId,
       userName:
         [row.firstName, row.lastName].filter(Boolean).join(' ') ||
-        row.email?.split('@')[0] ||
+        row.email ||
         'Unknown',
       content: row.content,
       createdAt: row.createdAt,
@@ -145,7 +145,7 @@ export class CommentService {
     const user = userResult.rows[0];
     const userName =
       [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-      user?.email?.split('@')[0] ||
+      user?.email ||
       'Unknown';
 
     return {

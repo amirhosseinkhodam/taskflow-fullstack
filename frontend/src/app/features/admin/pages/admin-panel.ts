@@ -87,7 +87,7 @@ import { AdminStore } from '../store/admin';
                   <td
                     class="px-4 py-3 text-sm text-slate-900 dark:text-white hidden md:table-cell"
                   >
-                    {{ user.firstName }} {{ user.lastName }}
+                    {{ getDisplayName(user) }}
                   </td>
                   <td class="px-4 py-3">
                     <span
@@ -225,6 +225,11 @@ export class AdminPanelComponent implements OnInit {
 
   isSuperAdminUser(user: UserModel): boolean {
     return user.role === 'superAdmin';
+  }
+
+  getDisplayName(user: UserModel): string {
+    const name = [user.firstName, user.lastName].filter(Boolean).join(' ');
+    return name || user.email;
   }
 
   toggleRole(user: UserModel): void {
