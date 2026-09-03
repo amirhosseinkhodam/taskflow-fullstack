@@ -11,7 +11,7 @@ COPY angular.json ./
 COPY frontend/ frontend/
 COPY shared/ shared/
 
-RUN npx ng build
+RUN npx ng build --configuration production
 
 # ── Stage 2: Serve with nginx ─────────────────────────────
 FROM nginx:stable-alpine AS production

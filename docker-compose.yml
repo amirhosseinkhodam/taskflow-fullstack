@@ -2,14 +2,18 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+
     environment:
       POSTGRES_USER: ${PGUSER:-postgres}
       POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
       POSTGRES_DB: ${PGDATABASE:-taskflow}
+
     volumes:
       - taskflow_db:/var/lib/postgresql/data
+
     ports:
       - "${DOCKER_PGPORT:-5433}:5432"
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres}"]
       interval: 5s
@@ -20,20 +24,29 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+
     restart: unless-stopped
+
     depends_on:
       postgres:
         condition: service_healthy
+
     environment:
       PGHOST: postgres
       PGPORT: "5432"
       PGUSER: ${PGUSER:-postgres}
       PGPASSWORD: ${PGPASSWORD:-postgres}
       PGDATABASE: ${PGDATABASE:-taskflow}
+
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+
+      SUPER_ADMIN_EMAIL: ${SUPER_ADMIN_EMAIL:-}
+      SUPER_ADMIN_PASSWORD: ${SUPER_ADMIN_PASSWORD:-}
+
       PORT: "3000"
       NODE_ENV: production
       CORS_ORIGIN: ""
+
     ports:
       - "${DOCKER_BACKEND_PORT:-3001}:3000"
 
@@ -41,9 +54,12 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+
     restart: unless-stopped
+
     depends_on:
       - backend
+
     ports:
       - "${DOCKER_FRONTEND_PORT:-8080}:80"
 

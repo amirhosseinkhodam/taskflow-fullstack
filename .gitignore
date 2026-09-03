@@ -60,8 +60,7 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Package manager
-package-lock.json
+# Package manager lockfiles (keep package-lock.json tracked)
 yarn.lock
 cargo-lock.toml
 pnpm-lock.yaml
@@ -72,3 +71,9 @@ dist-esbuild
 coverage/
 .nyc_output/
 *.map
+
+# OS / system packages
+*.deb
+
+# Agent instruction files (local only)
+AGENTS.md

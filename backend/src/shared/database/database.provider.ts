@@ -4,10 +4,17 @@ import * as bcrypt from 'bcryptjs';
 const RETRIES = 10;
 const RETRY_DELAY_MS = 2000;
 
-const SUPER_ADMIN_EMAIL = 'amirhosseinkhodam@gmail.com';
-const SUPER_ADMIN_PASSWORD = 'SuperAdmin123!';
+const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL ?? '';
+const SUPER_ADMIN_PASSWORD = process.env.SUPER_ADMIN_PASSWORD ?? '';
 
 async function ensureSuperAdmin(pool: Pool): Promise<void> {
+  if (!SUPER_ADMIN_EMAIL || !SUPER_ADMIN_PASSWORD) {
+    console.log(
+      'Super admin credentials not configured (SUPER_ADMIN_EMAIL / SUPER_ADMIN_PASSWORD). Skipping.',
+    );
+    return;
+  }
+
   const existing = await pool.query(
     'SELECT id, role FROM users WHERE email = $1',
     [SUPER_ADMIN_EMAIL],
@@ -18,7 +25,7 @@ async function ensureSuperAdmin(pool: Pool): Promise<void> {
         `UPDATE users SET role = 'superAdmin' WHERE email = $1`,
         [SUPER_ADMIN_EMAIL],
       );
-      console.log(`Super admin role corrected: ${SUPER_ADMIN_EMAIL}`);
+      console.log('Super admin role corrected');
     }
     return;
   }
@@ -27,9 +34,9 @@ async function ensureSuperAdmin(pool: Pool): Promise<void> {
   await pool.query(
     `INSERT INTO users (email, password, "firstName", "lastName", role)
      VALUES ($1, $2, $3, $4, $5)`,
-    [SUPER_ADMIN_EMAIL, hashed, 'Amirhossein', 'Khodam', 'superAdmin'],
+    [SUPER_ADMIN_EMAIL, hashed, '', '', 'superAdmin'],
   );
-  console.log(`Super admin seeded: ${SUPER_ADMIN_EMAIL}`);
+  console.log('Super admin seeded');
 }
 
 async function ensureTables(pool: Pool): Promise<void> {
