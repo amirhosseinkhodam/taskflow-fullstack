@@ -14,12 +14,14 @@ import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskStatus } from '../../../shared/models/task';
 import { switchMap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { CommentListComponent } from '../../comments/components/comment-list';
 
 @Component({
   selector: 'app-task-details',
   standalone: true,
   imports: [
+    FormsModule,
     TaskItemComponent,
     TaskFormComponent,
     CardComponent,
@@ -91,10 +93,9 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                   />
                   <div class="mt-4">
                     <app-textarea
-                      #commentInput
                       [placeholder]="t('commentPlaceholder')"
                       [rows]="3"
-                      (inputChange)="commentContent = $event"
+                      [(ngModel)]="commentContent"
                     />
                     <div class="mt-2 flex justify-end">
                       <app-button
