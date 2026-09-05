@@ -167,12 +167,12 @@ export class TaskService {
     let assigneeId: number | null = task.assigneeId;
     if (assigneeEmail !== undefined) {
       const newAssigneeId = assigneeEmail
-        ? (
+        ? ((
             await this.#db.query<{ id: number }>(
               `SELECT id FROM users WHERE email = $1`,
               [assigneeEmail],
             )
-          ).rows[0]?.id ?? null
+          ).rows[0]?.id ?? null)
         : null;
 
       const isChangingAssignee = newAssigneeId !== task.assigneeId;
@@ -241,9 +241,7 @@ export class TaskService {
     return (result.rowCount ?? 0) > 0;
   }
 
-  async reorder(
-    taskIds: number[],
-  ): Promise<void> {
+  async reorder(taskIds: number[]): Promise<void> {
     if (taskIds.length === 0) {
       throw new BadRequestException('taskIds must not be empty');
     }
@@ -256,10 +254,7 @@ export class TaskService {
     const result = await this.#db.query<{
       id: number;
       projectId: number;
-    }>(
-      `SELECT id, "projectId" FROM tasks WHERE id = ANY($1)`,
-      [uniqueIds],
-    );
+    }>(`SELECT id, "projectId" FROM tasks WHERE id = ANY($1)`, [uniqueIds]);
 
     if (result.rows.length !== uniqueIds.length) {
       throw new BadRequestException('One or more task IDs do not exist');
@@ -290,9 +285,7 @@ export class TaskService {
     }
   }
 
-  async delete(
-    id: number,
-  ): Promise<boolean> {
+  async delete(id: number): Promise<boolean> {
     const taskResult = await this.#db.query<{
       id: number;
     }>(`SELECT id FROM tasks WHERE id = $1`, [id]);

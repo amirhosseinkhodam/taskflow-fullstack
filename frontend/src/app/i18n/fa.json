@@ -139,6 +139,7 @@
   "couldNotAddComment": "نمی‌توان نظر اضافه کرد.",
   "couldNotUpdateComment": "نمی‌توان نظر را به‌روزرسانی کرد.",
   "couldNotDeleteComment": "نمی‌توان نظر را حذف کرد.",
+  "couldNotLoadComments": "نمی‌توان نظرات را بارگذاری کرد.",
   "userNotFound": "کاربر یافت نشد.",
   "unknownUser": "کاربر ناشناس",
   "passwordTooShort8": "رمز عبور باید حداقل ۸ کاراکتر باشد",

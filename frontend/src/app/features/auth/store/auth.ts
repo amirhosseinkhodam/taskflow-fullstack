@@ -13,6 +13,7 @@ import { tapResponse } from '@ngrx/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { NotificationService } from '../../../shared/services/notification';
 import { LoginFormService } from '../forms/login';
 import { RegisterFormService } from '../forms/register';
 import type { AuthResponseModel, AuthUserModel } from '@shared/types/auth';
@@ -66,6 +67,7 @@ export const AuthStore = signalStore(
       router = inject(Router),
       loginForm = inject(LoginFormService),
       registerForm = inject(RegisterFormService),
+      notification = inject(NotificationService),
     ) => {
       const login = rxMethod<void>(
         pipe(
@@ -90,6 +92,10 @@ export const AuthStore = signalStore(
                     error:
                       err.status === 401 ? 'invalidCredentials' : 'loginFailed',
                   });
+                  notification.show(
+                    'error',
+                    err.status === 401 ? 'invalidCredentials' : 'loginFailed',
+                  );
                 },
               }),
             );
@@ -122,6 +128,12 @@ export const AuthStore = signalStore(
                         ? 'emailAlreadyRegistered'
                         : 'registrationFailed',
                   });
+                  notification.show(
+                    'error',
+                    err.status === 409
+                      ? 'emailAlreadyRegistered'
+                      : 'registrationFailed',
+                  );
                 },
               }),
             );

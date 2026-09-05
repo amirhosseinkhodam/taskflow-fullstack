@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { TaskService } from '../../src/task/task.service';
 
 const mockQuery = jest.fn();
@@ -242,9 +239,7 @@ describe('TaskService', () => {
 
   describe('reorder', () => {
     it('empty taskIds throws BadRequestException', async () => {
-      await expect(service.reorder([])).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.reorder([])).rejects.toThrow(BadRequestException);
     });
 
     it('duplicate IDs throws BadRequestException', async () => {
@@ -278,9 +273,7 @@ describe('TaskService', () => {
       });
       mockClient.query.mockRejectedValueOnce(new Error('DB error'));
 
-      await expect(service.reorder([1])).rejects.toThrow(
-        'DB error',
-      );
+      await expect(service.reorder([1])).rejects.toThrow('DB error');
 
       const clientQueries = mockClient.query.mock.calls.map(
         (c: unknown[]) => (c as unknown[][])[0],
@@ -303,9 +296,7 @@ describe('TaskService', () => {
     it('nonexistent task throws NotFoundException', async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      await expect(service.delete(999)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.delete(999)).rejects.toThrow(NotFoundException);
     });
   });
 

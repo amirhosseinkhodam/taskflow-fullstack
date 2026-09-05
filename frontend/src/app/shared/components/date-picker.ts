@@ -13,7 +13,11 @@ import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LanguageService } from '../services/language';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Calendar01Icon, ChevronLeftIcon, ChevronRightIcon } from '@hugeicons/core-free-icons';
+import {
+  Calendar01Icon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from '@hugeicons/core-free-icons';
 import {
   startOfMonth as jalaliStartOfMonth,
   endOfMonth as jalaliEndOfMonth,

@@ -8,7 +8,6 @@ import type {
 } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import type {
-  HealthResponseModel,
   CreateTaskRequestModel,
   UpdateProjectRequestModel,
   UpdateTaskRequestModel,
@@ -17,10 +16,6 @@ import type {
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   readonly #api = inject(ApiService);
-
-  getHealth() {
-    return this.#api.get<HealthResponseModel>('/api/health');
-  }
 
   getTask(id: number) {
     return this.#api.get<TaskModel>(`/tasks/${id}`);

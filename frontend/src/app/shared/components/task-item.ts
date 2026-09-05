@@ -7,7 +7,11 @@ import {
   MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { AddCircleIcon, Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
+import {
+  AddCircleIcon,
+  Edit01Icon,
+  Delete01Icon,
+} from '@hugeicons/core-free-icons';
 import { LanguageService } from '../services/language';
 import { LocalizedDatePipe } from '../pipes/localized-date';
 import { ConfirmDialogComponent } from './confirm-dialog';

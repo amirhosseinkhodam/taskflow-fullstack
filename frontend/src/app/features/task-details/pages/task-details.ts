@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { CommentService } from '../../comments/services/comment';
 import { LanguageService } from '../../../shared/services/language';
+import { NotificationService } from '../../../shared/services/notification';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 import { ButtonComponent } from '../../../shared/components/button';
 import { TaskFormComponent } from '../../../shared/components/task-form';
@@ -123,6 +124,7 @@ export class TaskDetailsPageComponent {
   readonly #commentService = inject(CommentService);
   readonly #auth = inject(AuthStore);
   readonly #languageService = inject(LanguageService);
+  readonly #notification = inject(NotificationService);
 
   readonly task = signal<TaskModel | null>(null);
   readonly projects = signal<ProjectModel[]>([]);
@@ -170,6 +172,7 @@ export class TaskDetailsPageComponent {
         },
         error: (err) => {
           console.error('Failed to load task:', err);
+          this.#notification.show('error', 'taskNotFound');
           this.error.set(true);
           this.loading.set(false);
         },
@@ -183,7 +186,10 @@ export class TaskDetailsPageComponent {
   loadComments(): void {
     this.#commentService.getComments(this.#taskId).subscribe({
       next: (comments) => this.comments.set(comments),
-      error: (err) => console.error('Failed to load comments:', err),
+      error: (err) => {
+        console.error('Failed to load comments:', err);
+        this.#notification.show('error', 'couldNotLoadComments');
+      },
     });
   }
 
@@ -196,7 +202,10 @@ export class TaskDetailsPageComponent {
         this.comments.update((c) => [...c, comment]);
         this.commentContent = '';
       },
-      error: (err) => console.error('Failed to add comment:', err),
+      error: (err) => {
+        console.error('Failed to add comment:', err);
+        this.#notification.show('error', 'couldNotAddComment');
+      },
     });
   }
 
@@ -207,7 +216,10 @@ export class TaskDetailsPageComponent {
           c.map((comment) => (comment.id === id ? updated : comment)),
         );
       },
-      error: (err) => console.error('Failed to update comment:', err),
+      error: (err) => {
+        console.error('Failed to update comment:', err);
+        this.#notification.show('error', 'couldNotUpdateComment');
+      },
     });
   }
 
@@ -216,7 +228,10 @@ export class TaskDetailsPageComponent {
       next: () => {
         this.comments.update((c) => c.filter((comment) => comment.id !== id));
       },
-      error: (err) => console.error('Failed to delete comment:', err),
+      error: (err) => {
+        console.error('Failed to delete comment:', err);
+        this.#notification.show('error', 'couldNotDeleteComment');
+      },
     });
   }
 
@@ -250,7 +265,10 @@ export class TaskDetailsPageComponent {
           this.editingTask.set(null);
           this.isEditing.set(false);
         },
-        error: (err) => console.error('Failed to save task:', err),
+        error: (err) => {
+          console.error('Failed to save task:', err);
+          this.#notification.show('error', 'couldNotUpdateTask');
+        },
       });
   }
 

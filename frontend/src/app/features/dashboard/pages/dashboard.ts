@@ -123,20 +123,6 @@ import { DashboardStore } from '../store/dashboard';
             }
           </div>
         </div>
-
-        <p
-          class="mt-4 rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-300"
-        >
-          {{ t('apiHealth') }}: {{ store.healthStatus() }}
-        </p>
-
-        @if (store.message()) {
-          <p
-            class="mt-4 rounded-lg bg-blue-50 dark:bg-blue-900/30 px-4 py-2 text-sm text-blue-700 dark:text-blue-300"
-          >
-            {{ t(store.message()) }}
-          </p>
-        }
       </app-card>
 
       @if (isAdmin()) {

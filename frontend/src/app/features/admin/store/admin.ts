@@ -11,6 +11,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { AdminService } from '../services/admin';
+import { NotificationService } from '../../../shared/services/notification';
 import type { UserModel } from '../models/admin';
 import { mapPasswordError } from '../../../shared/utils/password-error';
 
@@ -31,83 +32,99 @@ export const AdminStore = signalStore(
   withComputed((store) => ({
     userCount: computed(() => store.users().length),
   })),
-  withMethods((store, adminService = inject(AdminService)) => {
-    const loadUsers = rxMethod<void>(
-      pipe(
-        tap(() => patchState(store, { isLoading: true })),
-        switchMap(() =>
-          adminService.getUsers().pipe(
-            tapResponse({
-              next: (users) => patchState(store, { users, isLoading: false }),
-              error: () =>
-                patchState(store, {
-                  isLoading: false,
-                  message: 'couldNotLoadUsers',
-                }),
-            }),
+  withMethods(
+    (
+      store,
+      adminService = inject(AdminService),
+      notification = inject(NotificationService),
+    ) => {
+      const loadUsers = rxMethod<void>(
+        pipe(
+          tap(() => patchState(store, { isLoading: true })),
+          switchMap(() =>
+            adminService.getUsers().pipe(
+              tapResponse({
+                next: (users) => patchState(store, { users, isLoading: false }),
+                error: () => {
+                  patchState(store, {
+                    isLoading: false,
+                    message: 'couldNotLoadUsers',
+                  });
+                  notification.show('error', 'couldNotLoadUsers');
+                },
+              }),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    const deleteUser = rxMethod<number>(
-      pipe(
-        switchMap((id) =>
-          adminService.deleteUser(id).pipe(
-            tapResponse({
-              next: () => {
-                patchState(store, {
-                  users: store.users().filter((u) => u.id !== id),
-                  message: 'userDeleted',
-                });
-              },
-              error: () => patchState(store, { message: 'couldNotDeleteUser' }),
-            }),
+      const deleteUser = rxMethod<number>(
+        pipe(
+          switchMap((id) =>
+            adminService.deleteUser(id).pipe(
+              tapResponse({
+                next: () => {
+                  patchState(store, {
+                    users: store.users().filter((u) => u.id !== id),
+                    message: 'userDeleted',
+                  });
+                },
+                error: () => {
+                  patchState(store, { message: 'couldNotDeleteUser' });
+                  notification.show('error', 'couldNotDeleteUser');
+                },
+              }),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    const updateUserRole = rxMethod<{ id: number; role: 'user' | 'admin' }>(
-      pipe(
-        switchMap(({ id, role }) =>
-          adminService.updateUserRole(id, role).pipe(
-            tapResponse({
-              next: (updatedUser) => {
-                patchState(store, {
-                  users: store
-                    .users()
-                    .map((u) => (u.id === updatedUser.id ? updatedUser : u)),
-                  message: 'roleUpdated',
-                });
-              },
-              error: () => patchState(store, { message: 'couldNotUpdateRole' }),
-            }),
+      const updateUserRole = rxMethod<{ id: number; role: 'user' | 'admin' }>(
+        pipe(
+          switchMap(({ id, role }) =>
+            adminService.updateUserRole(id, role).pipe(
+              tapResponse({
+                next: (updatedUser) => {
+                  patchState(store, {
+                    users: store
+                      .users()
+                      .map((u) => (u.id === updatedUser.id ? updatedUser : u)),
+                    message: 'roleUpdated',
+                  });
+                },
+                error: () => {
+                  patchState(store, { message: 'couldNotUpdateRole' });
+                  notification.show('error', 'couldNotUpdateRole');
+                },
+              }),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    const changePassword = rxMethod<{ userId: number; newPassword: string }>(
-      pipe(
-        switchMap(({ userId, newPassword }) =>
-          adminService.changeUserPassword(userId, newPassword).pipe(
-            tapResponse({
-              next: () => {
-                patchState(store, { message: 'passwordChanged' });
-              },
-              error: (err: { error?: { message?: string } }) =>
-                patchState(store, {
-                  message: mapPasswordError(err.error?.message ?? ''),
-                }),
-            }),
+      const changePassword = rxMethod<{ userId: number; newPassword: string }>(
+        pipe(
+          switchMap(({ userId, newPassword }) =>
+            adminService.changeUserPassword(userId, newPassword).pipe(
+              tapResponse({
+                next: () => {
+                  patchState(store, { message: 'passwordChanged' });
+                },
+                error: (err: { error?: { message?: string } }) => {
+                  patchState(store, {
+                    message: mapPasswordError(err.error?.message ?? ''),
+                  });
+                  notification.show('error', 'couldNotChangePassword');
+                },
+              }),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    return { loadUsers, deleteUser, updateUserRole, changePassword };
-  }),
+      return { loadUsers, deleteUser, updateUserRole, changePassword };
+    },
+  ),
   withHooks({
     onInit(store) {
       store.loadUsers();

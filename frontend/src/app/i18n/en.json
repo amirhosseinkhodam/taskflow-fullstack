@@ -139,6 +139,7 @@
   "couldNotAddComment": "Could not add comment.",
   "couldNotUpdateComment": "Could not update comment.",
   "couldNotDeleteComment": "Could not delete comment.",
+  "couldNotLoadComments": "Could not load comments.",
   "userNotFound": "User not found.",
   "unknownUser": "Unknown User",
   "passwordTooShort8": "Password must be at least 8 characters",

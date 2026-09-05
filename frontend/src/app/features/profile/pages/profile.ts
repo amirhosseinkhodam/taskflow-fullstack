@@ -16,6 +16,7 @@ import { PageHeaderComponent } from '../../../shared/components/page-header';
 import { PasswordBottomSheetComponent } from '../../../shared/components/password-bottom-sheet';
 import { PasswordDialogComponent } from '../../../shared/components/password-dialog';
 import { LanguageService } from '../../../shared/services/language';
+import { NotificationService } from '../../../shared/services/notification';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { AuthStore } from '../../auth/store/auth';
 import { ProfileFormService } from '../forms/profile-form';
@@ -232,22 +233,6 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
             </div>
           }
         </app-card>
-
-        @if (message()) {
-          <div
-            class="rounded-lg px-4 py-3 text-sm"
-            [ngClass]="{
-              'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300':
-                message() === 'profileUpdated' ||
-                message() === 'passwordChanged',
-              'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300':
-                message() !== 'profileUpdated' &&
-                message() !== 'passwordChanged',
-            }"
-          >
-            {{ t(message()!) }}
-          </div>
-        }
       </main>
     </div>
   `,
@@ -257,6 +242,7 @@ export class ProfileComponent {
   readonly profileForm = inject(ProfileFormService);
   readonly #profileService = inject(ProfileService);
   readonly #languageService = inject(LanguageService);
+  readonly #notification = inject(NotificationService);
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #breakpointObserver = inject(BreakpointObserver);
@@ -264,7 +250,6 @@ export class ProfileComponent {
   readonly icons = { Edit01Icon, LockPasswordIcon };
 
   readonly profile = signal<AuthUserModel | null>(null);
-  readonly message = signal<string | null>(null);
   readonly isSavingProfile = signal(false);
   readonly isEditing = signal(false);
   readonly isPhone = signal(false);
@@ -293,6 +278,7 @@ export class ProfileComponent {
     this.#profileService.getMe().subscribe({
       next: (user) => this.profile.set(user),
       error: () => {
+        this.#notification.show('error', 'couldNotLoadProfile');
         const user = this.auth.user();
         if (user) this.profile.set(user);
       },
@@ -309,13 +295,11 @@ export class ProfileComponent {
 
   cancelEdit(): void {
     this.isEditing.set(false);
-    this.message.set(null);
   }
 
   saveProfile(): void {
     if (this.profileForm.form.invalid) return;
     this.isSavingProfile.set(true);
-    this.message.set(null);
 
     const value = this.profileForm.form.getRawValue();
     this.#profileService
@@ -333,11 +317,12 @@ export class ProfileComponent {
           this.profile.set(response.user);
           this.isSavingProfile.set(false);
           this.isEditing.set(false);
-          this.message.set('profileUpdated');
+          this.#notification.show('success', 'profileUpdated');
         },
         error: (err) => {
           this.isSavingProfile.set(false);
-          this.message.set(
+          this.#notification.show(
+            'error',
             err.status === 409 ? 'emailAlreadyInUse' : 'couldNotUpdateProfile',
           );
         },
@@ -363,14 +348,15 @@ export class ProfileComponent {
         })
         .subscribe({
           next: () => {
-            this.message.set('passwordChanged');
+            this.#notification.show('success', 'passwordChanged');
           },
           error: (err) => {
-            const msg =
+            this.#notification.show(
+              'error',
               err.status === 400
                 ? mapPasswordError(err.error?.message ?? '')
-                : 'couldNotChangePassword';
-            this.message.set(msg);
+                : 'couldNotChangePassword',
+            );
           },
         });
     });
