@@ -1,33 +1,34 @@
-import { Component, inject, signal } from '@angular/core';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-import { BreakpointObserver } from '@angular/cdk/layout';
-import { Router } from '@angular/router';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { MatDialog } from '@angular/material/dialog';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { Component, inject, signal } from '@angular/core';
 import {
   MatBottomSheet,
   MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
-import { DashboardStore } from '../store/dashboard';
-import { AuthStore } from '../../auth/store/auth';
-import { TaskFormComponent } from '../../../shared/components/task-form';
+import { MatDialog } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
+import { Router } from '@angular/router';
+import type { ProjectModel } from '@shared/types/project';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/button';
 import { CardComponent } from '../../../shared/components/card';
-import { TaskListComponent } from '../components/task-list';
-import { StatusFilterComponent } from '../components/status-filter';
-import { SearchInputComponent } from '../components/search-input';
-import { ProjectFilterComponent } from '../components/project-filter';
+import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
+import { TaskFormComponent } from '../../../shared/components/task-form';
+import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
+import { LanguageService } from '../../../shared/services/language';
+import { AuthStore } from '../../auth/store/auth';
 import { PaginationComponent } from '../components/pagination';
-import { ProjectListComponent } from '../components/project-list';
-import { ProjectEditDialogComponent } from '../components/project-edit-dialog';
-import { ProjectEditBottomSheetComponent } from '../components/project-edit-bottom-sheet';
 import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
 import { ProjectDeleteConfirmBottomSheetComponent } from '../components/project-delete-confirm-bottom-sheet';
-import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
-import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
-import { LanguageService } from '../../../shared/services/language';
+import { ProjectEditBottomSheetComponent } from '../components/project-edit-bottom-sheet';
+import { ProjectEditDialogComponent } from '../components/project-edit-dialog';
+import { ProjectFilterComponent } from '../components/project-filter';
+import { ProjectListComponent } from '../components/project-list';
+import { SearchInputComponent } from '../components/search-input';
+import { StatusFilterComponent } from '../components/status-filter';
+import { TaskListComponent } from '../components/task-list';
 import { DashboardService } from '../services/dashboard';
-import type { ProjectModel } from '@shared/types/project';
+import { DashboardStore } from '../store/dashboard';
 
 @Component({
   selector: 'app-dashboard',
@@ -46,6 +47,7 @@ import type { ProjectModel } from '@shared/types/project';
     PaginationComponent,
     ProjectListComponent,
     MatBottomSheetModule,
+    MatMenuModule,
   ],
   template: `
     <main class="mx-auto max-w-4xl p-6">
@@ -91,60 +93,38 @@ import type { ProjectModel } from '@shared/types/project';
                 {{ t('logout') }}
               </app-button>
             } @else {
-              <div class="relative">
-                <app-button
-                  variant="secondary"
-                  type="button"
-                  (buttonClick)="menuOpen.set(!menuOpen())"
-                  [ariaLabel]="t('menu')"
+              <button
+                [matMenuTriggerFor]="mobileMenu"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                </app-button>
-                @if (menuOpen()) {
-                  <div
-                    class="absolute right-0 mt-2 w-48 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg z-50"
-                  >
-                    <div class="py-1">
-                      <app-button
-                        variant="ghost"
-                        cssClass="w-full justify-start"
-                        (buttonClick)="goToProfile(); menuOpen.set(false)"
-                      >
-                        {{ t('profile') }}
-                      </app-button>
-                      @if (isAdmin()) {
-                        <app-button
-                          variant="ghost"
-                          cssClass="w-full justify-start"
-                          (buttonClick)="goToAdmin(); menuOpen.set(false)"
-                        >
-                          {{ t('adminPanel') }}
-                        </app-button>
-                      }
-                      <app-button
-                        variant="destructive"
-                        cssClass="w-full justify-start"
-                        (buttonClick)="logout()"
-                      >
-                        {{ t('logout') }}
-                      </app-button>
-                    </div>
-                  </div>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+              <mat-menu #mobileMenu="matMenu">
+                <button mat-menu-item (click)="goToProfile()">
+                  {{ t('profile') }}
+                </button>
+                @if (isAdmin()) {
+                  <button mat-menu-item (click)="goToAdmin()">
+                    {{ t('adminPanel') }}
+                  </button>
                 }
-              </div>
+                <button mat-menu-item (click)="logout()" class="!text-red-600">
+                  {{ t('logout') }}
+                </button>
+              </mat-menu>
             }
           </div>
         </div>
@@ -262,7 +242,6 @@ export class DashboardComponent {
   readonly #dashboardService = inject(DashboardService);
 
   readonly isPhone = signal(false);
-  readonly menuOpen = signal(false);
   readonly #searchTerm$ = new Subject<string>();
 
   constructor() {
@@ -270,7 +249,6 @@ export class DashboardComponent {
       .observe(['(max-width: 767px)'])
       .subscribe((result) => {
         this.isPhone.set(result.matches);
-        if (!result.matches) this.menuOpen.set(false);
       });
 
     this.#searchTerm$
