@@ -163,31 +163,23 @@ export class TaskService {
     }
 
     const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
-    const isCreator = task.userId === requesterId;
-    const isAssignee = task.assigneeId === requesterId;
-    if (!isAdmin && !isCreator && !isAssignee) {
-      throw new ForbiddenException(
-        'You can only update your own tasks or tasks assigned to you',
-      );
-    }
 
     let assigneeId: number | null = task.assigneeId;
     if (assigneeEmail !== undefined) {
-      if (!isAdmin) {
+      const newAssigneeId = assigneeEmail
+        ? (
+            await this.#db.query<{ id: number }>(
+              `SELECT id FROM users WHERE email = $1`,
+              [assigneeEmail],
+            )
+          ).rows[0]?.id ?? null
+        : null;
+
+      const isChangingAssignee = newAssigneeId !== task.assigneeId;
+      if (isChangingAssignee && !isAdmin) {
         throw new ForbiddenException('Only admins can reassign tasks');
       }
-      if (assigneeEmail === '') {
-        assigneeId = null;
-      } else {
-        const userCheck = await this.#db.query<{ id: number }>(
-          `SELECT id FROM users WHERE email = $1`,
-          [assigneeEmail],
-        );
-        if (userCheck.rows.length === 0) {
-          throw new NotFoundException('Assignee not found');
-        }
-        assigneeId = userCheck.rows[0].id;
-      }
+      assigneeId = newAssigneeId;
     }
 
     if (projectId !== undefined && !isAdmin) {
@@ -251,8 +243,6 @@ export class TaskService {
 
   async reorder(
     taskIds: number[],
-    requesterId: number,
-    requesterRole: string,
   ): Promise<void> {
     if (taskIds.length === 0) {
       throw new BadRequestException('taskIds must not be empty');
@@ -266,10 +256,8 @@ export class TaskService {
     const result = await this.#db.query<{
       id: number;
       projectId: number;
-      userId: number | null;
-      assigneeId: number | null;
     }>(
-      `SELECT id, "projectId", "userId", "assigneeId" FROM tasks WHERE id = ANY($1)`,
+      `SELECT id, "projectId" FROM tasks WHERE id = ANY($1)`,
       [uniqueIds],
     );
 
@@ -282,18 +270,6 @@ export class TaskService {
       throw new BadRequestException(
         'All tasks must belong to the same project',
       );
-    }
-
-    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
-    if (!isAdmin) {
-      const unauthorizedTask = result.rows.find(
-        (r) => r.userId !== requesterId && r.assigneeId !== requesterId,
-      );
-      if (unauthorizedTask) {
-        throw new ForbiddenException(
-          'You can only reorder your own tasks or tasks assigned to you',
-        );
-      }
     }
 
     const client = await this.#db.connect();
@@ -316,26 +292,13 @@ export class TaskService {
 
   async delete(
     id: number,
-    requesterId: number,
-    requesterRole: string,
   ): Promise<boolean> {
     const taskResult = await this.#db.query<{
       id: number;
-      userId: number;
-      assigneeId: number | null;
-    }>(`SELECT id, "userId", "assigneeId" FROM tasks WHERE id = $1`, [id]);
+    }>(`SELECT id FROM tasks WHERE id = $1`, [id]);
     const task = taskResult.rows[0];
     if (!task) {
       throw new NotFoundException('Task not found');
-    }
-
-    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
-    const isCreator = task.userId === requesterId;
-    const isAssignee = task.assigneeId === requesterId;
-    if (!isAdmin && !isCreator && !isAssignee) {
-      throw new ForbiddenException(
-        'You can only delete your own tasks or tasks assigned to you',
-      );
     }
 
     const result = await this.#db.query(`DELETE FROM tasks WHERE id = $1`, [

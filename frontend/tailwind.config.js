@@ -3,6 +3,9 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Vazirmatn', 'sans-serif'],
+      },
       borderRadius: {
         card: '1rem',
         control: '0.5rem',

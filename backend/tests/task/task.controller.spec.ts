@@ -95,15 +95,13 @@ describe('TaskController', () => {
   it('reorder() — delegates with taskIds', async () => {
     const spy = jest.spyOn(taskService, 'reorder');
     const dto = { taskIds: [3, 1, 2] };
-    const req = { user: { id: 1, role: 'admin' } } as any;
-    await controller.reorder(dto, req);
-    expect(spy).toHaveBeenCalledWith([3, 1, 2], 1, 'admin');
+    await controller.reorder(dto);
+    expect(spy).toHaveBeenCalledWith([3, 1, 2]);
   });
 
   it('delete() — delegates with id', async () => {
     const spy = jest.spyOn(taskService, 'delete');
-    const req = { user: { id: 1, role: 'admin' } } as any;
-    await controller.delete(5, req);
-    expect(spy).toHaveBeenCalledWith(5, 1, 'admin');
+    await controller.delete(5);
+    expect(spy).toHaveBeenCalledWith(5);
   });
 });

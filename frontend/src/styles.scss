@@ -1,11 +1,19 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import 'vazirmatn/Vazirmatn-font-face.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+*,
+*::before,
+*::after {
+  font-family: 'Vazirmatn', sans-serif !important;
+}
+
 html {
   color-scheme: light;
+  font-family: 'Vazirmatn', sans-serif;
 }
 
 html.dark {

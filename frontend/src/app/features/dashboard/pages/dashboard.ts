@@ -199,7 +199,7 @@ import { DashboardStore } from '../store/dashboard';
                   (projectChange)="onProjectFilter($event)"
                 />
               </div>
-              <div class="w-full sm:w-auto">
+              <div class="w-full overflow-x-auto overflow-y-hidden sm:w-auto">
                 <app-status-filter
                   [activeStatus]="store.filter().status ?? 'all'"
                   (statusChange)="onStatusFilter($event)"
@@ -219,6 +219,7 @@ import { DashboardStore } from '../store/dashboard';
             (reorder)="onReorder($event)"
             (editTask)="store.startEdit($event)"
             (refresh)="store.loadTasks()"
+            (deleted)="store.deleteTask($event)"
             (statusChanged)="store.toggleTask($event)"
           />
           <app-pagination

@@ -276,7 +276,15 @@ export class TaskDetailsPageComponent {
   }
 
   onDeleted(): void {
-    this.#router.navigate(['/']);
+    const task = this.task();
+    if (!task) {
+      this.#router.navigate(['/']);
+      return;
+    }
+    this.#dashboardService.deleteTask(task.id).subscribe({
+      next: () => this.#router.navigate(['/']),
+      error: () => this.#router.navigate(['/']),
+    });
   }
 
   onLogout(): void {

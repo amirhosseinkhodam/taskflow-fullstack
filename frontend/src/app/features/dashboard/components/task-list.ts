@@ -27,7 +27,7 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
             [showAssigneeBadge]="true"
             (edit)="editTask.emit($event)"
             (toggled)="refresh.emit()"
-            (deleted)="refresh.emit()"
+            (deleted)="deleted.emit($event)"
             (statusChanged)="statusChanged.emit($event)"
           >
             <span
@@ -64,6 +64,7 @@ export class TaskListComponent {
   readonly reorder = output<{ previousIndex: number; currentIndex: number }>();
   readonly editTask = output<TaskModel>();
   readonly refresh = output<void>();
+  readonly deleted = output<TaskModel>();
   readonly statusChanged = output<{ task: TaskModel; status: TaskStatus }>();
 
   readonly #languageService = inject(LanguageService);

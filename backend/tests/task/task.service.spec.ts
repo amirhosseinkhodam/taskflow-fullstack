@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   NotFoundException,
-  ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { TaskService } from '../../src/task/task.service';
@@ -239,25 +238,17 @@ describe('TaskService', () => {
         NotFoundException,
       );
     });
-
-    it('non-owner non-admin gets ForbiddenException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ id: 1, userId: 2 }] });
-
-      await expect(service.update(1, 1, 'user', 'Title')).rejects.toThrow(
-        ForbiddenException,
-      );
-    });
   });
 
   describe('reorder', () => {
     it('empty taskIds throws BadRequestException', async () => {
-      await expect(service.reorder([], 1, 'admin')).rejects.toThrow(
+      await expect(service.reorder([])).rejects.toThrow(
         BadRequestException,
       );
     });
 
     it('duplicate IDs throws BadRequestException', async () => {
-      await expect(service.reorder([1, 1], 1, 'admin')).rejects.toThrow(
+      await expect(service.reorder([1, 1])).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -265,12 +256,12 @@ describe('TaskService', () => {
     it('success — calls BEGIN, UPDATE for each id, COMMIT', async () => {
       mockQuery.mockResolvedValueOnce({
         rows: [
-          { id: 1, projectId: 1, userId: 1 },
-          { id: 2, projectId: 1, userId: 1 },
+          { id: 1, projectId: 1 },
+          { id: 2, projectId: 1 },
         ],
       });
 
-      await service.reorder([1, 2], 1, 'admin');
+      await service.reorder([1, 2]);
 
       expect(mockConnect).toHaveBeenCalled();
       const clientQueries = mockClient.query.mock.calls.map(
@@ -283,11 +274,11 @@ describe('TaskService', () => {
 
     it('error triggers ROLLBACK and client.release()', async () => {
       mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, projectId: 1, userId: 1 }],
+        rows: [{ id: 1, projectId: 1 }],
       });
       mockClient.query.mockRejectedValueOnce(new Error('DB error'));
 
-      await expect(service.reorder([1], 1, 'admin')).rejects.toThrow(
+      await expect(service.reorder([1])).rejects.toThrow(
         'DB error',
       );
 
@@ -302,26 +293,18 @@ describe('TaskService', () => {
   describe('delete', () => {
     it('existing task returns true', async () => {
       mockQuery
-        .mockResolvedValueOnce({ rows: [{ id: 1, userId: 1 }] })
+        .mockResolvedValueOnce({ rows: [{ id: 1 }] })
         .mockResolvedValueOnce({ rowCount: 1 });
 
-      const result = await service.delete(1, 1, 'admin');
+      const result = await service.delete(1);
       expect(result).toBe(true);
     });
 
     it('nonexistent task throws NotFoundException', async () => {
       mockQuery.mockResolvedValueOnce({ rows: [] });
 
-      await expect(service.delete(999, 1, 'admin')).rejects.toThrow(
+      await expect(service.delete(999)).rejects.toThrow(
         NotFoundException,
-      );
-    });
-
-    it('non-owner non-admin gets ForbiddenException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ id: 1, userId: 2 }] });
-
-      await expect(service.delete(1, 1, 'user')).rejects.toThrow(
-        ForbiddenException,
       );
     });
   });

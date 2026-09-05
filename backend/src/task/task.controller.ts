@@ -83,16 +83,14 @@ export class TaskController {
   @Patch('reorder')
   reorder(
     @Body() dto: ReorderTaskDto,
-    @Req() req: AuthenticatedRequest,
   ): Promise<void> {
-    return this.#taskService.reorder(dto.taskIds, req.user.id, req.user.role);
+    return this.#taskService.reorder(dto.taskIds);
   }
 
   @Delete(':id')
   delete(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: AuthenticatedRequest,
   ): Promise<boolean> {
-    return this.#taskService.delete(id, req.user.id, req.user.role);
+    return this.#taskService.delete(id);
   }
 }
