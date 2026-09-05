@@ -12,6 +12,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LanguageService } from '../services/language';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Calendar01Icon, ChevronLeftIcon, ChevronRightIcon } from '@hugeicons/core-free-icons';
 import {
   startOfMonth as jalaliStartOfMonth,
   endOfMonth as jalaliEndOfMonth,
@@ -83,7 +85,7 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 @Component({
   selector: 'app-date-picker',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   template: `
     <div class="relative">
       <div class="relative">
@@ -102,18 +104,12 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
           (click)="toggle($event)"
           tabindex="-1"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-              clip-rule="evenodd"
-            />
-          </svg>
+          <hugeicons-icon
+            [icon]="icons.Calendar01Icon"
+            [size]="20"
+            color="currentColor"
+            [strokeWidth]="1.5"
+          />
         </button>
       </div>
 
@@ -130,31 +126,19 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
               (click)="prevMonth()"
             >
               @if (isRtl()) {
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="ChevronRightIcon"
+                  [size]="20"
+                  color="currentColor"
+                  [strokeWidth]="1.5"
+                />
               } @else {
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="ChevronLeftIcon"
+                  [size]="20"
+                  color="currentColor"
+                  [strokeWidth]="1.5"
+                />
               }
             </button>
             <span
@@ -168,31 +152,19 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
               (click)="nextMonth()"
             >
               @if (isRtl()) {
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="ChevronLeftIcon"
+                  [size]="20"
+                  color="currentColor"
+                  [strokeWidth]="1.5"
+                />
               } @else {
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="ChevronRightIcon"
+                  [size]="20"
+                  color="currentColor"
+                  [strokeWidth]="1.5"
+                />
               }
             </button>
           </div>
@@ -250,6 +222,8 @@ export class DatePickerComponent implements ControlValueAccessor {
   readonly placeholder = input<string>();
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
+
+  readonly icons = { Calendar01Icon, ChevronLeftIcon, ChevronRightIcon };
 
   readonly #languageService = inject(LanguageService);
   readonly #elementRef = inject(ElementRef);

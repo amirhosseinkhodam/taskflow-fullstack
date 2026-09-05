@@ -6,6 +6,8 @@ import type { ProjectModel } from '@shared/types/project';
 import { InputComponent } from '../../../shared/components/input';
 import { ButtonComponent } from '../../../shared/components/button';
 import { FormComponent } from '../../../shared/components/form';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-project-list',
@@ -16,6 +18,7 @@ import { FormComponent } from '../../../shared/components/form';
     InputComponent,
     ButtonComponent,
     FormComponent,
+    HugeiconsIconComponent,
   ],
   template: `
     <div class="h-full flex flex-col min-h-0">
@@ -74,16 +77,12 @@ import { FormComponent } from '../../../shared/components/form';
                 [attr.aria-label]="t('edit')"
                 (click)="edit.emit(project)"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4"
-                >
-                  <path
-                    d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="icons.Edit01Icon"
+                  [size]="16"
+                  color="currentColor"
+                  [strokeWidth]="1.5"
+                />
               </button>
               <button
                 class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
@@ -91,18 +90,12 @@ import { FormComponent } from '../../../shared/components/form';
                 [attr.aria-label]="t('delete')"
                 (click)="delete.emit(project)"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="icons.Delete01Icon"
+                  [size]="16"
+                  color="currentColor"
+                  [strokeWidth]="1.5"
+                />
               </button>
             </div>
           </li>
@@ -122,6 +115,8 @@ export class ProjectListComponent {
   readonly create = output<string>();
   readonly edit = output<ProjectModel>();
   readonly delete = output<ProjectModel>();
+
+  readonly icons = { Edit01Icon, Delete01Icon };
 
   readonly #languageService = inject(LanguageService);
   readonly #fb = inject(FormBuilder);

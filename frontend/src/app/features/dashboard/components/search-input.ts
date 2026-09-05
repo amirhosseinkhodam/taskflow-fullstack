@@ -2,25 +2,22 @@ import { Component, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LanguageService } from '../../../shared/services/language';
 import { InputComponent } from '../../../shared/components/input';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Search01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-search-input',
   standalone: true,
-  imports: [FormsModule, InputComponent],
+  imports: [FormsModule, InputComponent, HugeiconsIconComponent],
   template: `
     <div class="relative">
-      <svg
-        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-          clip-rule="evenodd"
-        />
-      </svg>
+      <hugeicons-icon
+        [icon]="Search01Icon"
+        [size]="16"
+        color="currentColor"
+        [strokeWidth]="1.5"
+        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+      />
       <app-input
         type="search"
         [ngModel]="searchTerm()"
@@ -35,6 +32,8 @@ import { InputComponent } from '../../../shared/components/input';
 export class SearchInputComponent {
   readonly searchTerm = input<string>('');
   readonly searchChange = output<string>();
+
+  readonly Search01Icon = Search01Icon;
 
   readonly #languageService = inject(LanguageService);
 

@@ -10,6 +10,8 @@ import {
 } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Menu01Icon } from '@hugeicons/core-free-icons';
 import { LanguageService } from '../services/language';
 import { ButtonComponent } from './button';
 import { LanguageToggleComponent } from './language-toggle';
@@ -24,6 +26,7 @@ import { ThemeToggleComponent } from './theme-toggle';
     LanguageToggleComponent,
     ThemeToggleComponent,
     MatMenuModule,
+    HugeiconsIconComponent,
   ],
   template: `
     <header
@@ -73,20 +76,12 @@ import { ThemeToggleComponent } from './theme-toggle';
                 [matMenuTriggerFor]="mobileMenu"
                 class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="Menu01Icon"
+                  [size]="20"
+                  color="currentColor"
+                  [strokeWidth]="2"
+                />
               </button>
               <mat-menu #mobileMenu="matMenu">
                 @if (roleBadge()) {
@@ -132,6 +127,8 @@ export class PageHeaderComponent {
   readonly showBackButton = input<boolean>(true);
   readonly showProfileButton = input<boolean>(true);
   readonly logoutEvent = output<void>({ alias: 'logout' });
+
+  readonly Menu01Icon = Menu01Icon;
 
   readonly #languageService = inject(LanguageService);
   readonly #router = inject(Router);

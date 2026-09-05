@@ -5,11 +5,13 @@ import type { TaskModel } from '@shared/types/task';
 import type { TaskStatus } from '../../../shared/models/task';
 import { LanguageService } from '../../../shared/services/language';
 import { TaskItemComponent } from '../../../shared/components/task-item';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Drag01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [DragDropModule, TaskItemComponent],
+  imports: [DragDropModule, TaskItemComponent, HugeiconsIconComponent],
   template: `
     <div cdkDropList class="space-y-3" (cdkDropListDropped)="onDrop($event)">
       @for (task of tasks(); track task.id) {
@@ -35,16 +37,12 @@ import { TaskItemComponent } from '../../../shared/components/task-item';
               dragHandle
               class="mt-0.5 cursor-grab text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="size-5"
-              >
-                <path
-                  d="M8 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm8 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM8 14a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm8 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM8 22a2 2 0 1 1 0-4 2 2 0 0 1 0 4Zm8 0a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"
-                />
-              </svg>
+              <hugeicons-icon
+                [icon]="Drag01Icon"
+                [size]="20"
+                color="currentColor"
+                [strokeWidth]="1.5"
+              />
             </span>
           </app-task-item>
         </article>
@@ -66,6 +64,8 @@ export class TaskListComponent {
   readonly refresh = output<void>();
   readonly deleted = output<TaskModel>();
   readonly statusChanged = output<{ task: TaskModel; status: TaskStatus }>();
+
+  readonly Drag01Icon = Drag01Icon;
 
   readonly #languageService = inject(LanguageService);
 

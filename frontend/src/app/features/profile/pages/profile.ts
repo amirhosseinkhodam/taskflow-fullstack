@@ -22,6 +22,8 @@ import { ProfileFormService } from '../forms/profile-form';
 import { ProfileService } from '../services/profile';
 import type { AuthUserModel } from '@shared/types/auth';
 import { mapPasswordError } from '../../../shared/utils/password-error';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-profile',
@@ -38,6 +40,7 @@ import { mapPasswordError } from '../../../shared/utils/password-error';
     InputComponent,
     PageHeaderComponent,
     LocalizedDatePipe,
+    HugeiconsIconComponent,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -63,16 +66,12 @@ import { mapPasswordError } from '../../../shared/utils/password-error';
                   (buttonClick)="startEdit()"
                   [ariaLabel]="t('edit')"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-                    />
-                  </svg>
+                  <hugeicons-icon
+                    [icon]="Edit01Icon"
+                    [size]="16"
+                    color="currentColor"
+                    [strokeWidth]="1.5"
+                  />
                 </app-button>
                 <app-button
                   variant="ghost"
@@ -81,18 +80,12 @@ import { mapPasswordError } from '../../../shared/utils/password-error';
                   (buttonClick)="openPasswordChange()"
                   [ariaLabel]="t('changePassword')"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
+                  <hugeicons-icon
+                    [icon]="LockPasswordIcon"
+                    [size]="16"
+                    color="currentColor"
+                    [strokeWidth]="1.5"
+                  />
                 </app-button>
               </div>
             }
@@ -267,6 +260,8 @@ export class ProfileComponent {
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #breakpointObserver = inject(BreakpointObserver);
+
+  readonly icons = { Edit01Icon, LockPasswordIcon };
 
   readonly profile = signal<AuthUserModel | null>(null);
   readonly message = signal<string | null>(null);

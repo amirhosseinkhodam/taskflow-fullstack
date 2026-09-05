@@ -17,6 +17,8 @@ import { TaskFormComponent } from '../../../shared/components/task-form';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
 import { LanguageService } from '../../../shared/services/language';
 import { AuthStore } from '../../auth/store/auth';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Menu01Icon } from '@hugeicons/core-free-icons';
 import { PaginationComponent } from '../components/pagination';
 import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
 import { ProjectDeleteConfirmBottomSheetComponent } from '../components/project-delete-confirm-bottom-sheet';
@@ -48,6 +50,7 @@ import { DashboardStore } from '../store/dashboard';
     ProjectListComponent,
     MatBottomSheetModule,
     MatMenuModule,
+    HugeiconsIconComponent,
   ],
   template: `
     <main class="mx-auto max-w-4xl p-6">
@@ -97,20 +100,12 @@ import { DashboardStore } from '../store/dashboard';
                 [matMenuTriggerFor]="mobileMenu"
                 class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
+                <hugeicons-icon
+                  [icon]="Menu01Icon"
+                  [size]="20"
+                  color="currentColor"
+                  [strokeWidth]="2"
+                />
               </button>
               <mat-menu #mobileMenu="matMenu">
                 <button mat-menu-item (click)="goToProfile()">
@@ -241,6 +236,8 @@ export class DashboardComponent {
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #languageService = inject(LanguageService);
   readonly #dashboardService = inject(DashboardService);
+
+  readonly Menu01Icon = Menu01Icon;
 
   readonly isPhone = signal(false);
   readonly #searchTerm$ = new Subject<string>();
