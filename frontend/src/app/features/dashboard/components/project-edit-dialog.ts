@@ -5,27 +5,33 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { InputComponent } from '../../../shared/components/input';
 import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-project-edit-dialog',
   standalone: true,
-  imports: [FormsModule, MatDialogModule, InputComponent, ButtonComponent],
+  imports: [
+    FormsModule,
+    MatDialogModule,
+    InputComponent,
+    ButtonComponent,
+    TranslatePipe,
+  ],
   template: `
-    <h2 mat-dialog-title>{{ t('editProject') }}</h2>
+    <h2 mat-dialog-title>{{ 'editProject' | translate }}</h2>
     <mat-dialog-content>
       <app-input
         [(ngModel)]="projectName"
-        [placeholder]="t('editProjectName')"
+        [placeholder]="'editProjectName' | translate"
         (keydown.enter)="onConfirm()"
         variant="default"
       />
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="gap-2">
       <app-button variant="primary" (buttonClick)="onCancel()">{{
-        t('cancel')
+        'cancel' | translate
       }}</app-button>
       <app-button
         variant="mat-raised"
@@ -33,7 +39,7 @@ import { ButtonComponent } from '../../../shared/components/button';
         (buttonClick)="onConfirm()"
         [disabled]="!projectName.trim()"
       >
-        {{ t('save') }}
+        {{ 'save' | translate }}
       </app-button>
     </mat-dialog-actions>
   `,
@@ -41,13 +47,8 @@ import { ButtonComponent } from '../../../shared/components/button';
 export class ProjectEditDialogComponent {
   readonly #dialogRef = inject(MatDialogRef<ProjectEditDialogComponent>);
   readonly #data = inject<{ name: string }>(MAT_DIALOG_DATA);
-  readonly #languageService = inject(LanguageService);
 
   projectName = this.#data.name;
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   onConfirm(): void {
     const name = this.projectName.trim();

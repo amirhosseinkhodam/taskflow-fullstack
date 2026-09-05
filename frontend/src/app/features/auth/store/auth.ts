@@ -17,6 +17,7 @@ import { NotificationService } from '../../../shared/services/notification';
 import { LoginFormService } from '../forms/login';
 import { RegisterFormService } from '../forms/register';
 import type { AuthResponseModel, AuthUserModel } from '@shared/types/auth';
+import { USER_ROLES } from '@shared/const/user-roles';
 
 interface AuthStateModel {
   token: string | null;
@@ -43,7 +44,7 @@ function decodeToken(token: string): AuthUserModel | null {
       nationalCode: payload.nationalCode ?? null,
       phone: payload.phone ?? null,
       birthDate: payload.birthDate ?? null,
-      role: payload.role ?? 'user',
+      role: payload.role ?? USER_ROLES.USER,
     };
   } catch {
     return null;
@@ -57,7 +58,8 @@ export const AuthStore = signalStore(
     isLoggedIn: computed(() => store.token() !== null),
     isAdmin: computed(
       () =>
-        store.user()?.role === 'admin' || store.user()?.role === 'superAdmin',
+        store.user()?.role === USER_ROLES.ADMIN ||
+        store.user()?.role === USER_ROLES.SUPER_ADMIN,
     ),
   })),
   withMethods(

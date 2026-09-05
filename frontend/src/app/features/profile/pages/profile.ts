@@ -16,6 +16,7 @@ import { PageHeaderComponent } from '../../../shared/components/page-header';
 import { PasswordBottomSheetComponent } from '../../../shared/components/password-bottom-sheet';
 import { PasswordDialogComponent } from '../../../shared/components/password-dialog';
 import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { NotificationService } from '../../../shared/services/notification';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { AuthStore } from '../../auth/store/auth';
@@ -42,11 +43,12 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
     PageHeaderComponent,
     LocalizedDatePipe,
     HugeiconsIconComponent,
+    TranslatePipe,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
       <app-page-header
-        [title]="t('profile')"
+        [title]="'profile' | translate"
         [roleBadge]="roleBadgeText()"
         [showProfileButton]="false"
         (logout)="auth.logout()"
@@ -56,7 +58,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
         <app-card>
           <div class="mb-6 flex items-center justify-between">
             <h2 class="text-lg font-medium text-slate-900 dark:text-white">
-              {{ t('profileInformation') }}
+              {{ 'profileInformation' | translate }}
             </h2>
             @if (!isEditing()) {
               <div class="flex items-center gap-2">
@@ -65,7 +67,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   size="sm"
                   type="button"
                   (buttonClick)="startEdit()"
-                  [ariaLabel]="t('edit')"
+                  [ariaLabel]="'edit' | translate"
                 >
                   <hugeicons-icon
                     [icon]="Edit01Icon"
@@ -79,7 +81,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   size="sm"
                   type="button"
                   (buttonClick)="openPasswordChange()"
-                  [ariaLabel]="t('changePassword')"
+                  [ariaLabel]="'changePassword' | translate"
                 >
                   <hugeicons-icon
                     [icon]="LockPasswordIcon"
@@ -96,41 +98,41 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
             <app-form
               [formGroup]="profileForm.form"
               variant="vertical"
-              (ngSubmit)="saveProfile()"
+              (formSubmit)="saveProfile()"
             >
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <app-input
                   formControlName="firstName"
-                  [placeholder]="t('firstName')"
+                  [placeholder]="'firstName' | translate"
                   variant="default"
                 />
                 <app-input
                   formControlName="lastName"
-                  [placeholder]="t('lastName')"
+                  [placeholder]="'lastName' | translate"
                   variant="default"
                 />
               </div>
               <app-input
                 formControlName="email"
-                [placeholder]="t('email')"
+                [placeholder]="'email' | translate"
                 variant="default"
                 [cssClass]="'mt-4'"
               />
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <app-input
                   formControlName="nationalCode"
-                  [placeholder]="t('nationalCode')"
+                  [placeholder]="'nationalCode' | translate"
                   variant="default"
                 />
                 <app-input
                   formControlName="phone"
-                  [placeholder]="t('phone')"
+                  [placeholder]="'phone' | translate"
                   variant="default"
                 />
               </div>
               <app-date-picker
                 formControlName="birthDate"
-                [placeholder]="t('birthDate')"
+                [placeholder]="'birthDate' | translate"
                 [cssClass]="'mt-4'"
               />
               <div class="flex gap-2 mt-4">
@@ -139,14 +141,14 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   type="submit"
                   [disabled]="isSavingProfile()"
                 >
-                  {{ t('save') }}
+                  {{ 'save' | translate }}
                 </app-button>
                 <app-button
                   variant="secondary"
                   type="button"
                   (buttonClick)="cancelEdit()"
                 >
-                  {{ t('cancel') }}
+                  {{ 'cancel' | translate }}
                 </app-button>
               </div>
             </app-form>
@@ -157,7 +159,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   <p
                     class="text-sm font-medium text-slate-500 dark:text-slate-400"
                   >
-                    {{ t('firstName') }}
+                    {{ 'firstName' | translate }}
                   </p>
                   <p class="mt-1 text-sm text-slate-900 dark:text-white">
                     {{ profile()?.firstName ?? '-' }}
@@ -167,7 +169,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   <p
                     class="text-sm font-medium text-slate-500 dark:text-slate-400"
                   >
-                    {{ t('lastName') }}
+                    {{ 'lastName' | translate }}
                   </p>
                   <p class="mt-1 text-sm text-slate-900 dark:text-white">
                     {{ profile()?.lastName ?? '-' }}
@@ -178,7 +180,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                 <p
                   class="text-sm font-medium text-slate-500 dark:text-slate-400"
                 >
-                  {{ t('email') }}
+                  {{ 'email' | translate }}
                 </p>
                 <p class="mt-1 text-sm text-slate-900 dark:text-white">
                   {{ profile()?.email }}
@@ -189,7 +191,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   <p
                     class="text-sm font-medium text-slate-500 dark:text-slate-400"
                   >
-                    {{ t('nationalCode') }}
+                    {{ 'nationalCode' | translate }}
                   </p>
                   <p class="mt-1 text-sm text-slate-900 dark:text-white">
                     {{ profile()?.nationalCode ?? '-' }}
@@ -199,7 +201,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   <p
                     class="text-sm font-medium text-slate-500 dark:text-slate-400"
                   >
-                    {{ t('phone') }}
+                    {{ 'phone' | translate }}
                   </p>
                   <p class="mt-1 text-sm text-slate-900 dark:text-white">
                     {{ profile()?.phone ?? '-' }}
@@ -210,7 +212,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                 <p
                   class="text-sm font-medium text-slate-500 dark:text-slate-400"
                 >
-                  {{ t('birthDate') }}
+                  {{ 'birthDate' | translate }}
                 </p>
                 <p class="mt-1 text-sm text-slate-900 dark:text-white">
                   {{
@@ -224,10 +226,10 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                 <p
                   class="text-sm font-medium text-slate-500 dark:text-slate-400"
                 >
-                  {{ t('role') }}
+                  {{ 'role' | translate }}
                 </p>
                 <p class="mt-1 text-sm text-slate-900 dark:text-white">
-                  {{ t(profile()?.role ?? '') }}
+                  {{ profile()?.role ?? '' | translate }}
                 </p>
               </div>
             </div>
@@ -257,7 +259,7 @@ export class ProfileComponent {
   readonly roleBadgeText = computed(() => {
     const role = this.auth.user()?.role;
     if (!role) return '';
-    return `${this.t('role')}: ${this.t(role)}`;
+    return `${this.#languageService.translate('role')}: ${this.#languageService.translate(role)}`;
   });
 
   constructor() {
@@ -268,10 +270,6 @@ export class ProfileComponent {
 
   ngOnInit(): void {
     this.loadProfile();
-  }
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
   }
 
   loadProfile(): void {

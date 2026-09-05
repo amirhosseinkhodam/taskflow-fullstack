@@ -1,27 +1,34 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { Pool } from 'pg';
-import type { AuthUserModel } from '@shared/types/auth';
+import { USER_ROLES, type UserRole } from '@shared/const/user-roles';
+import { PrismaService } from '../shared/prisma/prisma.service';
 import { validatePassword } from '../shared/password-validation';
 
 @Injectable()
 export class AdminService {
-  readonly #db: Pool;
-  constructor(@Inject('DATABASE') db: Pool) {
-    this.#db = db;
+  readonly #prisma: PrismaService;
+  constructor(prisma: PrismaService) {
+    this.#prisma = prisma;
   }
 
-  async findAllUsers() {
-    const result = await this.#db.query<AuthUserModel>(
-      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role
-       FROM users ORDER BY id`,
-    );
-    return result.rows;
+  findAllUsers() {
+    return this.#prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        nationalCode: true,
+        phone: true,
+        birthDate: true,
+        role: true,
+      },
+      orderBy: { id: 'asc' },
+    });
   }
 
   async deleteUser(id: number, requesterId: number) {
@@ -29,79 +36,64 @@ export class AdminService {
       throw new BadRequestException('Cannot delete yourself');
     }
 
-    const target = await this.#db.query<{ role: string }>(
-      'SELECT role FROM users WHERE id = $1',
-      [id],
-    );
-    if (target.rows.length === 0) {
+    const target = await this.#prisma.user.findUnique({
+      where: { id },
+      select: { role: true },
+    });
+    if (!target) {
       throw new NotFoundException('User not found');
     }
-    if (target.rows[0].role === 'superAdmin') {
+    if (target.role === USER_ROLES.SUPER_ADMIN) {
       throw new BadRequestException('Cannot delete superAdmin');
     }
 
-    const client = await this.#db.connect();
-    try {
-      await client.query('BEGIN');
-
-      await client.query(
-        'UPDATE tasks SET "assigneeId" = NULL WHERE "assigneeId" = $1',
-        [id],
-      );
-
-      await client.query('DELETE FROM task_comments WHERE "userId" = $1', [id]);
-
-      const result = await client.query('DELETE FROM users WHERE id = $1', [
-        id,
-      ]);
-      if (result.rowCount === 0) {
-        throw new NotFoundException('User not found');
-      }
-
-      await client.query('COMMIT');
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+    await this.#prisma.$transaction([
+      this.#prisma.task.updateMany({
+        where: { assigneeId: id },
+        data: { assigneeId: null },
+      }),
+      this.#prisma.taskComment.deleteMany({ where: { userId: id } }),
+      this.#prisma.user.delete({ where: { id } }),
+    ]);
 
     return { success: true };
   }
 
-  async updateUserRole(
-    id: number,
-    role: 'user' | 'admin' | 'superAdmin',
-    requesterId: number,
-  ) {
+  async updateUserRole(id: number, role: UserRole, requesterId: number) {
     if (id === requesterId) {
       throw new BadRequestException('Cannot change your own role');
     }
 
-    if (!['user', 'admin'].includes(role)) {
+    if (role !== USER_ROLES.USER && role !== USER_ROLES.ADMIN) {
       throw new BadRequestException('Role must be "user" or "admin"');
     }
 
-    const target = await this.#db.query<{ role: string }>(
-      'SELECT role FROM users WHERE id = $1',
-      [id],
-    );
-    if (target.rows.length === 0) {
+    const target = await this.#prisma.user.findUnique({
+      where: { id },
+      select: { role: true },
+    });
+    if (!target) {
       throw new NotFoundException('User not found');
     }
-    if (target.rows[0].role === 'superAdmin') {
+    if (target.role === USER_ROLES.SUPER_ADMIN) {
       throw new BadRequestException('Cannot modify superAdmin');
     }
 
-    const result = await this.#db.query<AuthUserModel>(
-      `UPDATE users SET role = $1 WHERE id = $2
-       RETURNING id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
-      [role, id],
-    );
-    if (result.rows.length === 0) {
-      throw new NotFoundException('User not found');
-    }
-    return result.rows[0];
+    const user = await this.#prisma.user.update({
+      where: { id },
+      data: { role },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        nationalCode: true,
+        phone: true,
+        birthDate: true,
+        role: true,
+      },
+    });
+    return user;
   }
 
   async updateUserPassword(
@@ -115,25 +107,22 @@ export class AdminService {
 
     validatePassword(newPassword);
 
-    const target = await this.#db.query<{ role: string }>(
-      'SELECT role FROM users WHERE id = $1',
-      [id],
-    );
-    if (target.rows.length === 0) {
+    const target = await this.#prisma.user.findUnique({
+      where: { id },
+      select: { role: true },
+    });
+    if (!target) {
       throw new NotFoundException('User not found');
     }
-    if (target.rows[0].role === 'superAdmin') {
+    if (target.role === USER_ROLES.SUPER_ADMIN) {
       throw new BadRequestException('Cannot change superAdmin password');
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);
-    const result = await this.#db.query(
-      'UPDATE users SET password = $1 WHERE id = $2',
-      [hashed, id],
-    );
-    if (result.rowCount === 0) {
-      throw new NotFoundException('User not found');
-    }
+    await this.#prisma.user.update({
+      where: { id },
+      data: { password: hashed },
+    });
     return { success: true };
   }
 }

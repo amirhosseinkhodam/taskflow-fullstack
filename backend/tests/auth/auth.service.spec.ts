@@ -3,9 +3,14 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from '../../src/auth/auth.service';
+import { PrismaService } from '../../src/shared/prisma/prisma.service';
 
-const mockQuery = jest.fn();
-const mockPool = { query: mockQuery } as any;
+const mockPrisma = {
+  user: {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+  },
+} as any;
 
 const mockJwtService = {
   sign: jest.fn().mockReturnValue('fake-jwt-token'),
@@ -20,7 +25,7 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: 'DATABASE', useValue: mockPool },
+        { provide: PrismaService, useValue: mockPrisma },
         { provide: JwtService, useValue: mockJwtService },
       ],
     }).compile();
@@ -30,19 +35,16 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('success — returns token and user', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({
-        rows: [
-          {
-            id: 1,
-            email: 'test@test.com',
-            firstName: null,
-            lastName: null,
-            nationalCode: null,
-            phone: null,
-            birthDate: null,
-            role: 'user',
-          },
-        ],
+      mockPrisma.user.findUnique.mockResolvedValueOnce(null);
+      mockPrisma.user.create.mockResolvedValueOnce({
+        id: 1,
+        email: 'test@test.com',
+        firstName: null,
+        lastName: null,
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'user',
       });
 
       const result = await service.register('test@test.com', 'password123');
@@ -71,7 +73,7 @@ describe('AuthService', () => {
     });
 
     it('conflict — throws ConflictException for existing email', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ id: 1 }] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ id: 1 });
 
       await expect(
         service.register('existing@test.com', 'password123'),
@@ -82,20 +84,16 @@ describe('AuthService', () => {
   describe('login', () => {
     it('success — returns token and user', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      mockQuery.mockResolvedValueOnce({
-        rows: [
-          {
-            id: 1,
-            email: 'test@test.com',
-            firstName: null,
-            lastName: null,
-            nationalCode: null,
-            phone: null,
-            birthDate: null,
-            role: 'user',
-            password: hashedPassword,
-          },
-        ],
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        id: 1,
+        email: 'test@test.com',
+        firstName: null,
+        lastName: null,
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'user',
+        password: hashedPassword,
       });
 
       const result = await service.login('test@test.com', 'password123');
@@ -115,20 +113,16 @@ describe('AuthService', () => {
 
     it('failure — wrong password throws UnauthorizedException', async () => {
       const hashedPassword = await bcrypt.hash('correctpassword', 10);
-      mockQuery.mockResolvedValueOnce({
-        rows: [
-          {
-            id: 1,
-            email: 'test@test.com',
-            firstName: null,
-            lastName: null,
-            nationalCode: null,
-            phone: null,
-            birthDate: null,
-            role: 'user',
-            password: hashedPassword,
-          },
-        ],
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        id: 1,
+        email: 'test@test.com',
+        firstName: null,
+        lastName: null,
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'user',
+        password: hashedPassword,
       });
 
       await expect(
@@ -137,7 +131,7 @@ describe('AuthService', () => {
     });
 
     it('failure — nonexistent email throws UnauthorizedException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
       await expect(
         service.login('nonexistent@test.com', 'password123'),

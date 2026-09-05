@@ -1,17 +1,17 @@
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Pool } from 'pg';
+import { USER_ROLES } from '@shared/const/user-roles';
+import { PrismaService } from '../shared/prisma/prisma.service';
 import type { CommentModel } from '@shared/types/task';
 
 @Injectable()
 export class CommentService {
-  readonly #db: Pool;
-  constructor(@Inject('DATABASE') db: Pool) {
-    this.#db = db;
+  readonly #prisma: PrismaService;
+  constructor(prisma: PrismaService) {
+    this.#prisma = prisma;
   }
 
   async create(
@@ -19,74 +19,62 @@ export class CommentService {
     userId: number,
     content: string,
   ): Promise<CommentModel> {
-    const taskCheck = await this.#db.query<{ id: number }>(
-      `SELECT id FROM tasks WHERE id = $1`,
-      [taskId],
-    );
-    if (taskCheck.rows.length === 0) {
+    const task = await this.#prisma.task.findUnique({
+      where: { id: taskId },
+      select: { id: true },
+    });
+    if (!task) {
       throw new NotFoundException('Task not found');
     }
 
-    const result = await this.#db.query<CommentModel>(
-      `INSERT INTO task_comments ("taskId", "userId", content)
-       VALUES ($1, $2, $3)
-       RETURNING id, "taskId", "userId", content, "createdAt", "updatedAt"`,
-      [taskId, userId, content],
-    );
+    const comment = await this.#prisma.taskComment.create({
+      data: { taskId, userId, content },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+      },
+    });
 
-    const comment = result.rows[0];
-    if (!comment) {
-      throw new Error('Comment creation failed');
-    }
-
-    // Fetch with user name
-    const userResult = await this.#db.query<{
-      email: string;
-      firstName: string | null;
-      lastName: string | null;
-    }>(`SELECT email, "firstName", "lastName" FROM users WHERE id = $1`, [
-      userId,
-    ]);
-    const user = userResult.rows[0];
-    const userName =
-      [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-      user?.email ||
-      'Unknown';
+    const userName = comment.user
+      ? [comment.user.firstName, comment.user.lastName]
+          .filter(Boolean)
+          .join(' ') || comment.user.email
+      : 'Unknown';
 
     return {
-      ...comment,
+      id: comment.id,
+      taskId: comment.taskId,
+      userId: comment.userId,
       userName,
+      content: comment.content,
+      createdAt: comment.createdAt.toISOString(),
+      updatedAt: comment.updatedAt.toISOString(),
     };
   }
 
   async findByTask(taskId: number): Promise<CommentModel[]> {
-    const result = await this.#db.query<
-      CommentModel & {
-        email: string;
-        firstName: string | null;
-        lastName: string | null;
-      }
-    >(
-      `SELECT c.id, c."taskId", c."userId", c.content, c."createdAt", c."updatedAt",
-              u.email, u."firstName", u."lastName"
-       FROM task_comments c
-       LEFT JOIN users u ON c."userId" = u.id
-       WHERE c."taskId" = $1
-       ORDER BY c."createdAt" ASC`,
-      [taskId],
-    );
+    const comments = await this.#prisma.taskComment.findMany({
+      where: { taskId },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
 
-    return result.rows.map((row) => ({
-      id: row.id,
-      taskId: row.taskId,
-      userId: row.userId,
-      userName:
-        [row.firstName, row.lastName].filter(Boolean).join(' ') ||
-        row.email ||
-        'Unknown',
-      content: row.content,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
+    return comments.map((c) => ({
+      id: c.id,
+      taskId: c.taskId,
+      userId: c.userId,
+      userName: c.user
+        ? [c.user.firstName, c.user.lastName].filter(Boolean).join(' ') ||
+          c.user.email
+        : 'Unknown',
+      content: c.content,
+      createdAt: c.createdAt.toISOString(),
+      updatedAt: c.updatedAt.toISOString(),
     }));
   }
 
@@ -96,26 +84,24 @@ export class CommentService {
     requesterRole: string,
     content: string,
   ): Promise<CommentModel> {
-    const commentResult = await this.#db.query<{
-      id: number;
-      userId: number;
-      taskId: number;
-    }>(`SELECT id, "userId", "taskId" FROM task_comments WHERE id = $1`, [id]);
-    const comment = commentResult.rows[0];
+    const comment = await this.#prisma.taskComment.findUnique({
+      where: { id },
+      select: { id: true, userId: true, taskId: true },
+    });
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
 
-    // Check if user can edit: comment author OR task assignee OR admin
-    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
+    const isAdmin =
+      requesterRole === USER_ROLES.ADMIN ||
+      requesterRole === USER_ROLES.SUPER_ADMIN;
     const isAuthor = comment.userId === requesterId;
 
-    // Check if requester is task assignee
-    const taskResult = await this.#db.query<{ assigneeId: number | null }>(
-      `SELECT "assigneeId" FROM tasks WHERE id = $1`,
-      [comment.taskId],
-    );
-    const isAssignee = taskResult.rows[0]?.assigneeId === requesterId;
+    const task = await this.#prisma.task.findUnique({
+      where: { id: comment.taskId },
+      select: { assigneeId: true },
+    });
+    const isAssignee = task?.assigneeId === requesterId;
 
     if (!isAdmin && !isAuthor && !isAssignee) {
       throw new ForbiddenException(
@@ -123,34 +109,30 @@ export class CommentService {
       );
     }
 
-    const result = await this.#db.query<CommentModel>(
-      `UPDATE task_comments SET content = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2
-       RETURNING id, "taskId", "userId", content, "createdAt", "updatedAt"`,
-      [content, id],
-    );
+    const updated = await this.#prisma.taskComment.update({
+      where: { id },
+      data: { content },
+      include: {
+        user: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+      },
+    });
 
-    const updatedComment = result.rows[0];
-    if (!updatedComment) {
-      throw new NotFoundException('Comment not found after update');
-    }
-
-    // Fetch user name
-    const userResult = await this.#db.query<{
-      email: string;
-      firstName: string | null;
-      lastName: string | null;
-    }>(`SELECT email, "firstName", "lastName" FROM users WHERE id = $1`, [
-      comment.userId,
-    ]);
-    const user = userResult.rows[0];
-    const userName =
-      [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
-      user?.email ||
-      'Unknown';
+    const userName = updated.user
+      ? [updated.user.firstName, updated.user.lastName]
+          .filter(Boolean)
+          .join(' ') || updated.user.email
+      : 'Unknown';
 
     return {
-      ...updatedComment,
+      id: updated.id,
+      taskId: updated.taskId,
+      userId: updated.userId,
       userName,
+      content: updated.content,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
     };
   }
 
@@ -159,25 +141,24 @@ export class CommentService {
     requesterId: number,
     requesterRole: string,
   ): Promise<boolean> {
-    const commentResult = await this.#db.query<{
-      id: number;
-      userId: number;
-      taskId: number;
-    }>(`SELECT id, "userId", "taskId" FROM task_comments WHERE id = $1`, [id]);
-    const comment = commentResult.rows[0];
+    const comment = await this.#prisma.taskComment.findUnique({
+      where: { id },
+      select: { id: true, userId: true, taskId: true },
+    });
     if (!comment) {
       throw new NotFoundException('Comment not found');
     }
 
-    // Check if user can delete: comment author OR task assignee OR admin
-    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
+    const isAdmin =
+      requesterRole === USER_ROLES.ADMIN ||
+      requesterRole === USER_ROLES.SUPER_ADMIN;
     const isAuthor = comment.userId === requesterId;
 
-    const taskResult = await this.#db.query<{ assigneeId: number | null }>(
-      `SELECT "assigneeId" FROM tasks WHERE id = $1`,
-      [comment.taskId],
-    );
-    const isAssignee = taskResult.rows[0]?.assigneeId === requesterId;
+    const task = await this.#prisma.task.findUnique({
+      where: { id: comment.taskId },
+      select: { assigneeId: true },
+    });
+    const isAssignee = task?.assigneeId === requesterId;
 
     if (!isAdmin && !isAuthor && !isAssignee) {
       throw new ForbiddenException(
@@ -185,10 +166,7 @@ export class CommentService {
       );
     }
 
-    const result = await this.#db.query(
-      `DELETE FROM task_comments WHERE id = $1`,
-      [id],
-    );
-    return (result.rowCount ?? 0) > 0;
+    const result = await this.#prisma.taskComment.delete({ where: { id } });
+    return result.id === id;
   }
 }

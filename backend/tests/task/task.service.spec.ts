@@ -1,26 +1,40 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { TaskService } from '../../src/task/task.service';
+import { PrismaService } from '../../src/shared/prisma/prisma.service';
 
-const mockQuery = jest.fn();
-const mockConnect = jest.fn();
-const mockRelease = jest.fn();
-const mockClient = {
-  query: jest.fn(),
-  release: mockRelease,
-};
-const mockPool = { query: mockQuery, connect: mockConnect } as any;
+const mockPrisma = {
+  project: {
+    findUnique: jest.fn(),
+  },
+  user: {
+    findUnique: jest.fn(),
+  },
+  task: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    count: jest.fn(),
+    aggregate: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    delete: jest.fn(),
+    deleteMany: jest.fn(),
+  },
+  $transaction: jest.fn(),
+} as any;
 
 describe('TaskService', () => {
   let service: TaskService;
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    mockConnect.mockResolvedValue(mockClient);
-    mockClient.query.mockResolvedValue({});
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TaskService, { provide: 'DATABASE', useValue: mockPool }],
+      providers: [
+        TaskService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
     }).compile();
 
     service = module.get(TaskService);
@@ -28,26 +42,23 @@ describe('TaskService', () => {
 
   describe('create', () => {
     it('inserts task at next position', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ id: 1 }] })
-        .mockResolvedValueOnce({ rows: [{ max: 2 }] })
-        .mockResolvedValueOnce({ rows: [{ id: 5 }] })
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              id: 5,
-              title: 'Test',
-              description: 'desc',
-              status: 'pending',
-              projectId: 1,
-              position: 3,
-              createdAt: '',
-              updatedAt: '',
-              userId: 1,
-              creatorName: 'User',
-            },
-          ],
-        });
+      mockPrisma.project.findUnique.mockResolvedValueOnce({ id: 1 });
+      mockPrisma.task.aggregate.mockResolvedValueOnce({ _max: { position: 2 } });
+      mockPrisma.task.create.mockResolvedValueOnce({ id: 5 });
+      mockPrisma.task.findUnique.mockResolvedValueOnce({
+        id: 5,
+        title: 'Test',
+        description: 'desc',
+        status: 'pending',
+        projectId: 1,
+        position: 3,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: 1,
+        assigneeId: null,
+        creator: { firstName: 'User', lastName: null, email: 'u@test.com' },
+        assignee: null,
+      });
 
       const result = await service.create('Test', 'desc', 1, 1);
 
@@ -56,33 +67,32 @@ describe('TaskService', () => {
     });
 
     it('first task in project gets position 0', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ id: 1 }] })
-        .mockResolvedValueOnce({ rows: [{ max: null }] })
-        .mockResolvedValueOnce({ rows: [{ id: 1 }] })
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              id: 1,
-              title: 'Test',
-              description: '',
-              status: 'pending',
-              projectId: 1,
-              position: 0,
-              createdAt: '',
-              updatedAt: '',
-              userId: 1,
-              creatorName: 'User',
-            },
-          ],
-        });
+      mockPrisma.project.findUnique.mockResolvedValueOnce({ id: 1 });
+      mockPrisma.task.aggregate.mockResolvedValueOnce({
+        _max: { position: null },
+      });
+      mockPrisma.task.create.mockResolvedValueOnce({ id: 1 });
+      mockPrisma.task.findUnique.mockResolvedValueOnce({
+        id: 1,
+        title: 'Test',
+        description: '',
+        status: 'pending',
+        projectId: 1,
+        position: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: 1,
+        assigneeId: null,
+        creator: { firstName: 'User', lastName: null, email: 'u@test.com' },
+        assignee: null,
+      });
 
       const result = await service.create('Test', '', 1, 1);
       expect(result.position).toBe(0);
     });
 
     it('throws NotFoundException when project does not exist', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.project.findUnique.mockResolvedValueOnce(null);
 
       await expect(service.create('Test', '', 999, 1)).rejects.toThrow(
         NotFoundException,
@@ -92,9 +102,8 @@ describe('TaskService', () => {
 
   describe('findAll', () => {
     it('no filters — returns paginated response', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-        .mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.count.mockResolvedValueOnce(0);
+      mockPrisma.task.findMany.mockResolvedValueOnce([]);
 
       const result = await service.findAll({});
 
@@ -108,43 +117,53 @@ describe('TaskService', () => {
     });
 
     it('filter by projectId', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ count: '1' }] })
-        .mockResolvedValueOnce({ rows: [{ id: 1 }] });
+      mockPrisma.task.count.mockResolvedValueOnce(1);
+      mockPrisma.task.findMany.mockResolvedValueOnce([
+        {
+          id: 1,
+          title: 'T',
+          description: '',
+          status: 'pending',
+          projectId: 3,
+          position: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          userId: 1,
+          assigneeId: null,
+          creator: null,
+          assignee: null,
+        },
+      ]);
 
       await service.findAll({ projectId: 3 });
 
-      const countCall = mockQuery.mock.calls[0];
-      expect(countCall[0]).toContain('"projectId" = $1');
-      expect(countCall[1]).toContain(3);
+      const whereCall = mockPrisma.task.count.mock.calls[0][0];
+      expect(whereCall.where.projectId).toBe(3);
     });
 
     it('filter by status', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-        .mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.count.mockResolvedValueOnce(0);
+      mockPrisma.task.findMany.mockResolvedValueOnce([]);
 
       await service.findAll({ status: 'pending' });
 
-      const countCall = mockQuery.mock.calls[0];
-      expect(countCall[0]).toContain('t.status = $1');
+      const whereCall = mockPrisma.task.count.mock.calls[0][0];
+      expect(whereCall.where.status).toBe('pending');
     });
 
     it('filter by searchTerm', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-        .mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.count.mockResolvedValueOnce(0);
+      mockPrisma.task.findMany.mockResolvedValueOnce([]);
 
       await service.findAll({ searchTerm: 'foo' });
 
-      const countCall = mockQuery.mock.calls[0];
-      expect(countCall[0]).toContain('ILIKE');
+      const whereCall = mockPrisma.task.count.mock.calls[0][0];
+      expect(whereCall.where.OR).toBeDefined();
     });
 
     it('pagination — page=2, limit=10', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ count: '25' }] })
-        .mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.count.mockResolvedValueOnce(25);
+      mockPrisma.task.findMany.mockResolvedValueOnce([]);
 
       const result = await service.findAll({ page: 2, limit: 10 });
 
@@ -154,9 +173,8 @@ describe('TaskService', () => {
     });
 
     it('clamps page<1 to 1, limit>100 to 100', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
-        .mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.count.mockResolvedValueOnce(0);
+      mockPrisma.task.findMany.mockResolvedValueOnce([]);
 
       const result = await service.findAll({ page: -5, limit: 200 });
 
@@ -167,8 +185,19 @@ describe('TaskService', () => {
 
   describe('findOne', () => {
     it('existing id returns task', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, title: 'Test', status: 'pending' }],
+      mockPrisma.task.findUnique.mockResolvedValueOnce({
+        id: 1,
+        title: 'Test',
+        description: '',
+        status: 'pending',
+        projectId: 1,
+        position: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        userId: 1,
+        assigneeId: null,
+        creator: null,
+        assignee: null,
       });
 
       const result = await service.findOne(1);
@@ -177,7 +206,7 @@ describe('TaskService', () => {
     });
 
     it('nonexistent id returns null', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.findUnique.mockResolvedValueOnce(null);
 
       const result = await service.findOne(999);
       expect(result).toBeNull();
@@ -186,22 +215,27 @@ describe('TaskService', () => {
 
   describe('update', () => {
     it('updates title only', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ id: 1, userId: 1 }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+      mockPrisma.task.findUnique.mockResolvedValueOnce({
+        id: 1,
+        userId: 1,
+        assigneeId: null,
+      });
+      mockPrisma.task.updateMany.mockResolvedValueOnce({ count: 1 });
 
       const result = await service.update(1, 1, 'admin', 'New Title');
 
       expect(result).toBe(true);
-      const updateCall = mockQuery.mock.calls[1][0];
-      expect(updateCall).toContain('title = $1');
-      expect(updateCall).not.toContain('description =');
+      const dataCall = mockPrisma.task.updateMany.mock.calls[0][0];
+      expect(dataCall.data.title).toBe('New Title');
     });
 
     it('updates multiple fields', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ id: 1, userId: 1 }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+      mockPrisma.task.findUnique.mockResolvedValueOnce({
+        id: 1,
+        userId: 1,
+        assigneeId: null,
+      });
+      mockPrisma.task.updateMany.mockResolvedValueOnce({ count: 1 });
 
       const result = await service.update(
         1,
@@ -213,15 +247,18 @@ describe('TaskService', () => {
       );
 
       expect(result).toBe(true);
-      const updateCall = mockQuery.mock.calls[1][0];
-      expect(updateCall).toContain('title = $1');
-      expect(updateCall).toContain('description = $2');
-      expect(updateCall).toContain('status = $3');
-      expect(updateCall).toContain('"updatedAt"');
+      const dataCall = mockPrisma.task.updateMany.mock.calls[0][0];
+      expect(dataCall.data.title).toBe('Title');
+      expect(dataCall.data.description).toBe('Desc');
+      expect(dataCall.data.status).toBe('done');
     });
 
     it('no fields provided returns false', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ id: 1, userId: 1 }] });
+      mockPrisma.task.findUnique.mockResolvedValueOnce({
+        id: 1,
+        userId: 1,
+        assigneeId: null,
+      });
 
       const result = await service.update(1, 1, 'admin');
 
@@ -229,7 +266,7 @@ describe('TaskService', () => {
     });
 
     it('nonexistent task throws NotFoundException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.findUnique.mockResolvedValueOnce(null);
 
       await expect(service.update(999, 1, 'admin', 'Title')).rejects.toThrow(
         NotFoundException,
@@ -248,68 +285,51 @@ describe('TaskService', () => {
       );
     });
 
-    it('success — calls BEGIN, UPDATE for each id, COMMIT', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [
-          { id: 1, projectId: 1 },
-          { id: 2, projectId: 1 },
-        ],
-      });
+    it('success — calls $transaction with updates', async () => {
+      mockPrisma.task.findMany.mockResolvedValueOnce([
+        { id: 1, projectId: 1 },
+        { id: 2, projectId: 1 },
+      ]);
+      mockPrisma.$transaction.mockResolvedValueOnce([{ id: 1 }, { id: 2 }]);
 
       await service.reorder([1, 2]);
 
-      expect(mockConnect).toHaveBeenCalled();
-      const clientQueries = mockClient.query.mock.calls.map(
-        (c: unknown[]) => (c as unknown[][])[0],
-      );
-      expect(clientQueries).toContain('BEGIN');
-      expect(clientQueries).toContain('COMMIT');
-      expect(mockRelease).toHaveBeenCalled();
+      expect(mockPrisma.$transaction).toHaveBeenCalled();
     });
 
-    it('error triggers ROLLBACK and client.release()', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, projectId: 1 }],
-      });
-      mockClient.query.mockRejectedValueOnce(new Error('DB error'));
+    it('error triggers rejection', async () => {
+      mockPrisma.task.findMany.mockResolvedValueOnce([{ id: 1, projectId: 1 }]);
+      mockPrisma.$transaction.mockRejectedValueOnce(new Error('DB error'));
 
       await expect(service.reorder([1])).rejects.toThrow('DB error');
-
-      const clientQueries = mockClient.query.mock.calls.map(
-        (c: unknown[]) => (c as unknown[][])[0],
-      );
-      expect(clientQueries).toContain('ROLLBACK');
-      expect(mockRelease).toHaveBeenCalled();
     });
   });
 
   describe('delete', () => {
     it('existing task returns true', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ id: 1 }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+      mockPrisma.task.findUnique.mockResolvedValueOnce({ id: 1 });
+      mockPrisma.task.delete.mockResolvedValueOnce({ id: 1 });
 
       const result = await service.delete(1);
       expect(result).toBe(true);
     });
 
     it('nonexistent task throws NotFoundException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.task.findUnique.mockResolvedValueOnce(null);
 
       await expect(service.delete(999)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('deleteByProject', () => {
-    it('runs DELETE with projectId', async () => {
-      mockQuery.mockResolvedValueOnce({});
+    it('runs deleteMany with projectId', async () => {
+      mockPrisma.task.deleteMany.mockResolvedValueOnce({ count: 3 });
 
       await service.deleteByProject(5);
 
-      expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM tasks'),
-        [5],
-      );
+      expect(mockPrisma.task.deleteMany).toHaveBeenCalledWith({
+        where: { projectId: 5 },
+      });
     });
   });
 });

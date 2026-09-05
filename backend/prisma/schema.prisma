@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
+  password    String
+  firstName   String? @map("firstName")
+  lastName    String? @map("lastName")
+  nationalCode String? @map("nationalCode")
+  phone       String?
+  birthDate   String? @map("birthDate")
+  role        String  @default("user")
+
+  tasks       Task[]        @relation("TaskCreator")
+  assignedTasks Task[]      @relation("TaskAssignee")
+  comments    TaskComment[]
+
+  @@map("users")
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  tasks Task[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  status      String  @default("pending")
+  projectId   Int     @map("projectId")
+  position    Int     @default(0)
+  userId      Int?    @map("userId")
+  assigneeId  Int?    @map("assigneeId")
+  createdAt   DateTime @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+
+  project  Project       @relation(fields: [projectId], references: [id])
+  creator  User?         @relation("TaskCreator", fields: [userId], references: [id])
+  assignee User?         @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  comments TaskComment[]
+
+  @@map("tasks")
+}
+
+model TaskComment {
+  id        Int      @id @default(autoincrement())
+  taskId    Int      @map("taskId")
+  userId    Int      @map("userId")
+  content   String
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("task_comments")
+}

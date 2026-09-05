@@ -12,6 +12,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
 } from 'class-validator';
+import { TASK_STATUSES } from '@shared/const/task-statuses';
 
 export class CreateTaskDto {
   @ApiProperty({ example: 'Implement login page' })
@@ -59,7 +60,7 @@ export class UpdateTaskDto {
     enum: ['pending', 'in-progress', 'done'],
   })
   @IsOptional()
-  @IsIn(['pending', 'in-progress', 'done'])
+  @IsIn([TASK_STATUSES.PENDING, TASK_STATUSES.IN_PROGRESS, TASK_STATUSES.DONE])
   readonly status?: string;
 
   @ApiProperty({

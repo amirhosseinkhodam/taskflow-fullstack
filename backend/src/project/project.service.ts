@@ -1,61 +1,68 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Pool } from 'pg';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../shared/prisma/prisma.service';
 import { TaskService } from '../task/task.service';
-import { ProjectModel } from '@shared/types/project';
+import type { ProjectModel } from '@shared/types/project';
 
 @Injectable()
 export class ProjectService {
-  readonly #db: Pool;
+  readonly #prisma: PrismaService;
   readonly #taskService: TaskService;
-  constructor(@Inject('DATABASE') db: Pool, taskService: TaskService) {
-    this.#db = db;
+  constructor(prisma: PrismaService, taskService: TaskService) {
+    this.#prisma = prisma;
     this.#taskService = taskService;
   }
 
   async findAll(): Promise<ProjectModel[]> {
-    const result = await this.#db.query<ProjectModel>(
-      'SELECT id, name, "createdAt", "updatedAt" FROM projects ORDER BY id',
-    );
-    return result.rows;
+    const projects = await this.#prisma.project.findMany({
+      orderBy: { id: 'asc' },
+    });
+    return projects.map((p) => ({
+      id: p.id,
+      name: p.name,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    }));
   }
 
   async findOne(id: number): Promise<ProjectModel | null> {
-    const result = await this.#db.query<ProjectModel>(
-      'SELECT id, name, "createdAt", "updatedAt" FROM projects WHERE id = $1',
-      [id],
-    );
-
-    return result.rows[0] ?? null;
+    const p = await this.#prisma.project.findUnique({ where: { id } });
+    if (!p) return null;
+    return {
+      id: p.id,
+      name: p.name,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    };
   }
 
   async create(name: string): Promise<ProjectModel> {
-    const result = await this.#db.query<ProjectModel>(
-      'INSERT INTO projects (name) VALUES ($1) RETURNING id, name, "createdAt", "updatedAt"',
-      [name],
-    );
-
-    return result.rows[0];
+    const p = await this.#prisma.project.create({ data: { name } });
+    return {
+      id: p.id,
+      name: p.name,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    };
   }
 
   async update(id: number, name?: string): Promise<ProjectModel | null> {
-    if (name === undefined) {
-      return null;
-    }
+    if (name === undefined) return null;
 
-    const result = await this.#db.query<ProjectModel>(
-      'UPDATE projects SET name = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, name, "createdAt", "updatedAt"',
-      [name, id],
-    );
-
-    return result.rows[0] ?? null;
+    const p = await this.#prisma.project.update({
+      where: { id },
+      data: { name },
+    });
+    return {
+      id: p.id,
+      name: p.name,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    };
   }
 
   async delete(id: number): Promise<boolean> {
     await this.#taskService.deleteByProject(id);
-    const result = await this.#db.query('DELETE FROM projects WHERE id = $1', [
-      id,
-    ]);
-
-    return (result.rowCount ?? 0) > 0;
+    const result = await this.#prisma.project.delete({ where: { id } });
+    return result.id === id;
   }
 }

@@ -1,11 +1,12 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatChipListbox, MatChipOption } from '@angular/material/chips';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
+import { TASK_STATUSES } from '@shared/const/task-statuses';
 
 @Component({
   selector: 'app-status-filter',
   standalone: true,
-  imports: [MatChipListbox, MatChipOption],
+  imports: [MatChipListbox, MatChipOption, TranslatePipe],
   template: `
     <mat-chip-listbox
       [value]="activeStatus()"
@@ -14,7 +15,7 @@ import { LanguageService } from '../../../shared/services/language';
     >
       @for (option of statusOptions; track option.value) {
         <mat-chip-option [value]="option.value">
-          {{ t(option.labelKey) }}
+          {{ option.labelKey | translate }}
         </mat-chip-option>
       }
     </mat-chip-listbox>
@@ -24,16 +25,10 @@ export class StatusFilterComponent {
   readonly activeStatus = input.required<string>();
   readonly statusChange = output<string>();
 
-  readonly #languageService = inject(LanguageService);
-
   readonly statusOptions = [
     { value: 'all', labelKey: 'all' },
-    { value: 'pending', labelKey: 'pending' },
-    { value: 'in-progress', labelKey: 'inProgress' },
-    { value: 'done', labelKey: 'done' },
+    { value: TASK_STATUSES.PENDING, labelKey: 'pending' },
+    { value: TASK_STATUSES.IN_PROGRESS, labelKey: 'inProgress' },
+    { value: TASK_STATUSES.DONE, labelKey: 'done' },
   ];
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 }

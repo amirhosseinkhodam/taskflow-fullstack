@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProjectModule } from './project/project.module';
-import { DatabaseModule } from './shared/database/database.module';
+import { PrismaModule } from './shared/prisma/prisma.module';
 import { TaskModule } from './task/task.module';
 
 @Module({
@@ -16,7 +16,7 @@ import { TaskModule } from './task/task.module';
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60_000, limit: 30 }],
     }),
-    DatabaseModule,
+    PrismaModule,
     AuthModule,
     TaskModule,
     AdminModule,

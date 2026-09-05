@@ -13,6 +13,8 @@ import { PasswordDialogComponent } from '../../../shared/components/password-dia
 import { ButtonComponent } from '../../../shared/components/button';
 import { PageHeaderComponent } from '../../../shared/components/page-header';
 import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
+import { USER_ROLES } from '@shared/const/user-roles';
 import { AuthStore } from '../../auth/store/auth';
 import type { UserModel } from '../models/admin';
 import { AdminStore } from '../store/admin';
@@ -27,11 +29,12 @@ import { AdminStore } from '../store/admin';
     MatBottomSheetModule,
     ButtonComponent,
     PageHeaderComponent,
+    TranslatePipe,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
       <app-page-header
-        [title]="t('adminPanel')"
+        [title]="'adminPanel' | translate"
         [roleBadge]="roleBadgeText()"
         (logout)="auth.logout()"
       />
@@ -39,10 +42,10 @@ import { AdminStore } from '../store/admin';
       <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-6 flex items-center justify-between">
           <h2 class="text-lg font-medium text-slate-900 dark:text-white">
-            {{ t('users') }}
+            {{ 'users' | translate }}
           </h2>
           <div class="text-sm text-slate-500 dark:text-slate-400">
-            {{ store.users().length }} {{ t('users') }}
+            {{ store.users().length }} {{ 'users' | translate }}
           </div>
         </div>
 
@@ -57,22 +60,22 @@ import { AdminStore } from '../store/admin';
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
-                  {{ t('email') }}
+                  {{ 'email' | translate }}
                 </th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell"
                 >
-                  {{ t('name') }}
+                  {{ 'name' | translate }}
                 </th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
-                  {{ t('role') }}
+                  {{ 'role' | translate }}
                 </th>
                 <th
                   class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
-                  {{ t('actions') }}
+                  {{ 'actions' | translate }}
                 </th>
               </tr>
             </thead>
@@ -94,14 +97,14 @@ import { AdminStore } from '../store/admin';
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                       [ngClass]="{
                         'bg-amber-200 text-amber-900 dark:bg-amber-800/40 dark:text-amber-200':
-                          user.role === 'superAdmin',
+                          user.role === USER_ROLES.SUPER_ADMIN,
                         'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300':
-                          user.role === 'admin',
+                          user.role === USER_ROLES.ADMIN,
                         'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300':
-                          user.role === 'user',
+                          user.role === USER_ROLES.USER,
                       }"
                     >
-                      {{ t(user.role) }}
+                      {{ user.role | translate }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-right">
@@ -111,7 +114,7 @@ import { AdminStore } from '../store/admin';
                       <app-button
                         variant="ghost"
                         [cssClass]="
-                          user.role === 'user'
+                          user.role === USER_ROLES.USER
                             ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50'
                             : 'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
                         "
@@ -121,14 +124,14 @@ import { AdminStore } from '../store/admin';
                         (buttonClick)="toggleRole(user)"
                       >
                         <span class="hidden sm:inline">{{
-                          user.role === 'user'
-                            ? t('promoteToAdmin')
-                            : t('demoteToUser')
+                          user.role === USER_ROLES.USER
+                            ? ('promoteToAdmin' | translate)
+                            : ('demoteToUser' | translate)
                         }}</span>
                         <span class="sm:hidden text-xs">{{
-                          user.role === 'user'
-                            ? t('promoteShort')
-                            : t('demoteShort')
+                          user.role === USER_ROLES.USER
+                            ? ('promoteShort' | translate)
+                            : ('demoteShort' | translate)
                         }}</span>
                       </app-button>
                       <app-button
@@ -137,10 +140,10 @@ import { AdminStore } from '../store/admin';
                         (buttonClick)="openPasswordChange(user)"
                       >
                         <span class="hidden sm:inline">{{
-                          t('changePassword')
+                          'changePassword' | translate
                         }}</span>
                         <span class="sm:hidden text-xs">{{
-                          t('password')
+                          'password' | translate
                         }}</span>
                       </app-button>
                       <app-button
@@ -151,9 +154,11 @@ import { AdminStore } from '../store/admin';
                         (buttonClick)="confirmDeleteUser(user)"
                       >
                         <span class="hidden sm:inline">{{
-                          t('deleteUser')
+                          'deleteUser' | translate
                         }}</span>
-                        <span class="sm:hidden text-xs">{{ t('delete') }}</span>
+                        <span class="sm:hidden text-xs">{{
+                          'delete' | translate
+                        }}</span>
                       </app-button>
                     </div>
                   </td>
@@ -164,7 +169,7 @@ import { AdminStore } from '../store/admin';
                     colspan="4"
                     class="px-4 py-12 text-center text-slate-500 dark:text-slate-400"
                   >
-                    {{ t('noUsers') }}
+                    {{ 'noUsers' | translate }}
                   </td>
                 </tr>
               }
@@ -186,7 +191,7 @@ import { AdminStore } from '../store/admin';
                 store.message() !== 'userDeleted',
             }"
           >
-            {{ t(store.message()) }}
+            {{ store.message() | translate }}
           </div>
         }
       </main>
@@ -205,7 +210,7 @@ export class AdminPanelComponent implements OnInit {
   readonly roleBadgeText = computed(() => {
     const role = this.auth.user()?.role;
     if (!role) return '';
-    return `${this.t('role')}: ${this.t(role)}`;
+    return `${this.#languageService.translate('role')}: ${this.#languageService.translate(role)}`;
   });
   isPhone = signal(false);
 
@@ -219,12 +224,8 @@ export class AdminPanelComponent implements OnInit {
     this.store.loadUsers();
   }
 
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
-
   isSuperAdminUser(user: UserModel): boolean {
-    return user.role === 'superAdmin';
+    return user.role === USER_ROLES.SUPER_ADMIN;
   }
 
   getDisplayName(user: UserModel): string {
@@ -234,7 +235,8 @@ export class AdminPanelComponent implements OnInit {
 
   toggleRole(user: UserModel): void {
     if (user.id === this.currentUserId()) return;
-    const newRole = user.role === 'user' ? 'admin' : 'user';
+    const newRole =
+      user.role === USER_ROLES.USER ? USER_ROLES.ADMIN : USER_ROLES.USER;
     this.store.updateUserRole({ id: user.id, role: newRole });
   }
 

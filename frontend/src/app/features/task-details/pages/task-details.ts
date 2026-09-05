@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { CommentService } from '../../comments/services/comment';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { NotificationService } from '../../../shared/services/notification';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 import { ButtonComponent } from '../../../shared/components/button';
@@ -30,11 +30,12 @@ import { CommentListComponent } from '../../comments/components/comment-list';
     ButtonComponent,
     CommentListComponent,
     TextareaComponent,
+    TranslatePipe,
   ],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-slate-900">
       <app-page-header
-        [title]="t('taskDetails')"
+        [title]="'taskDetails' | translate"
         [showBackButton]="true"
         (logout)="onLogout()"
       />
@@ -45,13 +46,13 @@ import { CommentListComponent } from '../../comments/components/comment-list';
             <p
               class="rounded-lg bg-slate-100 dark:bg-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300"
             >
-              {{ t('loading') }}
+              {{ 'loading' | translate }}
             </p>
           } @else if (error()) {
             <p
               class="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
             >
-              {{ t('taskNotFound') }}
+              {{ 'taskNotFound' | translate }}
             </p>
           } @else {
             @if (task(); as task) {
@@ -84,7 +85,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                   <h3
                     class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4"
                   >
-                    {{ t('comments') }}
+                    {{ 'comments' | translate }}
                   </h3>
                   <app-comment-list
                     [comments]="comments()"
@@ -94,7 +95,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                   />
                   <div class="mt-4">
                     <app-textarea
-                      [placeholder]="t('commentPlaceholder')"
+                      [placeholder]="'commentPlaceholder' | translate"
                       [rows]="3"
                       [(ngModel)]="commentContent"
                     />
@@ -104,7 +105,7 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                         size="sm"
                         (buttonClick)="onAddCommentClick()"
                       >
-                        {{ t('addComment') }}
+                        {{ 'addComment' | translate }}
                       </app-button>
                     </div>
                   </div>
@@ -123,7 +124,6 @@ export class TaskDetailsPageComponent {
   readonly #dashboardService = inject(DashboardService);
   readonly #commentService = inject(CommentService);
   readonly #auth = inject(AuthStore);
-  readonly #languageService = inject(LanguageService);
   readonly #notification = inject(NotificationService);
 
   readonly task = signal<TaskModel | null>(null);
@@ -177,10 +177,6 @@ export class TaskDetailsPageComponent {
           this.loading.set(false);
         },
       });
-  }
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
   }
 
   loadComments(): void {

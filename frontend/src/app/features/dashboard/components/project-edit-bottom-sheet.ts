@@ -5,27 +5,33 @@ import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { InputComponent } from '../../../shared/components/input';
 import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-project-edit-bottom-sheet',
   standalone: true,
-  imports: [FormsModule, MatBottomSheetModule, InputComponent, ButtonComponent],
+  imports: [
+    FormsModule,
+    MatBottomSheetModule,
+    InputComponent,
+    ButtonComponent,
+    TranslatePipe,
+  ],
   template: `
     <h3 class="mat-body-large mb-4 font-bold">
-      {{ t('editProject') }}
+      {{ 'editProject' | translate }}
     </h3>
     <app-input
       [(ngModel)]="projectName"
-      [placeholder]="t('editProjectName')"
+      [placeholder]="'editProjectName' | translate"
       (keydown.enter)="onConfirm()"
       variant="default"
     />
     <div class="flex gap-2 justify-end pt-4">
       <app-button variant="primary" (buttonClick)="onCancel()">{{
-        t('cancel')
+        'cancel' | translate
       }}</app-button>
       <app-button
         variant="mat-raised"
@@ -33,7 +39,7 @@ import { ButtonComponent } from '../../../shared/components/button';
         (buttonClick)="onConfirm()"
         [disabled]="!projectName.trim()"
       >
-        {{ t('save') }}
+        {{ 'save' | translate }}
       </app-button>
     </div>
   `,
@@ -42,14 +48,9 @@ export class ProjectEditBottomSheetComponent {
   readonly #bottomSheetRef = inject(
     MatBottomSheetRef<ProjectEditBottomSheetComponent>,
   );
-  readonly #languageService = inject(LanguageService);
   readonly #data = inject<{ name: string }>(MAT_BOTTOM_SHEET_DATA);
 
   projectName = this.#data.name;
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   onConfirm(): void {
     const name = this.projectName.trim();

@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtStrategy } from '../../src/auth/jwt.strategy';
+import { PrismaService } from '../../src/shared/prisma/prisma.service';
 
-const mockQuery = jest.fn();
-const mockPool = { query: mockQuery } as any;
+const mockPrisma = {
+  user: {
+    findUnique: jest.fn(),
+  },
+} as any;
 
 describe('JwtStrategy', () => {
   let strategy: JwtStrategy;
@@ -13,7 +17,10 @@ describe('JwtStrategy', () => {
     process.env.JWT_SECRET = 'test-secret';
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [JwtStrategy, { provide: 'DATABASE', useValue: mockPool }],
+      providers: [
+        JwtStrategy,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
     }).compile();
 
     strategy = module.get(JwtStrategy);
@@ -25,19 +32,15 @@ describe('JwtStrategy', () => {
 
   it('validate() — user found returns user object', async () => {
     const payload = { sub: 1, email: 'test@test.com', role: 'user' as const };
-    mockQuery.mockResolvedValueOnce({
-      rows: [
-        {
-          id: 1,
-          email: 'test@test.com',
-          firstName: null,
-          lastName: null,
-          nationalCode: null,
-          phone: null,
-          birthDate: null,
-          role: 'user',
-        },
-      ],
+    mockPrisma.user.findUnique.mockResolvedValueOnce({
+      id: 1,
+      email: 'test@test.com',
+      firstName: null,
+      lastName: null,
+      nationalCode: null,
+      phone: null,
+      birthDate: null,
+      role: 'user',
     });
 
     const result = await strategy.validate(payload);
@@ -56,7 +59,7 @@ describe('JwtStrategy', () => {
 
   it('validate() — user not found throws UnauthorizedException', async () => {
     const payload = { sub: 999, email: 'test@test.com', role: 'user' as const };
-    mockQuery.mockResolvedValueOnce({ rows: [] });
+    mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
     await expect(strategy.validate(payload)).rejects.toThrow(
       UnauthorizedException,

@@ -3,6 +3,15 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
+      keyframes: {
+        'bounce-dot': {
+          '0%, 80%, 100%': { transform: 'translateY(0)' },
+          '40%': { transform: 'translateY(-10px)' },
+        },
+      },
+      animation: {
+        'bounce-dot': 'bounce-dot 0.7s infinite ease-in-out both',
+      },
       fontFamily: {
         sans: ['Vazirmatn', 'sans-serif'],
       },

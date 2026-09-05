@@ -14,10 +14,13 @@ import {
 } from '@hugeicons/core-free-icons';
 import { LanguageService } from '../services/language';
 import { LocalizedDatePipe } from '../pipes/localized-date';
+import { TranslatePipe } from '../pipes/translate';
+import { TASK_STATUSES } from '@shared/const/task-statuses';
 import { ConfirmDialogComponent } from './confirm-dialog';
 import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
 import { ButtonComponent } from './button';
-import { SelectComponent, type SelectOption } from './select';
+import { SelectComponent } from './select';
+import type { SelectOption } from '../models/select';
 import type { TaskModel } from '@shared/types/task';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskStatus } from '../models/task';
@@ -27,6 +30,7 @@ import type { TaskStatus } from '../models/task';
   standalone: true,
   imports: [
     LocalizedDatePipe,
+    TranslatePipe,
     ButtonComponent,
     MatBottomSheetModule,
     SelectComponent,
@@ -45,41 +49,43 @@ import type { TaskStatus } from '../models/task';
               {{ task.title }}
             </h3>
             <p class="text-sm text-slate-500 dark:text-slate-400">
-              {{ t('project') }}: {{ getProjectName(task.projectId) }}
+              {{ 'project' | translate }}: {{ getProjectName(task.projectId) }}
             </p>
             <div class="flex flex-wrap gap-1.5 mt-1">
               @if (showCreatorBadge() && task.creatorName) {
                 <span
                   class="inline-block rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 text-xs text-indigo-600 dark:text-indigo-300"
                 >
-                  {{ t('createdBy') }}: {{ task.creatorName }}
+                  {{ 'createdBy' | translate }}: {{ task.creatorName }}
                 </span>
               }
               @if (showAssigneeBadge() && task.assigneeName) {
                 <span
                   class="inline-block rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs text-green-600 dark:text-green-300"
                 >
-                  {{ t('assignedTo') }}: {{ task.assigneeName }}
+                  {{ 'assignedTo' | translate }}: {{ task.assigneeName }}
                 </span>
               }
             </div>
             <p class="text-sm text-slate-600 dark:text-slate-400">
-              {{ task.description || t('noDescription') }}
+              {{ task.description || ('noDescription' | translate) }}
             </p>
             <p
               class="mt-1 text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500"
             >
-              {{ t('status') }}: {{ t(getStatusLabel(task.status)) }}
+              {{ 'status' | translate }}:
+              {{ getStatusLabel(task.status) | translate }}
             </p>
             <div
               class="mt-1 flex flex-wrap gap-x-3 text-xs text-slate-400 dark:text-slate-500"
             >
               <span
-                >{{ t('created') }}: {{ task.createdAt | localizedDate }}</span
+                >{{ 'created' | translate }}:
+                {{ task.createdAt | localizedDate }}</span
               >
               @if (task.updatedAt !== task.createdAt) {
                 <span
-                  >{{ t('modified') }}:
+                  >{{ 'modified' | translate }}:
                   {{ task.updatedAt | localizedDate }}</span
                 >
               }
@@ -94,7 +100,7 @@ import type { TaskStatus } from '../models/task';
                   size="md"
                   type="button"
                   (buttonClick)="navigateToDetail(task.id)"
-                  [title]="t('detail')"
+                  [title]="'detail' | translate"
                   cssClass="w-full sm:w-auto"
                 >
                   <hugeicons-icon
@@ -104,7 +110,7 @@ import type { TaskStatus } from '../models/task';
                     [strokeWidth]="1.5"
                     class="inline"
                   />
-                  <span>{{ t('detail') }}</span>
+                  <span>{{ 'detail' | translate }}</span>
                 </app-button>
               }
               @if (showEditButton()) {
@@ -113,7 +119,7 @@ import type { TaskStatus } from '../models/task';
                   size="md"
                   type="button"
                   (buttonClick)="edit.emit(task)"
-                  [title]="t('edit')"
+                  [title]="'edit' | translate"
                   cssClass="w-full sm:w-auto"
                 >
                   <hugeicons-icon
@@ -123,7 +129,7 @@ import type { TaskStatus } from '../models/task';
                     [strokeWidth]="1.5"
                     class="inline"
                   />
-                  <span>{{ t('edit') }}</span>
+                  <span>{{ 'edit' | translate }}</span>
                 </app-button>
               }
               <app-button
@@ -140,14 +146,14 @@ import type { TaskStatus } from '../models/task';
                   [strokeWidth]="1.5"
                   class="inline"
                 />
-                <span>{{ t('delete') }}</span>
+                <span>{{ 'delete' | translate }}</span>
               </app-button>
             </div>
             <app-select
               [options]="statusOptions"
               [value]="task.status"
               [clearable]="false"
-              [placeholder]="t('status')"
+              [placeholder]="'status' | translate"
               (selectChange)="onStatusChange($event)"
               cssClass="w-full sm:w-36"
             />
@@ -186,16 +192,12 @@ export class TaskItemComponent {
       .subscribe((result) => this.isPhone.set(result.matches));
   }
 
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
-
   getProjectName(projectId: number): string {
     return this.projects().find((p) => p.id === projectId)?.name ?? '';
   }
 
   getStatusLabel(status: string): string {
-    if (status === 'in-progress') return 'inProgress';
+    if (status === TASK_STATUSES.IN_PROGRESS) return 'inProgress';
     return status;
   }
 
@@ -207,12 +209,18 @@ export class TaskItemComponent {
   }
 
   readonly statusOptions: SelectOption[] = [
-    { value: 'pending', label: this.#languageService.translate('pending') },
     {
-      value: 'in-progress',
+      value: TASK_STATUSES.PENDING,
+      label: this.#languageService.translate('pending'),
+    },
+    {
+      value: TASK_STATUSES.IN_PROGRESS,
       label: this.#languageService.translate('inProgress'),
     },
-    { value: 'done', label: this.#languageService.translate('done') },
+    {
+      value: TASK_STATUSES.DONE,
+      label: this.#languageService.translate('done'),
+    },
   ];
 
   onStatusChange(newStatus: number | string | null): void {

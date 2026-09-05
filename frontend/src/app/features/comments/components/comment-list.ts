@@ -1,6 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { LanguageService } from '../../../shared/services/language';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { ButtonComponent } from '../../../shared/components/button';
 import { InputComponent } from '../../../shared/components/input';
 import type { CommentModel } from '@shared/types/task';
@@ -8,12 +9,12 @@ import type { CommentModel } from '@shared/types/task';
 @Component({
   selector: 'app-comment-list',
   standalone: true,
-  imports: [LocalizedDatePipe, ButtonComponent, InputComponent],
+  imports: [LocalizedDatePipe, TranslatePipe, ButtonComponent, InputComponent],
   template: `
     <div class="space-y-3">
       @if (comments().length === 0) {
         <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
-          {{ t('noCommentsYet') }}
+          {{ 'noCommentsYet' | translate }}
         </p>
       } @else {
         @for (comment of comments(); track comment.id) {
@@ -23,7 +24,7 @@ import type { CommentModel } from '@shared/types/task';
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <span class="font-medium text-slate-900 dark:text-slate-100">
-                  {{ comment.userName || t('unknownUser') }}
+                  {{ comment.userName || ('unknownUser' | translate) }}
                 </span>
                 <span class="text-xs text-slate-400 dark:text-slate-500">
                   {{ comment.createdAt | localizedDate }}
@@ -54,14 +55,14 @@ import type { CommentModel } from '@shared/types/task';
                     size="sm"
                     (buttonClick)="saveEdit(comment.id)"
                   >
-                    {{ t('save') }}
+                    {{ 'save' | translate }}
                   </app-button>
                   <app-button
                     variant="secondary"
                     size="sm"
                     (buttonClick)="cancelEdit(comment.id)"
                   >
-                    {{ t('cancel') }}
+                    {{ 'cancel' | translate }}
                   </app-button>
                 </div>
               } @else if (canEdit(comment)) {
@@ -71,14 +72,14 @@ import type { CommentModel } from '@shared/types/task';
                     size="sm"
                     (buttonClick)="startEdit(comment.id)"
                   >
-                    {{ t('editComment') }}
+                    {{ 'editComment' | translate }}
                   </app-button>
                   <app-button
                     variant="destructive"
                     size="sm"
                     (buttonClick)="confirmDelete(comment.id)"
                   >
-                    {{ t('deleteComment') }}
+                    {{ 'deleteComment' | translate }}
                   </app-button>
                 </div>
               }
@@ -99,10 +100,6 @@ export class CommentListComponent {
 
   readonly editingCommentId = signal<number | null>(null);
   readonly editContent: Record<number, string> = {};
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   isEditing(commentId: number): boolean {
     return this.editingCommentId() === commentId;
@@ -132,7 +129,7 @@ export class CommentListComponent {
   }
 
   confirmDelete(commentId: number): void {
-    if (confirm(this.t('confirmDeleteComment'))) {
+    if (confirm(this.#languageService.translate('confirmDeleteComment'))) {
       this.onDelete.emit(commentId);
     }
   }

@@ -1,24 +1,31 @@
 import {
   ConflictException,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { Pool } from 'pg';
-import type { AuthUserModel } from '@shared/types/auth';
+import { PrismaService } from '../shared/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
-  readonly #db: Pool;
+  readonly #prisma: PrismaService;
   readonly #jwtService: JwtService;
-  constructor(@Inject('DATABASE') db: Pool, jwtService: JwtService) {
-    this.#db = db;
+  constructor(prisma: PrismaService, jwtService: JwtService) {
+    this.#prisma = prisma;
     this.#jwtService = jwtService;
   }
 
-  #signToken(user: AuthUserModel): string {
+  #signToken(user: {
+    id: number;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    nationalCode: string | null;
+    phone: string | null;
+    birthDate: string | null;
+    role: string;
+  }): string {
     return this.#jwtService.sign({
       sub: user.id,
       email: user.email,
@@ -32,42 +39,43 @@ export class AuthService {
   }
 
   async register(email: string, password: string) {
-    const existing = await this.#db.query<{ id: number }>(
-      'SELECT id FROM users WHERE email = $1',
-      [email],
-    );
-    if (existing.rows[0]) {
+    const existing = await this.#prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+    if (existing) {
       throw new ConflictException('Email already exists');
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const result = await this.#db.query<AuthUserModel>(
-      `INSERT INTO users (email, password)
-       VALUES ($1, $2)
-       RETURNING id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
-      [email, hashed],
-    );
-    const user = result.rows[0];
-    const token = this.#signToken(user);
-
+    const user = await this.#prisma.user.create({
+      data: { email, password: hashed },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        nationalCode: true,
+        phone: true,
+        birthDate: true,
+        role: true,
+      },
+    });
+    const token = this.#signToken(user as never);
     return { token, user };
   }
 
   async login(email: string, password: string) {
-    const result = await this.#db.query<AuthUserModel & { password: string }>(
-      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role, password
-       FROM users WHERE email = $1`,
-      [email],
-    );
-    const user = result.rows[0];
-
+    const user = await this.#prisma.user.findUnique({
+      where: { email },
+    });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.#signToken(user);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _pw, ...userWithoutPassword } = user;
+    const token = this.#signToken(userWithoutPassword as never);
     return { token, user: userWithoutPassword };
   }
 }

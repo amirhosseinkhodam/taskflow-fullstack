@@ -15,7 +15,7 @@ import { CardComponent } from '../../../shared/components/card';
 import { LanguageToggleComponent } from '../../../shared/components/language-toggle';
 import { TaskFormComponent } from '../../../shared/components/task-form';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { AuthStore } from '../../auth/store/auth';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Menu01Icon } from '@hugeicons/core-free-icons';
@@ -51,6 +51,7 @@ import { DashboardStore } from '../store/dashboard';
     MatBottomSheetModule,
     MatMenuModule,
     HugeiconsIconComponent,
+    TranslatePipe,
   ],
   template: `
     <main class="mx-auto max-w-4xl p-6">
@@ -65,7 +66,7 @@ import { DashboardStore } from '../store/dashboard';
             <p
               class="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400"
             >
-              {{ t('createProjectAddTasks') }}
+              {{ 'createProjectAddTasks' | translate }}
             </p>
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
@@ -77,7 +78,7 @@ import { DashboardStore } from '../store/dashboard';
                 type="button"
                 (buttonClick)="goToProfile()"
               >
-                {{ t('profile') }}
+                {{ 'profile' | translate }}
               </app-button>
               @if (isAdmin()) {
                 <app-button
@@ -85,7 +86,7 @@ import { DashboardStore } from '../store/dashboard';
                   type="button"
                   (buttonClick)="goToAdmin()"
                 >
-                  {{ t('adminPanel') }}
+                  {{ 'adminPanel' | translate }}
                 </app-button>
               }
               <app-button
@@ -93,7 +94,7 @@ import { DashboardStore } from '../store/dashboard';
                 type="button"
                 (buttonClick)="logout()"
               >
-                {{ t('logout') }}
+                {{ 'logout' | translate }}
               </app-button>
             } @else {
               <button
@@ -109,15 +110,15 @@ import { DashboardStore } from '../store/dashboard';
               </button>
               <mat-menu #mobileMenu="matMenu">
                 <button mat-menu-item (click)="goToProfile()">
-                  {{ t('profile') }}
+                  {{ 'profile' | translate }}
                 </button>
                 @if (isAdmin()) {
                   <button mat-menu-item (click)="goToAdmin()">
-                    {{ t('adminPanel') }}
+                    {{ 'adminPanel' | translate }}
                   </button>
                 }
                 <button mat-menu-item (click)="logout()" class="!text-red-600">
-                  {{ t('logout') }}
+                  {{ 'logout' | translate }}
                 </button>
               </mat-menu>
             }
@@ -170,7 +171,7 @@ import { DashboardStore } from '../store/dashboard';
             <h2
               class="text-xl font-semibold text-slate-900 dark:text-slate-100"
             >
-              {{ t('tasks') }}
+              {{ 'tasks' | translate }}
             </h2>
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               <div class="w-full sm:w-auto min-w-[178px]">
@@ -220,7 +221,6 @@ export class DashboardComponent {
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #breakpointObserver = inject(BreakpointObserver);
-  readonly #languageService = inject(LanguageService);
   readonly #dashboardService = inject(DashboardService);
 
   readonly Menu01Icon = Menu01Icon;
@@ -241,10 +241,6 @@ export class DashboardComponent {
         const current = this.store.filter();
         this.store.setFilter({ ...current, searchTerm });
       });
-  }
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
   }
 
   isAdmin(): boolean {

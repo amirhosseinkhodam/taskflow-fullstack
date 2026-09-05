@@ -1,7 +1,7 @@
 import { Component, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LanguageService } from '../../../shared/services/language';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import type { ProjectModel } from '@shared/types/project';
 import { InputComponent } from '../../../shared/components/input';
 import { ButtonComponent } from '../../../shared/components/button';
@@ -15,6 +15,7 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
   imports: [
     ReactiveFormsModule,
     LocalizedDatePipe,
+    TranslatePipe,
     InputComponent,
     ButtonComponent,
     FormComponent,
@@ -23,22 +24,22 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
   template: `
     <div class="h-full flex flex-col min-h-0">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        {{ t('projects') }}
+        {{ 'projects' | translate }}
       </h2>
       <app-form
         [formGroup]="form"
         variant="inline"
         [cssClass]="'w-full mt-4 gap-2 items-center'"
-        (ngSubmit)="createProject()"
+        (formSubmit)="createProject()"
       >
         <app-input
           formControlName="projectName"
           class="min-w-0 flex-1"
-          [placeholder]="t('newProjectName')"
+          [placeholder]="'newProjectName' | translate"
           variant="default"
         />
         <app-button variant="primary" type="submit">
-          {{ t('add') }}
+          {{ 'add' | translate }}
         </app-button>
       </app-form>
 
@@ -59,12 +60,12 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
                 class="flex flex-wrap gap-x-3 text-xs text-slate-400 dark:text-slate-500 mt-0.5"
               >
                 <span
-                  >{{ t('created') }}:
+                  >{{ 'created' | translate }}:
                   {{ project.createdAt | localizedDate }}</span
                 >
                 @if (project.updatedAt !== project.createdAt) {
                   <span
-                    >{{ t('modified') }}:
+                    >{{ 'modified' | translate }}:
                     {{ project.updatedAt | localizedDate }}</span
                   >
                 }
@@ -74,7 +75,7 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
               <button
                 class="rounded p-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors"
                 type="button"
-                [attr.aria-label]="t('edit')"
+                [attr.aria-label]="'edit' | translate"
                 (click)="edit.emit(project)"
               >
                 <hugeicons-icon
@@ -87,7 +88,7 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
               <button
                 class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
                 type="button"
-                [attr.aria-label]="t('delete')"
+                [attr.aria-label]="'delete' | translate"
                 (click)="delete.emit(project)"
               >
                 <hugeicons-icon
@@ -103,7 +104,7 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
           <li
             class="py-4 text-center text-sm text-slate-500 dark:text-slate-400"
           >
-            {{ t('noProjectsYet') }}
+            {{ 'noProjectsYet' | translate }}
           </li>
         }
       </ul>
@@ -118,16 +119,11 @@ export class ProjectListComponent {
 
   readonly icons = { Edit01Icon, Delete01Icon };
 
-  readonly #languageService = inject(LanguageService);
   readonly #fb = inject(FormBuilder);
 
   readonly form = this.#fb.nonNullable.group({
     projectName: ['', Validators.required],
   });
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   createProject(): void {
     const name = this.form.getRawValue().projectName.trim();

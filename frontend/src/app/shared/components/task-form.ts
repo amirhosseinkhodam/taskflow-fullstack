@@ -1,39 +1,46 @@
 import { Component, effect, inject, input, output } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
 import { TaskFormService } from '../forms/task';
 import { LanguageService } from '../services/language';
+import { TranslatePipe } from '../pipes/translate';
 import { ButtonComponent } from './button';
+import { FormComponent } from './form';
 import { InputComponent } from './input';
-import { SelectComponent, type SelectOption } from './select';
+import { SelectComponent } from './select';
+import type { SelectOption } from '../models/select';
 import { TextareaComponent } from './textarea';
 
 @Component({
   selector: 'app-task-form',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
     InputComponent,
     ButtonComponent,
     TextareaComponent,
     SelectComponent,
+    FormComponent,
+    TranslatePipe,
   ],
   template: `
-    <form [formGroup]="form" (ngSubmit)="onSubmit($event)">
+    <app-form [formGroup]="form" (formSubmit)="onSubmit()">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        {{ form.get('title')?.value ? t('editTask') : t('newTask') }}
+        {{
+          form.get('title')?.value
+            ? ('editTask' | translate)
+            : ('newTask' | translate)
+        }}
       </h2>
       <app-input
         formControlName="title"
-        [placeholder]="t('taskTitlePlaceholder')"
+        [placeholder]="'taskTitlePlaceholder' | translate"
         variant="default"
         [cssClass]="'mt-4'"
       />
       @if (showProjectSelect()) {
         <app-select
           formControlName="projectId"
-          [placeholder]="t('selectProject')"
+          [placeholder]="'selectProject' | translate"
           [options]="projectOptions()"
           variant="default"
           [cssClass]="'mt-3'"
@@ -41,14 +48,14 @@ import { TextareaComponent } from './textarea';
       }
       <app-input
         formControlName="assigneeEmail"
-        [placeholder]="t('assigneeEmailPlaceholder')"
+        [placeholder]="'assigneeEmailPlaceholder' | translate"
         type="email"
         variant="default"
         [cssClass]="'mt-3'"
       />
       <app-textarea
         formControlName="description"
-        [placeholder]="t('descriptionPlaceholder')"
+        [placeholder]="'descriptionPlaceholder' | translate"
         rows="5"
         variant="default"
         [cssClass]="'mt-3'"
@@ -56,10 +63,15 @@ import { TextareaComponent } from './textarea';
       <div class="mt-3 flex gap-2">
         <app-button
           class="w-full"
+          variant="primary"
           type="submit"
-          [cssClass]="'flex-1 w-full bg-blue-600 hover:bg-blue-700 text-white'"
+          [cssClass]="'flex-1 w-full bg-blue-600 hover:bg-blue-700'"
         >
-          {{ form.get('title')?.value ? t('save') : t('addTask') }}
+          {{
+            form.get('title')?.value
+              ? ('save' | translate)
+              : ('addTask' | translate)
+          }}
         </app-button>
         @if (form.get('title')?.value) {
           <app-button
@@ -67,11 +79,11 @@ import { TextareaComponent } from './textarea';
             type="button"
             (buttonClick)="onCancel()"
           >
-            {{ t('cancel') }}
+            {{ 'cancel' | translate }}
           </app-button>
         }
       </div>
-    </form>
+    </app-form>
   `,
 })
 export class TaskFormComponent {
@@ -89,17 +101,13 @@ export class TaskFormComponent {
   readonly #taskForm = inject(TaskFormService);
   readonly #languageService = inject(LanguageService);
 
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
-
   get form() {
     return this.#taskForm.form;
   }
 
   projectOptions(): SelectOption[] {
     return [
-      { value: 0, label: this.t('selectProject') },
+      { value: 0, label: this.#languageService.translate('selectProject') },
       ...this.projects().map((p) => ({ value: p.id, label: p.name })),
     ];
   }
@@ -118,8 +126,7 @@ export class TaskFormComponent {
     });
   }
 
-  onSubmit(event: Event): void {
-    event.preventDefault();
+  onSubmit(): void {
     const value = this.#taskForm.form.getRawValue();
     this.submitTask.emit(value);
     this.#taskForm.resetForm(value.projectId);

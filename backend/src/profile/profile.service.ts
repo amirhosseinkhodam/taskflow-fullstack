@@ -1,35 +1,41 @@
 import {
   BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { Pool } from 'pg';
-import type { AuthUserModel } from '@shared/types/auth';
+import { PrismaService } from '../shared/prisma/prisma.service';
 import { validatePassword } from '../shared/password-validation';
 
 @Injectable()
 export class ProfileService {
-  readonly #db: Pool;
+  readonly #prisma: PrismaService;
   readonly #jwtService: JwtService;
-  constructor(@Inject('DATABASE') db: Pool, jwtService: JwtService) {
-    this.#db = db;
+  constructor(prisma: PrismaService, jwtService: JwtService) {
+    this.#prisma = prisma;
     this.#jwtService = jwtService;
   }
 
   async getProfile(userId: number) {
-    const result = await this.#db.query<AuthUserModel>(
-      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role
-       FROM users WHERE id = $1`,
-      [userId],
-    );
-    if (result.rows.length === 0) {
+    const user = await this.#prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        nationalCode: true,
+        phone: true,
+        birthDate: true,
+        role: true,
+      },
+    });
+    if (!user) {
       throw new UnauthorizedException('User not found');
     }
-    return result.rows[0];
+    return user;
   }
 
   async updateProfile(
@@ -43,75 +49,67 @@ export class ProfileService {
       birthDate?: string;
     },
   ) {
-    const user = await this.#db.query<AuthUserModel & { password: string }>(
-      `SELECT id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role, password
-       FROM users WHERE id = $1`,
-      [userId],
-    );
-    if (user.rows.length === 0) {
+    const existing = await this.#prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!existing) {
       throw new UnauthorizedException('User not found');
     }
 
-    const existing = user.rows[0];
-
     if (fields.email && fields.email !== existing.email) {
-      const emailCheck = await this.#db.query<{ id: number }>(
-        'SELECT id FROM users WHERE email = $1 AND id != $2',
-        [fields.email, userId],
-      );
-      if (emailCheck.rows.length > 0) {
+      const emailConflict = await this.#prisma.user.findFirst({
+        where: { email: fields.email, id: { not: userId } },
+        select: { id: true },
+      });
+      if (emailConflict) {
         throw new ConflictException('Email already in use');
       }
     }
 
-    const updatedEmail = fields.email ?? existing.email;
-    const updatedFirstName =
-      fields.firstName !== undefined ? fields.firstName : existing.firstName;
-    const updatedLastName =
-      fields.lastName !== undefined ? fields.lastName : existing.lastName;
-    const updatedNationalCode =
-      fields.nationalCode !== undefined
-        ? fields.nationalCode
-        : existing.nationalCode;
-    const updatedPhone =
-      fields.phone !== undefined ? fields.phone : existing.phone;
-    const updatedBirthDate =
-      fields.birthDate !== undefined ? fields.birthDate : existing.birthDate;
-
-    const result = await this.#db.query<AuthUserModel>(
-      `UPDATE users SET
-        email = $1,
-        "firstName" = $2,
-        "lastName" = $3,
-        "nationalCode" = $4,
-        phone = $5,
-        "birthDate" = $6
-       WHERE id = $7
-       RETURNING id, email, "firstName", "lastName", "nationalCode", phone, "birthDate", role`,
-      [
-        updatedEmail,
-        updatedFirstName,
-        updatedLastName,
-        updatedNationalCode,
-        updatedPhone,
-        updatedBirthDate,
-        userId,
-      ],
-    );
-
-    const updatedUser = result.rows[0];
-    const token = this.#jwtService.sign({
-      sub: updatedUser.id,
-      email: updatedUser.email,
-      firstName: updatedUser.firstName,
-      lastName: updatedUser.lastName,
-      nationalCode: updatedUser.nationalCode,
-      phone: updatedUser.phone,
-      birthDate: updatedUser.birthDate,
-      role: updatedUser.role,
+    const user = await this.#prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: fields.email ?? existing.email,
+        firstName:
+          fields.firstName !== undefined
+            ? fields.firstName
+            : existing.firstName,
+        lastName:
+          fields.lastName !== undefined ? fields.lastName : existing.lastName,
+        nationalCode:
+          fields.nationalCode !== undefined
+            ? fields.nationalCode
+            : existing.nationalCode,
+        phone: fields.phone !== undefined ? fields.phone : existing.phone,
+        birthDate:
+          fields.birthDate !== undefined
+            ? fields.birthDate
+            : existing.birthDate,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        nationalCode: true,
+        phone: true,
+        birthDate: true,
+        role: true,
+      },
     });
 
-    return { token, user: updatedUser };
+    const token = this.#jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nationalCode: user.nationalCode,
+      phone: user.phone,
+      birthDate: user.birthDate,
+      role: user.role,
+    });
+
+    return { token, user };
   }
 
   async changePassword(
@@ -119,25 +117,25 @@ export class ProfileService {
     currentPassword: string,
     newPassword: string,
   ) {
-    const user = await this.#db.query<{ password: string }>(
-      'SELECT password FROM users WHERE id = $1',
-      [userId],
-    );
-    if (user.rows.length === 0) {
+    const user = await this.#prisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true },
+    });
+    if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (!(await bcrypt.compare(currentPassword, user.rows[0].password))) {
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
       throw new BadRequestException('Current password is incorrect');
     }
 
     validatePassword(newPassword);
 
     const hashed = await bcrypt.hash(newPassword, 10);
-    await this.#db.query('UPDATE users SET password = $1 WHERE id = $2', [
-      hashed,
-      userId,
-    ]);
+    await this.#prisma.user.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
 
     return { success: true };
   }

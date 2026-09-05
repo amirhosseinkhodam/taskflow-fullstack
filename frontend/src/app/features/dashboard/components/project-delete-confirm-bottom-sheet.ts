@@ -4,34 +4,34 @@ import {
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { ButtonComponent } from '../../../shared/components/button';
 
 @Component({
   selector: 'app-project-delete-confirm-bottom-sheet',
   standalone: true,
-  imports: [MatBottomSheetModule, ButtonComponent],
+  imports: [MatBottomSheetModule, ButtonComponent, TranslatePipe],
   template: `
     <h3 class="mat-body-large mb-2 font-bold">
-      {{ t('confirmDeleteProject') }}
+      {{ 'confirmDeleteProject' | translate }}
     </h3>
     <p class="mat-body-medium text-slate-500 dark:text-slate-400 mb-2">
-      {{ t('confirmDeleteProjectMessage') }}
+      {{ 'confirmDeleteProjectMessage' | translate }}
     </p>
     @if (undoneCount > 0) {
       <p class="mb-4 text-sm font-medium text-amber-600 dark:text-amber-400">
-        {{ t('projectHasUndoneTasks') }} ({{ undoneCount }})
+        {{ 'projectHasUndoneTasks' | translate }} ({{ undoneCount }})
       </p>
     }
     <div class="flex gap-2 justify-end">
       <app-button variant="primary" (buttonClick)="onCancel()">{{
-        t('cancel')
+        'cancel' | translate
       }}</app-button>
       <app-button
         variant="mat-raised"
         color="warn"
         (buttonClick)="onConfirm()"
-        >{{ t('delete') }}</app-button
+        >{{ 'delete' | translate }}</app-button
       >
     </div>
   `,
@@ -41,13 +41,8 @@ export class ProjectDeleteConfirmBottomSheetComponent {
     MatBottomSheetRef<ProjectDeleteConfirmBottomSheetComponent>,
   );
   readonly #data = inject<{ undoneCount: number }>(MAT_BOTTOM_SHEET_DATA);
-  readonly #languageService = inject(LanguageService);
 
   undoneCount = this.#data.undoneCount;
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   onConfirm(): void {
     this.#bottomSheetRef.dismiss(true);

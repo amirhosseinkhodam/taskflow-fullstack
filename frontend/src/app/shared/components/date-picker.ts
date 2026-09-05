@@ -12,6 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { LanguageService } from '../services/language';
+import { TranslatePipe } from '../pipes/translate';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import {
   Calendar01Icon,
@@ -89,7 +90,7 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 @Component({
   selector: 'app-date-picker',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent],
+  imports: [CommonModule, HugeiconsIconComponent, TranslatePipe],
   template: `
     <div class="relative">
       <div class="relative">
@@ -97,7 +98,7 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
           type="text"
           readonly
           [value]="displayValue()"
-          [placeholder]="placeholder() ?? t('selectDate')"
+          [placeholder]="placeholder() ?? ('selectDate' | translate)"
           [disabled]="disabled()"
           [class]="inputClasses()"
           (click)="toggle($event)"
@@ -207,7 +208,7 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
               class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
               (click)="goToToday()"
             >
-              {{ t('today') }}
+              {{ 'today' | translate }}
             </button>
           </div>
         </div>
@@ -422,10 +423,6 @@ export class DatePickerComponent implements ControlValueAccessor {
 
   #toIsoString(date: Date): string {
     return format(date, 'yyyy-MM-dd');
-  }
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
   }
 
   dayClasses(day: CalendarDay): string {

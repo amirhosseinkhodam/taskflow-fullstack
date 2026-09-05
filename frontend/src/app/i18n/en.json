@@ -152,5 +152,13 @@
   "cannotChangeOwnPassword": "Cannot change your own password here",
   "loginFailed": "Login failed",
   "selectDate": "Select date",
-  "today": "Today"
+  "today": "Today",
+  "validationRequired": "This field is required",
+  "validationEmail": "Please enter a valid email",
+  "validationMinlength": "Minimum {{required}} characters",
+  "validationInvalidChars": "Invalid characters",
+  "validationInvalidPhone": "Invalid phone number",
+  "validationInvalidNationalCode": "Invalid national code",
+  "validationWeakPasswordMinLength": "Password is too weak",
+  "validationPasswordsMismatch": "Passwords do not match"
 }

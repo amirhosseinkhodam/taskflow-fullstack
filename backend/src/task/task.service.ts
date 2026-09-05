@@ -1,21 +1,19 @@
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Pool } from 'pg';
+import { USER_ROLES } from '@shared/const/user-roles';
+import { PrismaService } from '../shared/prisma/prisma.service';
 import type { TaskModel, PaginatedResponseModel } from '@shared/types/task';
 
 @Injectable()
 export class TaskService {
-  readonly #db: Pool;
-  constructor(@Inject('DATABASE') db: Pool) {
-    this.#db = db;
+  readonly #prisma: PrismaService;
+  constructor(prisma: PrismaService) {
+    this.#prisma = prisma;
   }
-
-  readonly #taskColumns = `t.id, t.title, t.description, t.status, t."projectId", t."position", t."createdAt", t."updatedAt", t."userId", COALESCE(NULLIF(TRIM(COALESCE(u."firstName", '') || ' ' || COALESCE(u."lastName", '')), ''), u.email) AS "creatorName", t."assigneeId", COALESCE(NULLIF(TRIM(COALESCE(u2."firstName", '') || ' ' || COALESCE(u2."lastName", '')), ''), u2.email) AS "assigneeName", u2.email AS "assigneeEmail"`;
 
   async create(
     title: string,
@@ -24,46 +22,44 @@ export class TaskService {
     userId: number,
     assigneeEmail?: string,
   ): Promise<TaskModel> {
-    const projectCheck = await this.#db.query<{ id: number }>(
-      `SELECT id FROM projects WHERE id = $1`,
-      [projectId],
-    );
-    if (projectCheck.rows.length === 0) {
+    const project = await this.#prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true },
+    });
+    if (!project) {
       throw new NotFoundException('Project not found');
     }
 
     let assigneeId: number | null = null;
     if (assigneeEmail) {
-      const userCheck = await this.#db.query<{ id: number }>(
-        `SELECT id FROM users WHERE email = $1`,
-        [assigneeEmail],
-      );
-      if (userCheck.rows.length === 0) {
+      const user = await this.#prisma.user.findUnique({
+        where: { email: assigneeEmail },
+        select: { id: true },
+      });
+      if (!user) {
         throw new NotFoundException('Assignee not found');
       }
-      assigneeId = userCheck.rows[0].id;
+      assigneeId = user.id;
     }
 
-    const posResult = await this.#db.query<{ max: number | null }>(
-      `SELECT MAX("position") as max FROM tasks WHERE "projectId" = $1`,
-      [projectId],
-    );
-    const nextPos = (posResult.rows[0]?.max ?? -1) + 1;
+    const maxPos = await this.#prisma.task.aggregate({
+      where: { projectId },
+      _max: { position: true },
+    });
+    const nextPos = (maxPos._max.position ?? -1) + 1;
 
-    const result = await this.#db.query<{ id: number }>(
-      `INSERT INTO tasks (title, description, "projectId", "position", "userId", "assigneeId")
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id`,
-      [title, description, projectId, nextPos, userId, assigneeId],
-    );
-    const id = result.rows[0]?.id;
+    const task = await this.#prisma.task.create({
+      data: {
+        title,
+        description,
+        projectId,
+        position: nextPos,
+        userId,
+        assigneeId,
+      },
+    });
 
-    const task = await this.findOne(id);
-    if (!task) {
-      throw new Error('Task creation failed');
-    }
-
-    return task;
+    return this.findOne(task.id) as Promise<TaskModel>;
   }
 
   async findAll(filters: {
@@ -73,73 +69,110 @@ export class TaskService {
     page?: number;
     limit?: number;
   }): Promise<PaginatedResponseModel<TaskModel>> {
-    const conditions: string[] = [];
-    const params: (string | number)[] = [];
+    const where: Record<string, unknown> = {};
 
     if (filters.projectId !== undefined) {
-      params.push(filters.projectId);
-      conditions.push(`t."projectId" = $${params.length}`);
+      where.projectId = filters.projectId;
     }
     if (filters.status && filters.status !== 'all') {
-      params.push(filters.status);
-      conditions.push(`t.status = $${params.length}`);
+      where.status = filters.status;
     }
     if (filters.searchTerm) {
-      params.push(`%${filters.searchTerm}%`);
-      conditions.push(
-        `(t.title ILIKE $${params.length} OR t.description ILIKE $${params.length})`,
-      );
+      where.OR = [
+        { title: { contains: filters.searchTerm, mode: 'insensitive' } },
+        {
+          description: {
+            contains: filters.searchTerm,
+            mode: 'insensitive',
+          },
+        },
+      ];
     }
-
-    const whereClause = conditions.length
-      ? ` WHERE ${conditions.join(' AND ')}`
-      : '';
-
-    const countResult = await this.#db.query<{ count: string }>(
-      `SELECT COUNT(*) as count FROM tasks t${whereClause}`,
-      params,
-    );
-    const total = Number(countResult.rows[0]?.count ?? 0);
 
     const page = Math.max(1, filters.page ?? 1);
     const limit = Math.max(1, Math.min(100, filters.limit ?? 5));
+    const [total, tasks] = await Promise.all([
+      this.#prisma.task.count({ where }),
+      this.#prisma.task.findMany({
+        where,
+        include: {
+          creator: {
+            select: { firstName: true, lastName: true, email: true },
+          },
+          assignee: {
+            select: { firstName: true, lastName: true, email: true },
+          },
+        },
+        orderBy: [{ position: 'asc' }, { id: 'asc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
     const totalPages = Math.max(1, Math.ceil(total / limit));
-    const offset = (page - 1) * limit;
 
-    const dataParams = [...params];
-    dataParams.push(limit);
-    dataParams.push(offset);
+    const data = tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      description: t.description ?? '',
+      status: t.status,
+      projectId: t.projectId,
+      position: t.position,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+      userId: t.userId ?? 0,
+      creatorName: t.creator
+        ? [t.creator.firstName, t.creator.lastName].filter(Boolean).join(' ') ||
+          t.creator.email
+        : undefined,
+      assigneeId: t.assigneeId,
+      assigneeName: t.assignee
+        ? [t.assignee.firstName, t.assignee.lastName]
+            .filter(Boolean)
+            .join(' ') || t.assignee.email
+        : null,
+      assigneeEmail: t.assignee?.email ?? null,
+    })) as unknown as TaskModel[];
 
-    const result = await this.#db.query<TaskModel>(
-      `SELECT ${this.#taskColumns} FROM tasks t
-       LEFT JOIN users u ON t."userId" = u.id
-       LEFT JOIN users u2 ON t."assigneeId" = u2.id
-       ${whereClause}
-       ORDER BY t."position" ASC, t.id ASC
-       LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}`,
-      dataParams,
-    );
-
-    return {
-      data: result.rows,
-      total,
-      page,
-      limit,
-      totalPages,
-    };
+    return { data, total, page, limit, totalPages };
   }
 
   async findOne(id: number): Promise<TaskModel | null> {
-    const result = await this.#db.query<TaskModel>(
-      `SELECT ${this.#taskColumns}
-       FROM tasks t
-       LEFT JOIN users u ON t."userId" = u.id
-       LEFT JOIN users u2 ON t."assigneeId" = u2.id
-       WHERE t.id = $1`,
-      [id],
-    );
+    const t = await this.#prisma.task.findUnique({
+      where: { id },
+      include: {
+        creator: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+        assignee: {
+          select: { firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+    if (!t) return null;
 
-    return result.rows[0] ?? null;
+    return {
+      id: t.id,
+      title: t.title,
+      description: t.description ?? '',
+      status: t.status,
+      projectId: t.projectId,
+      position: t.position,
+      createdAt: t.createdAt.toISOString(),
+      updatedAt: t.updatedAt.toISOString(),
+      userId: t.userId ?? 0,
+      creatorName: t.creator
+        ? [t.creator.firstName, t.creator.lastName].filter(Boolean).join(' ') ||
+          t.creator.email
+        : undefined,
+      assigneeId: t.assigneeId,
+      assigneeName: t.assignee
+        ? [t.assignee.firstName, t.assignee.lastName]
+            .filter(Boolean)
+            .join(' ') || t.assignee.email
+        : null,
+      assigneeEmail: t.assignee?.email ?? null,
+    };
   }
 
   async update(
@@ -152,28 +185,27 @@ export class TaskService {
     projectId?: number,
     assigneeEmail?: string,
   ): Promise<boolean> {
-    const taskResult = await this.#db.query<{
-      id: number;
-      userId: number;
-      assigneeId: number | null;
-    }>(`SELECT id, "userId", "assigneeId" FROM tasks WHERE id = $1`, [id]);
-    const task = taskResult.rows[0];
+    const task = await this.#prisma.task.findUnique({
+      where: { id },
+      select: { id: true, userId: true, assigneeId: true },
+    });
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
-    const isAdmin = requesterRole === 'admin' || requesterRole === 'superAdmin';
+    const isAdmin =
+      requesterRole === USER_ROLES.ADMIN ||
+      requesterRole === USER_ROLES.SUPER_ADMIN;
 
     let assigneeId: number | null = task.assigneeId;
     if (assigneeEmail !== undefined) {
-      const newAssigneeId = assigneeEmail
-        ? ((
-            await this.#db.query<{ id: number }>(
-              `SELECT id FROM users WHERE email = $1`,
-              [assigneeEmail],
-            )
-          ).rows[0]?.id ?? null)
+      const newAssignee = assigneeEmail
+        ? await this.#prisma.user.findUnique({
+            where: { email: assigneeEmail },
+            select: { id: true },
+          })
         : null;
+      const newAssigneeId = newAssignee?.id ?? null;
 
       const isChangingAssignee = newAssigneeId !== task.assigneeId;
       if (isChangingAssignee && !isAdmin) {
@@ -189,56 +221,32 @@ export class TaskService {
     }
 
     if (projectId !== undefined) {
-      const projectCheck = await this.#db.query<{ id: number }>(
-        `SELECT id FROM projects WHERE id = $1`,
-        [projectId],
-      );
-      if (projectCheck.rows.length === 0) {
+      const project = await this.#prisma.project.findUnique({
+        where: { id: projectId },
+        select: { id: true },
+      });
+      if (!project) {
         throw new NotFoundException('Target project not found');
       }
     }
 
-    const fields: string[] = [];
-    const params: (string | number | null)[] = [];
+    const data: Record<string, unknown> = {};
+    if (title !== undefined) data.title = title;
+    if (description !== undefined) data.description = description;
+    if (status !== undefined) data.status = status;
+    if (projectId !== undefined) data.projectId = projectId;
+    if (assigneeEmail !== undefined) data.assigneeId = assigneeId;
 
-    if (title !== undefined) {
-      params.push(title);
-      fields.push(`title = $${params.length}`);
-    }
-
-    if (description !== undefined) {
-      params.push(description);
-      fields.push(`description = $${params.length}`);
-    }
-
-    if (status !== undefined) {
-      params.push(status);
-      fields.push(`status = $${params.length}`);
-    }
-
-    if (projectId !== undefined) {
-      params.push(projectId);
-      fields.push(`"projectId" = $${params.length}`);
-    }
-
-    if (assigneeEmail !== undefined) {
-      params.push(assigneeId);
-      fields.push(`"assigneeId" = $${params.length}`);
-    }
-
-    if (!fields.length) {
+    if (Object.keys(data).length === 0) {
       return false;
     }
 
-    fields.push(`"updatedAt" = CURRENT_TIMESTAMP`);
-    params.push(id);
+    const result = await this.#prisma.task.updateMany({
+      where: { id },
+      data,
+    });
 
-    const result = await this.#db.query(
-      `UPDATE tasks SET ${fields.join(', ')} WHERE id = $${params.length}`,
-      params,
-    );
-
-    return (result.rowCount ?? 0) > 0;
+    return result.count > 0;
   }
 
   async reorder(taskIds: number[]): Promise<void> {
@@ -251,58 +259,46 @@ export class TaskService {
       throw new BadRequestException('taskIds must not contain duplicates');
     }
 
-    const result = await this.#db.query<{
-      id: number;
-      projectId: number;
-    }>(`SELECT id, "projectId" FROM tasks WHERE id = ANY($1)`, [uniqueIds]);
+    const tasks = await this.#prisma.task.findMany({
+      where: { id: { in: uniqueIds } },
+      select: { id: true, projectId: true },
+    });
 
-    if (result.rows.length !== uniqueIds.length) {
+    if (tasks.length !== uniqueIds.length) {
       throw new BadRequestException('One or more task IDs do not exist');
     }
 
-    const projectIds = new Set(result.rows.map((r) => r.projectId));
+    const projectIds = new Set(tasks.map((t) => t.projectId));
     if (projectIds.size !== 1) {
       throw new BadRequestException(
         'All tasks must belong to the same project',
       );
     }
 
-    const client = await this.#db.connect();
-    try {
-      await client.query('BEGIN');
-      for (let i = 0; i < taskIds.length; i++) {
-        await client.query(
-          `UPDATE tasks SET "position" = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2`,
-          [i, taskIds[i]],
-        );
-      }
-      await client.query('COMMIT');
-    } catch (e) {
-      await client.query('ROLLBACK');
-      throw e;
-    } finally {
-      client.release();
-    }
+    await this.#prisma.$transaction(
+      taskIds.map((taskId, i) =>
+        this.#prisma.task.update({
+          where: { id: taskId },
+          data: { position: i },
+        }),
+      ),
+    );
   }
 
   async delete(id: number): Promise<boolean> {
-    const taskResult = await this.#db.query<{
-      id: number;
-    }>(`SELECT id FROM tasks WHERE id = $1`, [id]);
-    const task = taskResult.rows[0];
+    const task = await this.#prisma.task.findUnique({
+      where: { id },
+      select: { id: true },
+    });
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
-    const result = await this.#db.query(`DELETE FROM tasks WHERE id = $1`, [
-      id,
-    ]);
-    return (result.rowCount ?? 0) > 0;
+    const result = await this.#prisma.task.delete({ where: { id } });
+    return result.id === id;
   }
 
   async deleteByProject(projectId: number): Promise<void> {
-    await this.#db.query(`DELETE FROM tasks WHERE "projectId" = $1`, [
-      projectId,
-    ]);
+    await this.#prisma.task.deleteMany({ where: { projectId } });
   }
 }

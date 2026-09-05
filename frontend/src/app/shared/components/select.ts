@@ -12,11 +12,7 @@ import {
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-
-export interface SelectOption {
-  value: number | string;
-  label: string;
-}
+import type { SelectOption } from '../models/select';
 
 @Component({
   selector: 'app-select',

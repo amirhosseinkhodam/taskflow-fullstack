@@ -1,15 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from '../../src/admin/admin.service';
+import { PrismaService } from '../../src/shared/prisma/prisma.service';
 
-const mockQuery = jest.fn();
-const mockClientQuery = jest.fn();
-const mockRelease = jest.fn();
-const mockConnect = jest.fn().mockResolvedValue({
-  query: mockClientQuery,
-  release: mockRelease,
-});
-const mockPool = { query: mockQuery, connect: mockConnect } as any;
+const mockPrisma = {
+  user: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  task: {
+    updateMany: jest.fn(),
+  },
+  taskComment: {
+    deleteMany: jest.fn(),
+  },
+  $transaction: jest.fn(),
+} as any;
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -18,7 +26,10 @@ describe('AdminService', () => {
     jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AdminService, { provide: 'DATABASE', useValue: mockPool }],
+      providers: [
+        AdminService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
     }).compile();
 
     service = module.get(AdminService);
@@ -26,40 +37,48 @@ describe('AdminService', () => {
 
   describe('findAllUsers', () => {
     it('returns all users ordered by id', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [
-          {
-            id: 1,
-            email: 'a@test.com',
-            firstName: 'A',
-            lastName: null,
-            nationalCode: null,
-            phone: null,
-            birthDate: null,
-            role: 'user',
-          },
-        ],
-      });
+      mockPrisma.user.findMany.mockResolvedValueOnce([
+        {
+          id: 1,
+          email: 'a@test.com',
+          firstName: 'A',
+          lastName: null,
+          nationalCode: null,
+          phone: null,
+          birthDate: null,
+          role: 'user',
+        },
+      ]);
 
       const result = await service.findAllUsers();
       expect(result).toHaveLength(1);
-      expect(mockQuery.mock.calls[0][0]).toContain('ORDER BY id');
+      expect(mockPrisma.user.findMany).toHaveBeenCalledWith({
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          nationalCode: true,
+          phone: true,
+          birthDate: true,
+          role: true,
+        },
+        orderBy: { id: 'asc' },
+      });
     });
   });
 
   describe('deleteUser', () => {
     it('success — returns { success: true }', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'user' }] });
-      mockClientQuery
-        .mockResolvedValueOnce({}) // BEGIN
-        .mockResolvedValueOnce({}) // UPDATE tasks
-        .mockResolvedValueOnce({}) // DELETE comments
-        .mockResolvedValueOnce({ rowCount: 1 }) // DELETE users
-        .mockResolvedValueOnce({}); // COMMIT
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ role: 'user' });
+      mockPrisma.$transaction.mockResolvedValueOnce([
+        { count: 0 },
+        { count: 0 },
+        { id: 2 },
+      ]);
 
       const result = await service.deleteUser(2, 1);
       expect(result).toEqual({ success: true });
-      expect(mockRelease).toHaveBeenCalled();
     });
 
     it('self-delete throws BadRequestException', async () => {
@@ -69,7 +88,7 @@ describe('AdminService', () => {
     });
 
     it('superAdmin target throws BadRequestException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'superAdmin' }] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ role: 'superAdmin' });
 
       await expect(service.deleteUser(2, 1)).rejects.toThrow(
         BadRequestException,
@@ -77,44 +96,27 @@ describe('AdminService', () => {
     });
 
     it('nonexistent user throws NotFoundException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
       await expect(service.deleteUser(999, 1)).rejects.toThrow(
         NotFoundException,
       );
     });
-
-    it('delete returns rowCount=0 throws NotFoundException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'user' }] });
-      mockClientQuery
-        .mockResolvedValueOnce({}) // BEGIN
-        .mockResolvedValueOnce({}) // UPDATE tasks
-        .mockResolvedValueOnce({}) // DELETE comments
-        .mockResolvedValueOnce({ rowCount: 0 }); // DELETE users — rowCount 0
-
-      await expect(service.deleteUser(2, 1)).rejects.toThrow(NotFoundException);
-      expect(mockRelease).toHaveBeenCalled();
-    });
   });
 
   describe('updateUserRole', () => {
     it('success — returns updated user', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ role: 'user' }] })
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              id: 2,
-              email: 'b@test.com',
-              firstName: 'B',
-              lastName: null,
-              nationalCode: null,
-              phone: null,
-              birthDate: null,
-              role: 'admin',
-            },
-          ],
-        });
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ role: 'user' });
+      mockPrisma.user.update.mockResolvedValueOnce({
+        id: 2,
+        email: 'b@test.com',
+        firstName: 'B',
+        lastName: null,
+        nationalCode: null,
+        phone: null,
+        birthDate: null,
+        role: 'admin',
+      });
 
       const result = await service.updateUserRole(2, 'admin', 1);
       expect(result.role).toBe('admin');
@@ -127,13 +129,13 @@ describe('AdminService', () => {
     });
 
     it('invalid role value throws BadRequestException', async () => {
-      await expect(service.updateUserRole(2, 'superAdmin', 1)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.updateUserRole(2, 'superAdmin', 1),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('superAdmin target throws BadRequestException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'superAdmin' }] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ role: 'superAdmin' });
 
       await expect(service.updateUserRole(2, 'admin', 1)).rejects.toThrow(
         BadRequestException,
@@ -141,7 +143,7 @@ describe('AdminService', () => {
     });
 
     it('nonexistent user throws NotFoundException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
       await expect(service.updateUserRole(999, 'admin', 1)).rejects.toThrow(
         NotFoundException,
@@ -151,9 +153,8 @@ describe('AdminService', () => {
 
   describe('updateUserPassword', () => {
     it('success — returns { success: true }', async () => {
-      mockQuery
-        .mockResolvedValueOnce({ rows: [{ role: 'user' }] })
-        .mockResolvedValueOnce({ rowCount: 1 });
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ role: 'user' });
+      mockPrisma.user.update.mockResolvedValueOnce({});
 
       const result = await service.updateUserPassword(2, 'NewPass123!', 1);
       expect(result).toEqual({ success: true });
@@ -178,7 +179,7 @@ describe('AdminService', () => {
     });
 
     it('superAdmin target throws BadRequestException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [{ role: 'superAdmin' }] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce({ role: 'superAdmin' });
 
       await expect(
         service.updateUserPassword(2, 'NewPass123!', 1),
@@ -186,7 +187,7 @@ describe('AdminService', () => {
     });
 
     it('nonexistent user throws NotFoundException', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
       await expect(
         service.updateUserPassword(999, 'NewPass123!', 1),

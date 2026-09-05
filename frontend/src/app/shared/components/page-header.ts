@@ -12,7 +12,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Menu01Icon } from '@hugeicons/core-free-icons';
-import { LanguageService } from '../services/language';
+import { TranslatePipe } from '../pipes/translate';
+import { USER_ROLES } from '@shared/const/user-roles';
 import { ButtonComponent } from './button';
 import { LanguageToggleComponent } from './language-toggle';
 import { ThemeToggleComponent } from './theme-toggle';
@@ -27,6 +28,7 @@ import { ThemeToggleComponent } from './theme-toggle';
     ThemeToggleComponent,
     MatMenuModule,
     HugeiconsIconComponent,
+    TranslatePipe,
   ],
   template: `
     <header
@@ -41,7 +43,7 @@ import { ThemeToggleComponent } from './theme-toggle';
                 type="button"
                 (buttonClick)="goBack()"
               >
-                {{ t('backToDashboard') }}
+                {{ 'backToDashboard' | translate }}
               </app-button>
             }
             <h1
@@ -65,11 +67,11 @@ import { ThemeToggleComponent } from './theme-toggle';
             @if (!isMobile()) {
               @if (showProfileButton()) {
                 <app-button variant="secondary" (buttonClick)="goToProfile()">
-                  {{ t('profile') }}
+                  {{ 'profile' | translate }}
                 </app-button>
               }
               <app-button variant="secondary" (buttonClick)="onLogout()">
-                {{ t('logout') }}
+                {{ 'logout' | translate }}
               </app-button>
             } @else {
               <button
@@ -98,12 +100,12 @@ import { ThemeToggleComponent } from './theme-toggle';
                 }
                 @if (showBackButton()) {
                   <button mat-menu-item (click)="goBack()">
-                    {{ t('backToDashboard') }}
+                    {{ 'backToDashboard' | translate }}
                   </button>
                 }
                 @if (showProfileButton()) {
                   <button mat-menu-item (click)="goToProfile()">
-                    {{ t('profile') }}
+                    {{ 'profile' | translate }}
                   </button>
                 }
                 <button
@@ -111,7 +113,7 @@ import { ThemeToggleComponent } from './theme-toggle';
                   (click)="onLogout()"
                   class="!text-red-600"
                 >
-                  {{ t('logout') }}
+                  {{ 'logout' | translate }}
                 </button>
               </mat-menu>
             }
@@ -130,7 +132,6 @@ export class PageHeaderComponent {
 
   readonly Menu01Icon = Menu01Icon;
 
-  readonly #languageService = inject(LanguageService);
   readonly #router = inject(Router);
   readonly #breakpointObserver = inject(BreakpointObserver);
 
@@ -146,18 +147,14 @@ export class PageHeaderComponent {
 
   readonly roleBadgeClasses = computed(() => {
     const badge = this.roleBadge() ?? '';
-    if (badge.includes('superAdmin')) {
+    if (badge.includes(USER_ROLES.SUPER_ADMIN)) {
       return 'bg-amber-200 text-amber-900 dark:bg-amber-800/40 dark:text-amber-200';
     }
-    if (badge.includes('admin')) {
+    if (badge.includes(USER_ROLES.ADMIN)) {
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
     }
     return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
   });
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   goBack(): void {
     this.#router.navigate(['/']);

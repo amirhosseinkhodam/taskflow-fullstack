@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsString, MaxLength, MinLength } from 'class-validator';
+import { USER_ROLES } from '@shared/const/user-roles';
 
 export class AdminChangeRoleDto {
   @ApiProperty({ example: 'admin', enum: ['user', 'admin'] })
-  @IsIn(['user', 'admin'])
-  readonly role: 'user' | 'admin' = 'user';
+  @IsIn([USER_ROLES.USER, USER_ROLES.ADMIN])
+  readonly role: 'user' | 'admin' = USER_ROLES.USER;
 }
 
 export class AdminChangePasswordDto {

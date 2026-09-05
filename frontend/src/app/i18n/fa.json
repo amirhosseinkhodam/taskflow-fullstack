@@ -152,5 +152,13 @@
   "cannotChangeOwnPassword": "نمی‌توانید رمز عبور خودتان را اینجا تغییر دهید",
   "loginFailed": "ورود ناموفق بود",
   "selectDate": "انتخاب تاریخ",
-  "today": "امروز"
+  "today": "امروز",
+  "validationRequired": "این فیلد الزامی است",
+  "validationEmail": "لطفاً یک ایمیل معتبر وارد کنید",
+  "validationMinlength": "حداقل {{required}} کاراکتر",
+  "validationInvalidChars": "کاراکترهای نامعتبر",
+  "validationInvalidPhone": "شماره تلفن نامعتبر",
+  "validationInvalidNationalCode": "کد ملی نامعتبر",
+  "validationWeakPasswordMinLength": "رمز عبور ضعیف است",
+  "validationPasswordsMismatch": "رمزهای عبور مطابقت ندارند"
 }

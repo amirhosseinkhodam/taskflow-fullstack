@@ -77,3 +77,6 @@ coverage/
 
 # Agent instruction files (local only)
 AGENTS.md
+
+# Stale database files
+database.sqlite

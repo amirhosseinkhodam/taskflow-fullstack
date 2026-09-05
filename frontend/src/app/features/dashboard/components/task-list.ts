@@ -1,9 +1,9 @@
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { Component, inject, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
 import type { TaskStatus } from '../../../shared/models/task';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { TaskItemComponent } from '../../../shared/components/task-item';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Drag01Icon } from '@hugeicons/core-free-icons';
@@ -11,7 +11,12 @@ import { Drag01Icon } from '@hugeicons/core-free-icons';
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [DragDropModule, TaskItemComponent, HugeiconsIconComponent],
+  imports: [
+    DragDropModule,
+    TaskItemComponent,
+    HugeiconsIconComponent,
+    TranslatePipe,
+  ],
   template: `
     <div cdkDropList class="space-y-3" (cdkDropListDropped)="onDrop($event)">
       @for (task of tasks(); track task.id) {
@@ -50,7 +55,7 @@ import { Drag01Icon } from '@hugeicons/core-free-icons';
         <p
           class="rounded-card border border-dashed border-slate-300 dark:border-slate-600 p-8 text-center text-sm text-slate-500 dark:text-slate-400"
         >
-          {{ t('noTasksYet') }}
+          {{ 'noTasksYet' | translate }}
         </p>
       }
     </div>
@@ -66,12 +71,6 @@ export class TaskListComponent {
   readonly statusChanged = output<{ task: TaskModel; status: TaskStatus }>();
 
   readonly Drag01Icon = Drag01Icon;
-
-  readonly #languageService = inject(LanguageService);
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 
   onDrop(event: CdkDragDrop<TaskModel[]>): void {
     this.reorder.emit({

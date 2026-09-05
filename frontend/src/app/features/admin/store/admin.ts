@@ -14,6 +14,7 @@ import { AdminService } from '../services/admin';
 import { NotificationService } from '../../../shared/services/notification';
 import type { UserModel } from '../models/admin';
 import { mapPasswordError } from '../../../shared/utils/password-error';
+import type { UserRole } from '@shared/const/user-roles';
 
 interface AdminStateModel {
   users: UserModel[];
@@ -79,7 +80,7 @@ export const AdminStore = signalStore(
         ),
       );
 
-      const updateUserRole = rxMethod<{ id: number; role: 'user' | 'admin' }>(
+      const updateUserRole = rxMethod<{ id: number; role: UserRole }>(
         pipe(
           switchMap(({ id, role }) =>
             adminService.updateUserRole(id, role).pipe(

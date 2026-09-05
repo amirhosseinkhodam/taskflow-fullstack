@@ -1,9 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectService } from '../../src/project/project.service';
 import { TaskService } from '../../src/task/task.service';
+import { PrismaService } from '../../src/shared/prisma/prisma.service';
 
-const mockQuery = jest.fn();
-const mockPool = { query: mockQuery } as any;
+const mockPrisma = {
+  project: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+} as any;
 
 const mockTaskService = {
   deleteByProject: jest.fn().mockResolvedValue(undefined),
@@ -18,7 +26,7 @@ describe('ProjectService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProjectService,
-        { provide: 'DATABASE', useValue: mockPool },
+        { provide: PrismaService, useValue: mockPrisma },
         { provide: TaskService, useValue: mockTaskService },
       ],
     }).compile();
@@ -28,21 +36,26 @@ describe('ProjectService', () => {
 
   describe('findAll', () => {
     it('returns all projects ordered by id', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, name: 'P1', createdAt: '', updatedAt: '' }],
-      });
+      mockPrisma.project.findMany.mockResolvedValueOnce([
+        { id: 1, name: 'P1', createdAt: new Date(), updatedAt: new Date() },
+      ]);
 
       const result = await service.findAll();
 
       expect(result).toHaveLength(1);
-      expect(mockQuery.mock.calls[0][0]).toContain('ORDER BY id');
+      expect(mockPrisma.project.findMany).toHaveBeenCalledWith({
+        orderBy: { id: 'asc' },
+      });
     });
   });
 
   describe('findOne', () => {
     it('existing id returns project', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, name: 'P1', createdAt: '', updatedAt: '' }],
+      mockPrisma.project.findUnique.mockResolvedValueOnce({
+        id: 1,
+        name: 'P1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       const result = await service.findOne(1);
@@ -51,7 +64,7 @@ describe('ProjectService', () => {
     });
 
     it('nonexistent id returns null', async () => {
-      mockQuery.mockResolvedValueOnce({ rows: [] });
+      mockPrisma.project.findUnique.mockResolvedValueOnce(null);
 
       const result = await service.findOne(999);
       expect(result).toBeNull();
@@ -60,8 +73,11 @@ describe('ProjectService', () => {
 
   describe('create', () => {
     it('inserts and returns project', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, name: 'New', createdAt: '', updatedAt: '' }],
+      mockPrisma.project.create.mockResolvedValueOnce({
+        id: 1,
+        name: 'New',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       const result = await service.create('New');
@@ -71,8 +87,11 @@ describe('ProjectService', () => {
 
   describe('update', () => {
     it('name provided — updates and returns project', async () => {
-      mockQuery.mockResolvedValueOnce({
-        rows: [{ id: 1, name: 'Updated', createdAt: '', updatedAt: '' }],
+      mockPrisma.project.update.mockResolvedValueOnce({
+        id: 1,
+        name: 'Updated',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       const result = await service.update(1, 'Updated');
@@ -83,13 +102,13 @@ describe('ProjectService', () => {
     it('name undefined — returns null immediately', async () => {
       const result = await service.update(1, undefined);
       expect(result).toBeNull();
-      expect(mockQuery).not.toHaveBeenCalled();
+      expect(mockPrisma.project.update).not.toHaveBeenCalled();
     });
   });
 
   describe('delete', () => {
     it('calls taskService.deleteByProject then deletes project', async () => {
-      mockQuery.mockResolvedValueOnce({ rowCount: 1 });
+      mockPrisma.project.delete.mockResolvedValueOnce({ id: 1 });
 
       const result = await service.delete(1);
 
@@ -98,10 +117,11 @@ describe('ProjectService', () => {
     });
 
     it('nonexistent project returns false', async () => {
-      mockQuery.mockResolvedValueOnce({ rowCount: 0 });
+      mockPrisma.project.delete.mockRejectedValueOnce(
+        new Error('Record to delete does not exist'),
+      );
 
-      const result = await service.delete(999);
-      expect(result).toBe(false);
+      await expect(service.delete(999)).rejects.toThrow();
     });
   });
 });

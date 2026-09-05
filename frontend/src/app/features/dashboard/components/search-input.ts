@@ -1,6 +1,6 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LanguageService } from '../../../shared/services/language';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 import { InputComponent } from '../../../shared/components/input';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Search01Icon } from '@hugeicons/core-free-icons';
@@ -8,7 +8,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons';
 @Component({
   selector: 'app-search-input',
   standalone: true,
-  imports: [FormsModule, InputComponent, HugeiconsIconComponent],
+  imports: [FormsModule, InputComponent, HugeiconsIconComponent, TranslatePipe],
   template: `
     <div class="relative">
       <hugeicons-icon
@@ -22,7 +22,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons';
         type="search"
         [ngModel]="searchTerm()"
         (ngModelChange)="searchChange.emit($event)"
-        [placeholder]="t('searchTasks')"
+        [placeholder]="'searchTasks' | translate"
         variant="default"
         [cssClass]="'pl-9'"
       />
@@ -34,10 +34,4 @@ export class SearchInputComponent {
   readonly searchChange = output<string>();
 
   readonly Search01Icon = Search01Icon;
-
-  readonly #languageService = inject(LanguageService);
-
-  t(key: string): string {
-    return this.#languageService.translate(key);
-  }
 }
