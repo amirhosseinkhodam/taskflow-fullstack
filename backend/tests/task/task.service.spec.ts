@@ -43,7 +43,9 @@ describe('TaskService', () => {
   describe('create', () => {
     it('inserts task at next position', async () => {
       mockPrisma.project.findUnique.mockResolvedValueOnce({ id: 1 });
-      mockPrisma.task.aggregate.mockResolvedValueOnce({ _max: { position: 2 } });
+      mockPrisma.task.aggregate.mockResolvedValueOnce({
+        _max: { position: 2 },
+      });
       mockPrisma.task.create.mockResolvedValueOnce({ id: 5 });
       mockPrisma.task.findUnique.mockResolvedValueOnce({
         id: 5,
@@ -293,6 +295,18 @@ describe('TaskService', () => {
       mockPrisma.$transaction.mockResolvedValueOnce([{ id: 1 }, { id: 2 }]);
 
       await service.reorder([1, 2]);
+
+      expect(mockPrisma.$transaction).toHaveBeenCalled();
+    });
+
+    it('success — accepts task IDs from different projects', async () => {
+      mockPrisma.task.findMany.mockResolvedValueOnce([
+        { id: 1, projectId: 1 },
+        { id: 2, projectId: 3 },
+      ]);
+      mockPrisma.$transaction.mockResolvedValueOnce([{ id: 1 }, { id: 2 }]);
+
+      await expect(service.reorder([1, 2])).resolves.toBeUndefined();
 
       expect(mockPrisma.$transaction).toHaveBeenCalled();
     });

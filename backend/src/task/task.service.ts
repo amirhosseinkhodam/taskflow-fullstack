@@ -261,18 +261,11 @@ export class TaskService {
 
     const tasks = await this.#prisma.task.findMany({
       where: { id: { in: uniqueIds } },
-      select: { id: true, projectId: true },
+      select: { id: true },
     });
 
     if (tasks.length !== uniqueIds.length) {
       throw new BadRequestException('One or more task IDs do not exist');
-    }
-
-    const projectIds = new Set(tasks.map((t) => t.projectId));
-    if (projectIds.size !== 1) {
-      throw new BadRequestException(
-        'All tasks must belong to the same project',
-      );
     }
 
     await this.#prisma.$transaction(
