@@ -9,6 +9,7 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  ValidateIf,
   ArrayMaxSize,
   ArrayMinSize,
 } from 'class-validator';
@@ -37,6 +38,7 @@ export class CreateTaskDto {
     description: 'Admin-only: assign task to user by email',
   })
   @IsOptional()
+  @ValidateIf((o: CreateTaskDto) => o.assigneeEmail !== '')
   @IsEmail()
   readonly assigneeEmail?: string;
 }
@@ -79,6 +81,7 @@ export class UpdateTaskDto {
     description: 'Admin-only: reassign task to user by email',
   })
   @IsOptional()
+  @ValidateIf((o: UpdateTaskDto) => o.assigneeEmail !== '')
   @IsEmail()
   readonly assigneeEmail?: string;
 }

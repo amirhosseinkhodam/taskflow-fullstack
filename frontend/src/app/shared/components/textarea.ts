@@ -7,6 +7,11 @@ import {
   ElementRef,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  CONTROL_BASE_CLASSES,
+  CONTROL_VARIANT_CLASSES,
+  controlFocusClasses,
+} from '../const/control-classes';
 
 @Component({
   selector: 'app-textarea',
@@ -94,23 +99,16 @@ export class TextareaComponent implements ControlValueAccessor {
   }
 
   readonly computedClasses = () => {
-    const focusClasses = this.focusRing()
-      ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
-      : 'focus:outline-none';
-    const base = `w-full rounded-control border px-3 py-2 transition-colors ${focusClasses} placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-vertical`;
-
-    const variants = {
-      default:
-        'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-      error:
-        'border-red-500 dark:border-red-600 bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100',
-      disabled:
-        'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-50',
-    };
+    const base = `${CONTROL_BASE_CLASSES} ${controlFocusClasses(this.focusRing())} resize-vertical`;
 
     const errorClass = this.error() ? 'ring-red-500 border-red-500' : '';
 
-    return [base, variants[this.variant()], errorClass, this.cssClass()]
+    return [
+      base,
+      CONTROL_VARIANT_CLASSES[this.variant()],
+      errorClass,
+      this.cssClass(),
+    ]
       .filter(Boolean)
       .join(' ');
   };

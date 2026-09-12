@@ -9,12 +9,13 @@ import { CommentModule } from './comment/comment.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProjectModule } from './project/project.module';
 import { PrismaModule } from './shared/prisma/prisma.module';
+import { RATE_LIMITS, RATE_LIMIT_TTL_MS } from './shared/const/rate-limits';
 import { TaskModule } from './task/task.module';
 
 @Module({
   imports: [
     ThrottlerModule.forRoot({
-      throttlers: [{ ttl: 60_000, limit: 30 }],
+      throttlers: [{ ttl: RATE_LIMIT_TTL_MS, limit: RATE_LIMITS.global }],
     }),
     PrismaModule,
     AuthModule,

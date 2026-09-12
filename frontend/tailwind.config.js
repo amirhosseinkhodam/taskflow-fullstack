@@ -26,9 +26,12 @@ module.exports = {
           '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
         dialog:
           '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+        surface: '0 1px 2px 0 rgb(15 23 42 / 0.06)',
+        'surface-md':
+          '0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.04)',
       },
       height: {
-        '112': '28rem',
+        112: '28rem',
       },
     },
   },

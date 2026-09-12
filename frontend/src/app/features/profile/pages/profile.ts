@@ -70,7 +70,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   [ariaLabel]="'edit' | translate"
                 >
                   <hugeicons-icon
-                    [icon]="Edit01Icon"
+                    [icon]="icons.Edit01Icon"
                     [size]="16"
                     color="currentColor"
                     [strokeWidth]="1.5"
@@ -84,7 +84,7 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   [ariaLabel]="'changePassword' | translate"
                 >
                   <hugeicons-icon
-                    [icon]="LockPasswordIcon"
+                    [icon]="icons.LockPasswordIcon"
                     [size]="16"
                     color="currentColor"
                     [strokeWidth]="1.5"
@@ -130,11 +130,13 @@ import { Edit01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
                   variant="default"
                 />
               </div>
-              <app-date-picker
-                formControlName="birthDate"
-                [placeholder]="'birthDate' | translate"
-                [cssClass]="'mt-4'"
-              />
+              <div class="mt-4">
+                <app-date-picker
+                  formControlName="birthDate"
+                  [placeholder]="'birthDate' | translate"
+                  variant="default"
+                />
+              </div>
               <div class="flex gap-2 mt-4">
                 <app-button
                   variant="primary"

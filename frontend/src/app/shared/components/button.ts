@@ -58,7 +58,7 @@ export class ButtonComponent {
     }
   }
 
-  onEnter(event: KeyboardEvent) {
+  onEnter(event: Event) {
     event.preventDefault();
     if (!this.disabled() && !this.loading()) {
       this.click.emit();

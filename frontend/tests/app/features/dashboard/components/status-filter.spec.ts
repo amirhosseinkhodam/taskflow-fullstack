@@ -2,13 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { StatusFilterComponent } from '../../../../../src/app/features/dashboard/components/status-filter';
+import { createMockLanguageService } from '../../../../support/language';
 
 describe('StatusFilterComponent', () => {
   let fixture: ComponentFixture<StatusFilterComponent>;
 
-  const mockLanguageService = {
-    translate: (key: string) => key,
-  };
+  const mockLanguageService = createMockLanguageService();
 
   beforeEach(async () => {
     TestBed.resetTestingModule();

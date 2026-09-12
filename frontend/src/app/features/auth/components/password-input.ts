@@ -30,14 +30,14 @@ import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
       >
         @if (showPassword()) {
           <hugeicons-icon
-            [icon]="ViewOffIcon"
+            [icon]="icons.ViewOffIcon"
             [size]="20"
             color="currentColor"
             [strokeWidth]="1.5"
           />
         } @else {
           <hugeicons-icon
-            [icon]="ViewIcon"
+            [icon]="icons.ViewIcon"
             [size]="20"
             color="currentColor"
             [strokeWidth]="1.5"

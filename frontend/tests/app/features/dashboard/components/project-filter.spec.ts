@@ -3,13 +3,12 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ProjectFilterComponent } from '../../../../../src/app/features/dashboard/components/project-filter';
 import type { ProjectModel } from '@shared/types/project';
+import { createMockLanguageService } from '../../../../support/language';
 
 describe('ProjectFilterComponent', () => {
   let fixture: ComponentFixture<ProjectFilterComponent>;
 
-  const mockLanguageService = {
-    translate: (key: string) => key,
-  };
+  const mockLanguageService = createMockLanguageService();
 
   const mockProjects: ProjectModel[] = [
     {

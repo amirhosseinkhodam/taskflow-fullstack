@@ -3,13 +3,12 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ProjectEditDialogComponent } from '../../../../../src/app/features/dashboard/components/project-edit-dialog';
+import { createMockLanguageService } from '../../../../support/language';
 
 describe('ProjectEditDialogComponent', () => {
   let fixture: ComponentFixture<ProjectEditDialogComponent>;
 
-  const mockLanguageService = {
-    translate: (key: string) => key,
-  };
+  const mockLanguageService = createMockLanguageService();
 
   const mockDialogRef = {
     close: jest.fn(),

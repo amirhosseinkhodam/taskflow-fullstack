@@ -2,13 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { SearchInputComponent } from '../../../../../src/app/features/dashboard/components/search-input';
+import { createMockLanguageService } from '../../../../support/language';
 
 describe('SearchInputComponent', () => {
   let fixture: ComponentFixture<SearchInputComponent>;
 
-  const mockLanguageService = {
-    translate: (key: string) => key,
-  };
+  const mockLanguageService = createMockLanguageService();
 
   beforeEach(async () => {
     TestBed.resetTestingModule();

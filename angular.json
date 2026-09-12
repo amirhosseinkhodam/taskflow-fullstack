@@ -20,20 +20,34 @@
           },
           "configurations": {
             "production": {
+              "outputHashing": "all",
               "fileReplacements": [
                 {
                   "replace": "frontend/src/environments/environment.ts",
                   "with": "frontend/src/environments/environment.prod.ts"
                 }
               ]
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "buildTarget": "taskflow-frontend:build"
-          }
+          "configurations": {
+            "production": {
+              "buildTarget": "taskflow-frontend:build:production"
+            },
+            "development": {
+              "buildTarget": "taskflow-frontend:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }

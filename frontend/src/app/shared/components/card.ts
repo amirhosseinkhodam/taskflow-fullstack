@@ -18,7 +18,8 @@ export class CardComponent {
   readonly computedClasses = () => {
     const base = 'rounded-card shadow-card';
     const variants = {
-      default: 'bg-white dark:bg-slate-800',
+      default:
+        'bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-transparent',
       bordered:
         'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
     };

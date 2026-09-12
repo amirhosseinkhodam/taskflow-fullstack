@@ -4,23 +4,20 @@ import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmBottomSheetComponent } from '../../../../src/app/shared/components/confirm-bottom-sheet';
 import { LanguageService } from '../../../../src/app/shared/services/language';
+import { createMockLanguageService } from '../../../support/language';
 
 describe('ConfirmBottomSheetComponent', () => {
   let bottomSheetRefSpy: { dismiss: jest.Mock };
-  let languageServiceSpy: { translate: jest.Mock };
+  let languageServiceSpy: ReturnType<typeof createMockLanguageService>;
 
   beforeEach(async () => {
     TestBed.resetTestingModule();
     bottomSheetRefSpy = { dismiss: jest.fn() };
-    languageServiceSpy = { translate: jest.fn() };
-    languageServiceSpy.translate.mockImplementation((key: string) => {
-      const map: Record<string, string> = {
-        confirmDeleteTask: 'Confirm Delete',
-        confirmDeleteMessage: 'Are you sure you want to delete?',
-        cancel: 'Cancel',
-        delete: 'Delete',
-      };
-      return map[key] ?? key;
+    languageServiceSpy = createMockLanguageService('en', {
+      confirmDeleteTask: 'Confirm Delete',
+      confirmDeleteMessage: 'Are you sure you want to delete?',
+      cancel: 'Cancel',
+      delete: 'Delete',
     });
 
     await TestBed.configureTestingModule({

@@ -1,5 +1,6 @@
 import {
   Component,
+  effect,
   input,
   output,
   forwardRef,
@@ -7,6 +8,11 @@ import {
   ElementRef,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  CONTROL_BASE_CLASSES,
+  CONTROL_VARIANT_CLASSES,
+  controlFocusClasses,
+} from '../const/control-classes';
 
 @Component({
   selector: 'app-input',
@@ -59,6 +65,7 @@ export class InputComponent implements ControlValueAccessor {
   readonly step = input<string | number>();
   readonly error = input<boolean>(false);
   readonly label = input<string>();
+  readonly value = input<string>();
 
   readonly input = output<string>({ alias: 'inputChange' });
   readonly blur = output<void>({ alias: 'inputBlur' });
@@ -69,6 +76,15 @@ export class InputComponent implements ControlValueAccessor {
   inputElement!: ElementRef<HTMLInputElement>;
   #onChange: (value: string) => void = () => {};
   #onTouched: () => void = () => {};
+
+  constructor() {
+    effect(() => {
+      const value = this.value();
+      if (value !== undefined && this.inputElement) {
+        this.inputElement.nativeElement.value = value;
+      }
+    });
+  }
 
   onInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
@@ -106,23 +122,16 @@ export class InputComponent implements ControlValueAccessor {
   }
 
   readonly computedClasses = () => {
-    const focusClasses = this.focusRing()
-      ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
-      : 'focus:outline-none';
-    const base = `w-full rounded-lg border px-3 py-2 transition-colors ${focusClasses} placeholder:text-slate-400 dark:placeholder:text-slate-500`;
-
-    const variants = {
-      default:
-        'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100',
-      error:
-        'border-red-500 dark:border-red-600 bg-red-50 dark:bg-red-900/30 text-red-900 dark:text-red-100',
-      disabled:
-        'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-50',
-    };
+    const base = `${CONTROL_BASE_CLASSES} ${controlFocusClasses(this.focusRing())}`;
 
     const errorClass = this.error() ? 'ring-red-500 border-red-500' : '';
 
-    return [base, variants[this.variant()], errorClass, this.cssClass()]
+    return [
+      base,
+      CONTROL_VARIANT_CLASSES[this.variant()],
+      errorClass,
+      this.cssClass(),
+    ]
       .filter(Boolean)
       .join(' ');
   };

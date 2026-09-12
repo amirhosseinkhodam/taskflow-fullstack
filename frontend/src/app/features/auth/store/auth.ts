@@ -36,6 +36,9 @@ const initialState: AuthStateModel = {
 function decodeToken(token: string): AuthUserModel | null {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
+    if (typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now()) {
+      return null;
+    }
     return {
       id: payload.sub ?? 0,
       email: payload.email ?? '',
@@ -156,14 +159,15 @@ export const AuthStore = signalStore(
 
       const restoreSession = () => {
         const token = localStorage.getItem('token');
-        if (token) {
-          const user = decodeToken(token);
-          patchState(store, {
-            token,
-            user,
-            isLoading: false,
-          });
+        if (!token) return;
+
+        const user = decodeToken(token);
+        if (!user) {
+          localStorage.removeItem('token');
+          return;
         }
+
+        patchState(store, { token, user, isLoading: false });
       };
 
       const updateSession = (response: AuthResponseModel) => {

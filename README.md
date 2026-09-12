@@ -93,21 +93,31 @@ TypeScript interfaces in `shared/types/` are imported by both halves via the `@s
 | `tasks` | Tasks with title, description, status, position, project and user references |
 | `task_comments` | Comments on tasks with user reference |
 
-Tables are auto-created on application startup. No migration tool is used.
+The schema is managed with Prisma Migrate. `npm run setup` creates the database,
+applies migrations and seeds it; `npm run db:migrate` applies pending migrations
+on their own. The backend Docker image applies migrations on container start.
 
 ## Testing
 
-**290 tests** — 84 backend + 206 frontend — all passing.
+**358 unit tests** — 82 backend + 276 frontend — plus **49 end-to-end tests**, all passing.
 
 ```bash
-npm run test              # Run all tests
-npm run test:backend      # Backend only (12 suites, 84 tests)
-npm run test:frontend     # Frontend only (39 suites, 206 tests)
+npm run test              # Run all unit tests
+npm run test:backend      # Backend only (12 suites, 82 tests)
+npm run test:frontend     # Frontend only (43 suites, 276 tests)
 npm run test:backend:cov  # Backend with coverage
 npm run test:frontend:cov # Frontend with coverage
+npm run test:e2e          # Playwright end-to-end suite
+npm run test:e2e:ui       # Playwright interactive UI mode
 ```
 
-Backend tests cover services, controllers, guards, and strategies using `@nestjs/testing` and mocked `pg` Pool. Frontend tests use Angular TestBed with HttpTestingController.
+Backend tests cover services, controllers, guards, and strategies using `@nestjs/testing` with a mocked Prisma client. Frontend tests use Angular TestBed with HttpTestingController.
+
+The E2E suite drives a real browser against the real API and database, covering
+registration, login, authorization and RBAC boundaries, and project, task and
+admin management. It provisions its own `taskflow_e2e` database and starts both
+servers itself, so a run never depends on or disturbs local state. Postgres must
+be reachable (the `PG*` environment variables apply).
 
 ## Docker
 
@@ -304,10 +314,10 @@ GitHub Actions workflow runs on push/PR to `master`:
 4. Frontend tests (`jest --config frontend/jest.config.ts`)
 5. Build backend (`nest build`)
 6. Build frontend (`ng build`)
+7. E2E tests (`playwright test`) against a Postgres service container
 
 ## Future Improvements
 
-- E2E tests (Playwright or Cypress)
 - Production deployment configuration
 - Task file attachments
 - Email notifications

@@ -81,6 +81,26 @@ describe('InputComponent', () => {
     expect(getInputEl().nativeElement.disabled).toBe(true);
   });
 
+  it('reflects the value input into the element', () => {
+    host.value = 'prefilled';
+    hostFixture.detectChanges();
+
+    expect(getInputEl().nativeElement.value).toBe('prefilled');
+  });
+
+  it('updates the element when the value input changes', () => {
+    const fixture = TestBed.createComponent(InputComponent);
+    fixture.componentRef.setInput('value', 'first');
+    fixture.detectChanges();
+
+    fixture.componentRef.setInput('value', 'second');
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.css('input')).nativeElement.value,
+    ).toBe('second');
+  });
+
   it('emits inputChange with value on input event', () => {
     const el = getInputEl();
     el.nativeElement.value = 'hello';

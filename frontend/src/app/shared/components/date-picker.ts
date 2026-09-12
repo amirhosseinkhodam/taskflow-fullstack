@@ -3,216 +3,85 @@ import {
   inject,
   input,
   signal,
-  computed,
   forwardRef,
   effect,
-  ElementRef,
-  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { LanguageService } from '../services/language';
 import { TranslatePipe } from '../pipes/translate';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Calendar01Icon } from '@hugeicons/core-free-icons';
+import { AdaptiveDateAdapter } from '../adapters/adaptive-date-adapter';
 import {
-  Calendar01Icon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@hugeicons/core-free-icons';
-import {
-  startOfMonth as jalaliStartOfMonth,
-  endOfMonth as jalaliEndOfMonth,
-  startOfWeek as jalaliStartOfWeek,
-  endOfWeek as jalaliEndOfWeek,
-  eachDayOfInterval as jalaliEachDayOfInterval,
-  addMonths as jalaliAddMonths,
-  subMonths as jalaliSubMonths,
-  formatDate as jalaliFormatDate,
-  isSameDay as jalaliIsSameDay,
-  isSameMonth as jalaliIsSameMonth,
-  getYear as jalaliGetYear,
-  getMonth as jalaliGetMonth,
-} from 'date-fns-jalali';
-import {
-  startOfMonth,
-  endOfMonth,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-  addMonths,
-  subMonths,
-  format,
-  isSameDay,
-  isSameMonth,
-  getYear,
-  getMonth,
-} from 'date-fns';
+  CONTROL_BASE_CLASSES,
+  CONTROL_VARIANT_CLASSES,
+  controlFocusClasses,
+} from '../const/control-classes';
 
-interface CalendarDay {
-  date: Date;
-  label: string;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  isSelected: boolean;
-}
-
-const FA_MONTHS = [
-  'فروردین',
-  'اردیبهشت',
-  'خرداد',
-  'تیر',
-  'مرداد',
-  'شهریور',
-  'مهر',
-  'آبان',
-  'آذر',
-  'دی',
-  'بهمن',
-  'اسفند',
-];
-const EN_MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-const FA_WEEKDAYS = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
-const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const DATE_FORMATS = {
+  parse: {
+    dateInput: 'yyyy/MM/dd',
+  },
+  display: {
+    dateInput: 'yyyy/MM/dd',
+    monthYearLabel: 'MMMM yyyy',
+    dateA11yLabel: 'yyyy/MM/dd',
+    monthYearA11yLabel: 'MMMM yyyy',
+  },
+};
 
 @Component({
   selector: 'app-date-picker',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent, TranslatePipe],
+  imports: [
+    CommonModule,
+    MatDatepickerModule,
+    HugeiconsIconComponent,
+    TranslatePipe,
+  ],
   template: `
+    @if (label()) {
+      <label
+        class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
+      >
+        {{ label() }}
+      </label>
+    }
     <div class="relative">
-      <div class="relative">
-        <input
-          type="text"
-          readonly
-          [value]="displayValue()"
-          [placeholder]="placeholder() ?? ('selectDate' | translate)"
-          [disabled]="disabled()"
-          [class]="inputClasses()"
-          (click)="toggle($event)"
+      <input
+        [matDatepicker]="picker"
+        [value]="selectedDate()"
+        [disabled]="disabled()"
+        [placeholder]="placeholder() ?? ('selectDate' | translate)"
+        [class]="computedClasses()"
+        (dateChange)="onDateChange($event)"
+        (click)="picker.open()"
+        (blur)="onPickerClosed()"
+        readonly
+      />
+      <button
+        type="button"
+        class="absolute inset-y-0 end-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="disabled()"
+        [attr.aria-label]="'selectDate' | translate"
+        (click)="picker.open()"
+        tabindex="-1"
+      >
+        <hugeicons-icon
+          [icon]="icons.Calendar01Icon"
+          [size]="20"
+          color="currentColor"
+          [strokeWidth]="1.5"
         />
-        <button
-          type="button"
-          class="absolute inset-y-0 end-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 top-3.5"
-          (click)="toggle($event)"
-          tabindex="-1"
-        >
-          <hugeicons-icon
-            [icon]="icons.Calendar01Icon"
-            [size]="20"
-            color="currentColor"
-            [strokeWidth]="1.5"
-          />
-        </button>
-      </div>
-
-      @if (isOpen()) {
-        <div
-          class="absolute z-50 mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-3"
-          [class.start-0]="!isRtl()"
-          [class.end-0]="isRtl()"
-        >
-          <div class="flex items-center justify-between mb-3">
-            <button
-              type="button"
-              class="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-300"
-              (click)="prevMonth()"
-            >
-              @if (isRtl()) {
-                <hugeicons-icon
-                  [icon]="ChevronRightIcon"
-                  [size]="20"
-                  color="currentColor"
-                  [strokeWidth]="1.5"
-                />
-              } @else {
-                <hugeicons-icon
-                  [icon]="ChevronLeftIcon"
-                  [size]="20"
-                  color="currentColor"
-                  [strokeWidth]="1.5"
-                />
-              }
-            </button>
-            <span
-              class="text-sm font-medium text-slate-900 dark:text-slate-100"
-            >
-              {{ monthYearLabel() }}
-            </span>
-            <button
-              type="button"
-              class="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-300"
-              (click)="nextMonth()"
-            >
-              @if (isRtl()) {
-                <hugeicons-icon
-                  [icon]="ChevronLeftIcon"
-                  [size]="20"
-                  color="currentColor"
-                  [strokeWidth]="1.5"
-                />
-              } @else {
-                <hugeicons-icon
-                  [icon]="ChevronRightIcon"
-                  [size]="20"
-                  color="currentColor"
-                  [strokeWidth]="1.5"
-                />
-              }
-            </button>
-          </div>
-
-          <div class="grid grid-cols-7 gap-0.5 mb-1">
-            @for (day of weekdays(); track day) {
-              <div
-                class="w-8 h-8 flex items-center justify-center text-xs font-medium text-slate-500 dark:text-slate-400"
-              >
-                {{ day }}
-              </div>
-            }
-          </div>
-
-          <div class="grid grid-cols-7 gap-0.5">
-            @for (
-              day of calendarDays();
-              track day.label + day.date.toISOString()
-            ) {
-              <button
-                type="button"
-                class="w-8 h-8 flex items-center justify-center rounded-full text-sm transition-colors"
-                [class]="dayClasses(day)"
-                (click)="selectDate(day)"
-              >
-                {{ day.label }}
-              </button>
-            }
-          </div>
-
-          <div
-            class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-center"
-          >
-            <button
-              type="button"
-              class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-              (click)="goToToday()"
-            >
-              {{ 'today' | translate }}
-            </button>
-          </div>
-        </div>
-      }
+      </button>
+      <mat-datepicker
+        #picker
+        [startAt]="viewDate()"
+        (closed)="onPickerClosed()"
+      />
     </div>
   `,
   providers: [
@@ -221,137 +90,54 @@ const EN_WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
       useExisting: forwardRef(() => DatePickerComponent),
       multi: true,
     },
+    {
+      provide: DateAdapter,
+      useClass: AdaptiveDateAdapter,
+    },
+    {
+      provide: MAT_DATE_FORMATS,
+      useValue: DATE_FORMATS,
+    },
   ],
 })
 export class DatePickerComponent implements ControlValueAccessor {
   readonly placeholder = input<string>();
   readonly disabled = input<boolean>(false);
   readonly cssClass = input<string>();
+  readonly focusRing = input<boolean>(false);
+  readonly variant = input<'default' | 'error' | 'disabled'>('default');
+  readonly error = input<boolean>(false);
+  readonly label = input<string>();
 
-  readonly icons = { Calendar01Icon, ChevronLeftIcon, ChevronRightIcon };
+  readonly icons = { Calendar01Icon };
 
   readonly #languageService = inject(LanguageService);
-  readonly #elementRef = inject(ElementRef);
 
-  readonly isOpen = signal(false);
-  readonly viewDate = signal(new Date());
   readonly selectedDate = signal<Date | null>(null);
+  readonly viewDate = signal<Date>(new Date());
 
   #onChange: (value: string) => void = () => {};
   #onTouched: () => void = () => {};
 
-  readonly isRtl = computed(
-    () => this.#languageService.getCurrentLanguageOption().rtl,
-  );
-
-  readonly weekdays = computed(() =>
-    this.#languageService.currentLanguage() === 'fa'
-      ? FA_WEEKDAYS
-      : EN_WEEKDAYS,
-  );
-
-  readonly monthYearLabel = computed(() => {
-    const lang = this.#languageService.currentLanguage();
-    const date = this.viewDate();
-    if (lang === 'fa') {
-      const year = jalaliGetYear(date);
-      const month = FA_MONTHS[jalaliGetMonth(date)];
-      return `${month} ${year}`;
-    }
-    const year = getYear(date);
-    const month = EN_MONTHS[getMonth(date)];
-    return `${month} ${year}`;
-  });
-
-  readonly calendarDays = computed<CalendarDay[]>(() => {
-    const lang = this.#languageService.currentLanguage();
-    const date = this.viewDate();
-    const selected = this.selectedDate();
-    const today = new Date();
-
-    if (lang === 'fa') {
-      return this.#buildJalaliDays(date, selected, today);
-    }
-    return this.#buildGregorianDays(date, selected, today);
-  });
-
-  readonly displayValue = computed(() => {
-    const selected = this.selectedDate();
-    if (!selected) return '';
-    const lang = this.#languageService.currentLanguage();
-    if (lang === 'fa') {
-      return jalaliFormatDate(selected, 'yyyy/MM/dd');
-    }
-    return format(selected, 'yyyy/MM/dd');
-  });
-
-  readonly inputClasses = computed(() => {
-    const base =
-      'w-full rounded-lg border px-3 py-2 pe-10 transition-colors focus:outline-none cursor-pointer text-sm';
-    const state = this.disabled()
-      ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-50'
-      : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500';
-    return [base, state, this.cssClass()].filter(Boolean).join(' ');
-  });
-
   constructor() {
     effect(() => {
       this.#languageService.currentLanguage();
-      this.viewDate.set(new Date());
+      const selected = this.selectedDate();
+      this.viewDate.set(selected ? new Date(selected) : new Date());
     });
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (this.isOpen()) {
-      const target = event.target as HTMLElement;
-      if (!this.#elementRef.nativeElement.contains(target)) {
-        this.isOpen.set(false);
-      }
+  onDateChange(event: { value: Date }): void {
+    const date = event.value;
+    if (date) {
+      this.selectedDate.set(date);
+      this.viewDate.set(new Date(date));
+      this.#onChange(this.#toIsoString(date));
     }
-  }
-
-  toggle(event: MouseEvent): void {
-    event.stopPropagation();
-    if (!this.disabled()) {
-      if (!this.isOpen()) {
-        const selected = this.selectedDate();
-        this.viewDate.set(selected ? new Date(selected) : new Date());
-      }
-      this.isOpen.set(!this.isOpen());
-    }
-  }
-
-  prevMonth(): void {
-    const lang = this.#languageService.currentLanguage();
-    const date = this.viewDate();
-    this.viewDate.set(
-      lang === 'fa' ? jalaliSubMonths(date, 1) : subMonths(date, 1),
-    );
-  }
-
-  nextMonth(): void {
-    const lang = this.#languageService.currentLanguage();
-    const date = this.viewDate();
-    this.viewDate.set(
-      lang === 'fa' ? jalaliAddMonths(date, 1) : addMonths(date, 1),
-    );
-  }
-
-  selectDate(day: CalendarDay): void {
-    if (!day.isCurrentMonth) return;
-    this.selectedDate.set(day.date);
-    this.isOpen.set(false);
-    this.#onChange(this.#toIsoString(day.date));
     this.#onTouched();
   }
 
-  goToToday(): void {
-    const today = new Date();
-    this.selectedDate.set(today);
-    this.viewDate.set(today);
-    this.isOpen.set(false);
-    this.#onChange(this.#toIsoString(today));
+  onPickerClosed(): void {
     this.#onTouched();
   }
 
@@ -375,67 +161,23 @@ export class DatePickerComponent implements ControlValueAccessor {
     this.#onTouched = fn;
   }
 
-  setDisabledState(isDisabled: boolean): void {
-    if (isDisabled) {
-      this.isOpen.set(false);
-    }
-  }
+  setDisabledState(): void {}
 
-  #buildJalaliDays(
-    viewDate: Date,
-    selected: Date | null,
-    today: Date,
-  ): CalendarDay[] {
-    const monthStart = jalaliStartOfMonth(viewDate);
-    const monthEnd = jalaliEndOfMonth(viewDate);
-    const calStart = jalaliStartOfWeek(monthStart, { weekStartsOn: 6 });
-    const calEnd = jalaliEndOfWeek(monthEnd, { weekStartsOn: 6 });
-    const days = jalaliEachDayOfInterval({ start: calStart, end: calEnd });
+  readonly computedClasses = () => {
+    const base = `${CONTROL_BASE_CLASSES} ${controlFocusClasses(this.focusRing())} pe-10 cursor-pointer`;
 
-    return days.map((date) => ({
-      date,
-      label: jalaliFormatDate(date, 'd'),
-      isCurrentMonth: jalaliIsSameMonth(date, viewDate),
-      isToday: jalaliIsSameDay(date, today),
-      isSelected: selected ? jalaliIsSameDay(date, selected) : false,
-    }));
-  }
+    const variant = this.disabled() ? 'disabled' : this.variant();
+    const errorClass = this.error() ? 'ring-red-500 border-red-500' : '';
 
-  #buildGregorianDays(
-    viewDate: Date,
-    selected: Date | null,
-    today: Date,
-  ): CalendarDay[] {
-    const monthStart = startOfMonth(viewDate);
-    const monthEnd = endOfMonth(viewDate);
-    const calStart = startOfWeek(monthStart);
-    const calEnd = endOfWeek(monthEnd);
-    const days = eachDayOfInterval({ start: calStart, end: calEnd });
-
-    return days.map((date) => ({
-      date,
-      label: format(date, 'd'),
-      isCurrentMonth: isSameMonth(date, viewDate),
-      isToday: isSameDay(date, today),
-      isSelected: selected ? isSameDay(date, selected) : false,
-    }));
-  }
+    return [base, CONTROL_VARIANT_CLASSES[variant], errorClass, this.cssClass()]
+      .filter(Boolean)
+      .join(' ');
+  };
 
   #toIsoString(date: Date): string {
-    return format(date, 'yyyy-MM-dd');
-  }
-
-  dayClasses(day: CalendarDay): string {
-    const base =
-      'w-8 h-8 flex items-center justify-center rounded-full text-sm transition-colors';
-    if (!day.isCurrentMonth) {
-      return `${base} text-slate-300 dark:text-slate-600`;
-    }
-    const selected = day.isSelected
-      ? 'bg-indigo-600 text-white'
-      : day.isToday
-        ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold'
-        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700';
-    return `${base} ${selected}`;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

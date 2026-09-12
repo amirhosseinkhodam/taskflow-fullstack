@@ -35,7 +35,7 @@ export class AuthService {
       phone: user.phone,
       birthDate: user.birthDate,
       role: user.role,
-    }) as string;
+    });
   }
 
   async register(email: string, password: string) {
@@ -61,7 +61,7 @@ export class AuthService {
         role: true,
       },
     });
-    const token = this.#signToken(user as never);
+    const token = this.#signToken(user);
     return { token, user };
   }
 
@@ -75,7 +75,7 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _pw, ...userWithoutPassword } = user;
-    const token = this.#signToken(userWithoutPassword as never);
+    const token = this.#signToken(userWithoutPassword);
     return { token, user: userWithoutPassword };
   }
 }

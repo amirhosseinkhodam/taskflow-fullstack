@@ -19,7 +19,7 @@ import type { CommentModel } from '@shared/types/task';
       } @else {
         @for (comment of comments(); track comment.id) {
           <div
-            class="flex gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700"
+            class="flex gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-surface dark:shadow-none"
           >
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">

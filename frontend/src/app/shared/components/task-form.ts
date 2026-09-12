@@ -1,4 +1,12 @@
-import { Component, effect, inject, input, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+} from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
 import { TaskFormService } from '../forms/task';
@@ -15,6 +23,7 @@ import { TextareaComponent } from './textarea';
   selector: 'app-task-form',
   standalone: true,
   imports: [
+    ReactiveFormsModule,
     InputComponent,
     ButtonComponent,
     TextareaComponent,
@@ -25,11 +34,7 @@ import { TextareaComponent } from './textarea';
   template: `
     <app-form [formGroup]="form" (formSubmit)="onSubmit()">
       <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        {{
-          form.get('title')?.value
-            ? ('editTask' | translate)
-            : ('newTask' | translate)
-        }}
+        {{ isEditing() ? ('editTask' | translate) : ('newTask' | translate) }}
       </h2>
       <app-input
         formControlName="title"
@@ -56,7 +61,7 @@ import { TextareaComponent } from './textarea';
       <app-textarea
         formControlName="description"
         [placeholder]="'descriptionPlaceholder' | translate"
-        rows="5"
+        [rows]="5"
         variant="default"
         [cssClass]="'mt-3'"
       />
@@ -67,13 +72,9 @@ import { TextareaComponent } from './textarea';
           type="submit"
           [cssClass]="'flex-1 w-full bg-blue-600 hover:bg-blue-700'"
         >
-          {{
-            form.get('title')?.value
-              ? ('save' | translate)
-              : ('addTask' | translate)
-          }}
+          {{ isEditing() ? ('save' | translate) : ('addTask' | translate) }}
         </app-button>
-        @if (form.get('title')?.value) {
+        @if (isEditing()) {
           <app-button
             variant="secondary"
             type="button"
@@ -105,12 +106,12 @@ export class TaskFormComponent {
     return this.#taskForm.form;
   }
 
-  projectOptions(): SelectOption[] {
-    return [
-      { value: 0, label: this.#languageService.translate('selectProject') },
-      ...this.projects().map((p) => ({ value: p.id, label: p.name })),
-    ];
-  }
+  readonly isEditing = computed(() => this.editingTask() !== null);
+
+  readonly projectOptions = computed<SelectOption[]>(() => [
+    { value: 0, label: this.#languageService.translate('selectProject') },
+    ...this.projects().map((p) => ({ value: p.id, label: p.name })),
+  ]);
 
   constructor() {
     effect(() => {

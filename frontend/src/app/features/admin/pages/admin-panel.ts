@@ -50,7 +50,7 @@ import { AdminStore } from '../store/admin';
         </div>
 
         <div
-          class="overflow-x-auto rounded-card border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+          class="overflow-x-auto rounded-card border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-surface-md dark:shadow-none"
         >
           <table class="w-full min-w-[640px]">
             <thead
@@ -205,6 +205,8 @@ export class AdminPanelComponent implements OnInit {
   readonly #dialog = inject(MatDialog);
   readonly #bottomSheet = inject(MatBottomSheet);
   readonly #languageService = inject(LanguageService);
+
+  readonly USER_ROLES = USER_ROLES;
 
   readonly currentUserId = computed(() => this.auth.user()?.id ?? null);
   readonly roleBadgeText = computed(() => {

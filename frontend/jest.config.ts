@@ -12,6 +12,8 @@ const config: Config = {
     ],
   },
   moduleNameMapper: {
+    '^@hugeicons/angular$':
+      '<rootDir>/../node_modules/@hugeicons/angular/dist/fesm2022/hugeicons-angular.mjs',
     '^@shared/(.*)$': '<rootDir>/../shared/$1',
     '^@models/(.*)$': '<rootDir>/src/app/models/$1',
     '^@core/(.*)$': '<rootDir>/src/app/core/$1',
@@ -28,7 +30,9 @@ const config: Config = {
     '!src/**/*.module.ts',
     '!src/**/*.routes.ts',
   ],
-  transformIgnorePatterns: ['node_modules/(?!(@ngrx|@ng-select|rxjs|@angular))'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@ngrx|@ng-select|rxjs|@angular|@hugeicons))',
+  ],
 };
 
 export default config;

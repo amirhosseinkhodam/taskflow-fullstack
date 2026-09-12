@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { TranslatePipe } from '../../../shared/pipes/translate';
 import { SelectComponent } from '../../../shared/components/select';
 import type { SelectOption } from '../../../shared/models/select';
@@ -12,7 +12,7 @@ import type { ProjectModel } from '@shared/types/project';
     <app-select
       [options]="projectOptions()"
       [value]="selectedProjectId()"
-      (selectChange)="projectChange.emit($event)"
+      (selectChange)="onSelectChange($event)"
       [placeholder]="'allProjects' | translate"
       [clearable]="true"
       [searchable]="true"
@@ -25,7 +25,11 @@ export class ProjectFilterComponent {
   readonly selectedProjectId = input(0);
   readonly projectChange = output<number>();
 
-  projectOptions(): SelectOption[] {
-    return this.projects().map((p) => ({ value: p.id, label: p.name }));
+  readonly projectOptions = computed<SelectOption[]>(() =>
+    this.projects().map((p) => ({ value: p.id, label: p.name })),
+  );
+
+  onSelectChange(value: number | string | null): void {
+    this.projectChange.emit(Number(value ?? 0));
   }
 }

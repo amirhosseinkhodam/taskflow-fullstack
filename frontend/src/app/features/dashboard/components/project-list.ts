@@ -1,13 +1,13 @@
 import { Component, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
-import { TranslatePipe } from '../../../shared/pipes/translate';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Delete01Icon, Edit01Icon } from '@hugeicons/core-free-icons';
 import type { ProjectModel } from '@shared/types/project';
-import { InputComponent } from '../../../shared/components/input';
 import { ButtonComponent } from '../../../shared/components/button';
 import { FormComponent } from '../../../shared/components/form';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
+import { InputComponent } from '../../../shared/components/input';
+import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 
 @Component({
   selector: 'app-project-list',
@@ -44,7 +44,7 @@ import { Edit01Icon, Delete01Icon } from '@hugeicons/core-free-icons';
       </app-form>
 
       <ul
-        class="my-4 divide-y divide-slate-200 dark:divide-slate-700 overflow-y-auto flex-1 min-h-0"
+        class="my-4 divide-y divide-slate-200 dark:divide-slate-700 flex-1 min-h-0"
       >
         @for (project of projects(); track project.id) {
           <li

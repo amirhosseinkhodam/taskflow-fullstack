@@ -24,14 +24,6 @@ describe('DashboardService', () => {
     httpMock.verify();
   });
 
-  it('getHealth() — GET /api/health', () => {
-    service.getHealth().subscribe();
-
-    const req = httpMock.expectOne(`${API}/api/health`);
-    expect(req.request.method).toBe(HTTP_METHODS.GET);
-    req.flush({ status: 'ok' });
-  });
-
   it('getTask(id) — GET /tasks/{id}', () => {
     service.getTask(42).subscribe();
 

@@ -7,7 +7,6 @@ import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
 
 const mockDashboardService = {
-  getHealth: jest.fn().mockReturnValue(of({ status: 'ok' })),
   getProjects: jest.fn().mockReturnValue(of([])),
   getTasks: jest
     .fn()
@@ -70,7 +69,6 @@ describe('DashboardStore', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDashboardService.getHealth.mockReturnValue(of({ status: 'ok' }));
     mockDashboardService.getProjects.mockReturnValue(of([]));
     mockDashboardService.getTasks.mockReturnValue(
       of({ data: [], total: 0, page: 1, limit: 5, totalPages: 1 }),
@@ -96,9 +94,7 @@ describe('DashboardStore', () => {
     expect(store.totalTasks()).toBe(0);
     expect(store.editingTaskId()).toBeNull();
     expect(store.editingProjectId()).toBeNull();
-    expect(store.message()).toBe('');
     expect(store.isLoading()).toBe(false);
-    expect(store.healthStatus()).toBe('ok');
   });
 
   it('hasProjects should be false when projects is empty', () => {
@@ -204,17 +200,8 @@ describe('DashboardStore', () => {
     expect(store.totalTasks()).toBe(10);
   });
 
-  it('onInit should call loadHealth and loadAll', () => {
-    expect(mockDashboardService.getHealth).toHaveBeenCalled();
+  it('onInit should load the dashboard data', () => {
     expect(mockDashboardService.getProjects).toHaveBeenCalled();
-  });
-
-  it('loadHealth should update healthStatus on success', () => {
-    mockDashboardService.getHealth.mockReturnValue(of({ status: 'degraded' }));
-
-    store.loadHealth();
-
-    expect(store.healthStatus()).toBe('degraded');
   });
 
   it('loadProjects should update projects and isLoading', () => {

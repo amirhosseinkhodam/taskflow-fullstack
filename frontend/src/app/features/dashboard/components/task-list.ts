@@ -22,7 +22,7 @@ import { Drag01Icon } from '@hugeicons/core-free-icons';
       @for (task of tasks(); track task.id) {
         <article
           cdkDrag
-          class="flex items-start justify-between gap-4 rounded-container border border-slate-200 dark:border-slate-700 p-4"
+          class="flex items-start justify-between gap-4 rounded-container border border-slate-200 dark:border-slate-700 p-4 shadow-surface dark:shadow-none"
         >
           <app-task-item
             class="w-full"

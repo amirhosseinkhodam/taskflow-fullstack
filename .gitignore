@@ -23,6 +23,10 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
+/test-results
+/playwright-report
+/playwright/.cache
+e2e-report*.json
 
 # IDEs and editors
 /.idea

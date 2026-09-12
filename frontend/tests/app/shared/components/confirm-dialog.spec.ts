@@ -4,23 +4,20 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmDialogComponent } from '../../../../src/app/shared/components/confirm-dialog';
 import { LanguageService } from '../../../../src/app/shared/services/language';
+import { createMockLanguageService } from '../../../support/language';
 
 describe('ConfirmDialogComponent', () => {
   let dialogRefSpy: { close: jest.Mock };
-  let languageServiceSpy: { translate: jest.Mock };
+  let languageServiceSpy: ReturnType<typeof createMockLanguageService>;
 
   beforeEach(async () => {
     TestBed.resetTestingModule();
     dialogRefSpy = { close: jest.fn() };
-    languageServiceSpy = { translate: jest.fn() };
-    languageServiceSpy.translate.mockImplementation((key: string) => {
-      const map: Record<string, string> = {
-        confirmDeleteTask: 'Confirm Delete',
-        confirmDeleteMessage: 'Are you sure you want to delete?',
-        cancel: 'Cancel',
-        delete: 'Delete',
-      };
-      return map[key] ?? key;
+    languageServiceSpy = createMockLanguageService('en', {
+      confirmDeleteTask: 'Confirm Delete',
+      confirmDeleteMessage: 'Are you sure you want to delete?',
+      cancel: 'Cancel',
+      delete: 'Delete',
     });
 
     await TestBed.configureTestingModule({

@@ -5,8 +5,8 @@
     "types": ["jest"]
   },
   "include": [
-    "frontend/src/**/*.spec.ts",
-    "frontend/src/**/*.d.ts",
+    "frontend/tests/**/*.ts",
+    "frontend/src/**/*.ts",
     "shared/**/*.ts"
   ]
 }

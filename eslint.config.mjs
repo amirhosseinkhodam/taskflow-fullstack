@@ -20,7 +20,7 @@ export default tseslint.config(
       globals: { ...globals.node },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.backend.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -32,7 +32,7 @@ export default tseslint.config(
       globals: { ...globals.browser },
       sourceType: 'module',
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.frontend.spec.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

@@ -99,7 +99,7 @@ import type { TaskStatus } from '../models/task';
                   variant="primary"
                   size="md"
                   type="button"
-                  (buttonClick)="navigateToDetail(task.id)"
+                  (buttonClick)="navigateToDetail()"
                   [title]="'detail' | translate"
                   cssClass="w-full sm:w-auto"
                 >

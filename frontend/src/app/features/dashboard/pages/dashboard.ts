@@ -99,7 +99,7 @@ import { DashboardStore } from '../store/dashboard';
             } @else {
               <button
                 [matMenuTriggerFor]="mobileMenu"
-                class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-surface dark:shadow-none"
               >
                 <hugeicons-icon
                   [icon]="Menu01Icon"

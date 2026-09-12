@@ -3,13 +3,12 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { ProjectDeleteConfirmComponent } from '../../../../../src/app/features/dashboard/components/project-delete-confirm';
+import { createMockLanguageService } from '../../../../support/language';
 
 describe('ProjectDeleteConfirmComponent', () => {
   let fixture: ComponentFixture<ProjectDeleteConfirmComponent>;
 
-  const mockLanguageService = {
-    translate: (key: string) => key,
-  };
+  const mockLanguageService = createMockLanguageService();
 
   const mockDialogRef = {
     close: jest.fn(),

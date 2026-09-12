@@ -2,13 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { LanguageService } from '../../../../../src/app/shared/services/language';
 import { PaginationComponent } from '../../../../../src/app/features/dashboard/components/pagination';
+import { createMockLanguageService } from '../../../../support/language';
 
 describe('PaginationComponent', () => {
   let fixture: ComponentFixture<PaginationComponent>;
 
-  const mockLanguageService = {
-    translate: (key: string) => key,
-  };
+  const mockLanguageService = createMockLanguageService();
 
   beforeEach(async () => {
     TestBed.resetTestingModule();

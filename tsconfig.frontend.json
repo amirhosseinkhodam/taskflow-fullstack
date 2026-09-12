@@ -20,5 +20,10 @@
       "@models/*": ["frontend/src/app/models/*"],
       "@shared/*": ["shared/*"]
     }
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
   }
 }

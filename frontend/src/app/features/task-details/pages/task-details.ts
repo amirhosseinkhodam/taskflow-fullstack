@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardService } from '../../dashboard/services/dashboard';
 import { CommentService } from '../../comments/services/comment';
@@ -78,7 +78,6 @@ import { CommentListComponent } from '../../comments/components/comment-list';
                   (statusChanged)="onStatusChanged($event)"
                 />
 
-                <!-- Comments Section -->
                 <div
                   class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700"
                 >
@@ -143,7 +142,7 @@ export class TaskDetailsPageComponent {
       updatedAt: string;
     }[]
   >([]);
-  readonly currentUserId = signal<number>(0);
+  readonly currentUserId = computed(() => this.#auth.user()?.id ?? 0);
   commentContent = '';
 
   readonly #taskId: number;
@@ -166,7 +165,6 @@ export class TaskDetailsPageComponent {
       .subscribe({
         next: (task) => {
           this.task.set(task);
-          this.currentUserId.set(Number(localStorage.getItem('userId') ?? '0'));
           this.loadComments();
           this.loading.set(false);
         },
