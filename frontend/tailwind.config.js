@@ -33,6 +33,9 @@ module.exports = {
       height: {
         112: '28rem',
       },
+      minHeight: {
+        10.5: '2.625rem',
+      },
     },
   },
   plugins: [require('tailwindcss-rtl')],

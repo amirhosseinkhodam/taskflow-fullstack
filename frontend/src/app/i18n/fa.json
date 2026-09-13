@@ -1,6 +1,5 @@
 {
   "logout": "خروج",
-  "createProjectAddTasks": "یک پروژه بسازید، تسک اضافه کنید و Nest API را تست کنید.",
   "apiHealth": "وضعیت API",
   "projects": "پروژه‌ها",
   "newProjectName": "نام پروژه جدید",

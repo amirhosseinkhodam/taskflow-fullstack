@@ -1,29 +1,36 @@
-import { Component, inject, input, output, signal } from '@angular/core';
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import {
   MatBottomSheet,
   MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import {
   AddCircleIcon,
-  Edit01Icon,
   Delete01Icon,
+  Edit01Icon,
 } from '@hugeicons/core-free-icons';
-import { LanguageService } from '../services/language';
+import { TASK_STATUSES } from '@shared/const/task-statuses';
+import type { ProjectModel } from '@shared/types/project';
+import type { TaskModel } from '@shared/types/task';
+import type { SelectOption } from '../models/select';
+import type { TaskStatus } from '../models/task';
 import { LocalizedDatePipe } from '../pipes/localized-date';
 import { TranslatePipe } from '../pipes/translate';
-import { TASK_STATUSES } from '@shared/const/task-statuses';
-import { ConfirmDialogComponent } from './confirm-dialog';
-import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
+import { LanguageService } from '../services/language';
 import { ButtonComponent } from './button';
+import { ConfirmBottomSheetComponent } from './confirm-bottom-sheet';
+import { ConfirmDialogComponent } from './confirm-dialog';
 import { SelectComponent } from './select';
-import type { SelectOption } from '../models/select';
-import type { TaskModel } from '@shared/types/task';
-import type { ProjectModel } from '@shared/types/project';
-import type { TaskStatus } from '../models/task';
 
 @Component({
   selector: 'app-task-item',
@@ -150,7 +157,7 @@ import type { TaskStatus } from '../models/task';
               </app-button>
             </div>
             <app-select
-              [options]="statusOptions"
+              [options]="statusOptions()"
               [value]="task.status"
               [clearable]="false"
               [placeholder]="'status' | translate"
@@ -208,20 +215,23 @@ export class TaskItemComponent {
     }
   }
 
-  readonly statusOptions: SelectOption[] = [
-    {
-      value: TASK_STATUSES.PENDING,
-      label: this.#languageService.translate('pending'),
-    },
-    {
-      value: TASK_STATUSES.IN_PROGRESS,
-      label: this.#languageService.translate('inProgress'),
-    },
-    {
-      value: TASK_STATUSES.DONE,
-      label: this.#languageService.translate('done'),
-    },
-  ];
+  readonly statusOptions = computed<SelectOption[]>(() => {
+    this.#languageService.currentLanguage();
+    return [
+      {
+        value: TASK_STATUSES.PENDING,
+        label: this.#languageService.translate('pending'),
+      },
+      {
+        value: TASK_STATUSES.IN_PROGRESS,
+        label: this.#languageService.translate('inProgress'),
+      },
+      {
+        value: TASK_STATUSES.DONE,
+        label: this.#languageService.translate('done'),
+      },
+    ];
+  });
 
   onStatusChange(newStatus: number | string | null): void {
     const task = this.task();

@@ -8,6 +8,8 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Menu01Icon } from '@hugeicons/core-free-icons';
 import type { ProjectModel } from '@shared/types/project';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ButtonComponent } from '../../../shared/components/button';
@@ -17,8 +19,6 @@ import { TaskFormComponent } from '../../../shared/components/task-form';
 import { ThemeToggleComponent } from '../../../shared/components/theme-toggle';
 import { TranslatePipe } from '../../../shared/pipes/translate';
 import { AuthStore } from '../../auth/store/auth';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Menu01Icon } from '@hugeicons/core-free-icons';
 import { PaginationComponent } from '../components/pagination';
 import { ProjectDeleteConfirmComponent } from '../components/project-delete-confirm';
 import { ProjectDeleteConfirmBottomSheetComponent } from '../components/project-delete-confirm-bottom-sheet';
@@ -57,18 +57,11 @@ import { DashboardStore } from '../store/dashboard';
     <main class="mx-auto max-w-4xl p-6">
       <app-card variant="default">
         <div class="flex items-center justify-between">
-          <div class="min-w-0">
-            <h1
-              class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100"
-            >
-              TaskFlow
-            </h1>
-            <p
-              class="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400"
-            >
-              {{ 'createProjectAddTasks' | translate }}
-            </p>
-          </div>
+          <h1
+            class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100"
+          >
+            TaskFlow
+          </h1>
           <div class="flex items-center gap-2 flex-shrink-0">
             <app-theme-toggle></app-theme-toggle>
             <app-language-toggle></app-language-toggle>

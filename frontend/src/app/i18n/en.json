@@ -1,6 +1,5 @@
 {
   "logout": "Logout",
-  "createProjectAddTasks": "Create a project, add tasks, and test the Nest API.",
   "apiHealth": "API health",
   "projects": "Projects",
   "newProjectName": "New project name",

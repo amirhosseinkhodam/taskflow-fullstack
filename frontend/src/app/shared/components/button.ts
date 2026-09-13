@@ -14,7 +14,7 @@ import { LoadingSpinnerComponent } from './loading-spinner';
       (click)="onClick()"
       (keydown.enter)="onEnter($event)"
     >
-      <span [class]="loading() ? 'invisible' : ''">
+      <span class="flex gap-1" [class]="loading() ? 'invisible' : ''">
         <ng-content></ng-content>
       </span>
       @if (loading()) {

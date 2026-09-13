@@ -1,11 +1,11 @@
 import { Component, input, signal } from '@angular/core';
 import {
-  ReactiveFormsModule,
   ControlContainer,
   FormGroupDirective,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
+import { ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-password-input',
@@ -30,7 +30,7 @@ import { ViewIcon, ViewOffIcon } from '@hugeicons/core-free-icons';
       >
         @if (showPassword()) {
           <hugeicons-icon
-            [icon]="icons.ViewOffIcon"
+            [icon]="icons.ViewOffSlashIcon"
             [size]="20"
             color="currentColor"
             [strokeWidth]="1.5"
@@ -53,5 +53,5 @@ export class PasswordInputComponent {
   readonly autocompleteValue = input('');
   readonly showPassword = signal(false);
 
-  readonly icons = { ViewIcon, ViewOffIcon };
+  readonly icons = { ViewIcon, ViewOffSlashIcon };
 }
