@@ -129,9 +129,9 @@ describe('AdminService', () => {
     });
 
     it('invalid role value throws BadRequestException', async () => {
-      await expect(
-        service.updateUserRole(2, 'superAdmin', 1),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.updateUserRole(2, 'superAdmin', 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('superAdmin target throws BadRequestException', async () => {
