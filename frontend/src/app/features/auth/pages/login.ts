@@ -30,7 +30,7 @@ import { FormComponent } from '../../../shared/components/form';
         [formGroup]="loginForm.form"
         (formSubmit)="auth.login()"
         variant="default"
-        [cssClass]="'rounded-2xl bg-white dark:bg-slate-800 p-8 shadow'"
+        [cssClass]="'rounded-card bg-white dark:bg-slate-800 p-8 shadow-card'"
       >
         <div class="flex items-center justify-between mb-6">
           <div>

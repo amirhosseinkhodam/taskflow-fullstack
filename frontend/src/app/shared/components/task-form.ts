@@ -10,10 +10,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 import type { ProjectModel } from '@shared/types/project';
 import type { TaskModel } from '@shared/types/task';
 import { TaskFormService } from '../forms/task';
-import { LanguageService } from '../services/language';
 import { TranslatePipe } from '../pipes/translate';
 import { ButtonComponent } from './button';
 import { FormComponent } from './form';
+import { FormFieldComponent } from './form-field';
 import { InputComponent } from './input';
 import { SelectComponent } from './select';
 import type { SelectOption } from '../models/select';
@@ -29,6 +29,7 @@ import { TextareaComponent } from './textarea';
     TextareaComponent,
     SelectComponent,
     FormComponent,
+    FormFieldComponent,
     TranslatePipe,
   ],
   template: `
@@ -42,6 +43,7 @@ import { TextareaComponent } from './textarea';
         variant="default"
         [cssClass]="'mt-4'"
       />
+      <app-form-field [control]="form.controls.title" />
       @if (showProjectSelect()) {
         <app-select
           formControlName="projectId"
@@ -50,6 +52,7 @@ import { TextareaComponent } from './textarea';
           variant="default"
           [cssClass]="'mt-3'"
         />
+        <app-form-field [control]="form.controls.projectId" />
       }
       <app-input
         formControlName="assigneeEmail"
@@ -58,6 +61,7 @@ import { TextareaComponent } from './textarea';
         variant="default"
         [cssClass]="'mt-3'"
       />
+      <app-form-field [control]="form.controls.assigneeEmail" />
       <app-textarea
         formControlName="description"
         [placeholder]="'descriptionPlaceholder' | translate"
@@ -70,7 +74,7 @@ import { TextareaComponent } from './textarea';
           class="w-full"
           variant="primary"
           type="submit"
-          [cssClass]="'flex-1 w-full bg-blue-600 hover:bg-blue-700'"
+          [cssClass]="'flex-1 w-full'"
         >
           {{ isEditing() ? ('save' | translate) : ('addTask' | translate) }}
         </app-button>
@@ -100,7 +104,6 @@ export class TaskFormComponent {
   readonly cancelEdit = output<void>();
 
   readonly #taskForm = inject(TaskFormService);
-  readonly #languageService = inject(LanguageService);
 
   get form() {
     return this.#taskForm.form;
@@ -108,10 +111,9 @@ export class TaskFormComponent {
 
   readonly isEditing = computed(() => this.editingTask() !== null);
 
-  readonly projectOptions = computed<SelectOption[]>(() => [
-    { value: 0, label: this.#languageService.translate('selectProject') },
-    ...this.projects().map((p) => ({ value: p.id, label: p.name })),
-  ]);
+  readonly projectOptions = computed<SelectOption[]>(() =>
+    this.projects().map((p) => ({ value: p.id, label: p.name })),
+  );
 
   constructor() {
     effect(() => {
@@ -128,13 +130,15 @@ export class TaskFormComponent {
   }
 
   onSubmit(): void {
-    const value = this.#taskForm.form.getRawValue();
-    this.submitTask.emit(value);
-    this.#taskForm.resetForm(value.projectId);
+    if (this.#taskForm.form.invalid) return;
+    const { projectId, ...rest } = this.#taskForm.form.getRawValue();
+    if (projectId === null) return;
+    this.submitTask.emit({ ...rest, projectId });
+    this.#taskForm.resetForm();
   }
 
   onCancel(): void {
     this.cancelEdit.emit();
-    this.#taskForm.resetForm(this.#taskForm.form.getRawValue().projectId);
+    this.#taskForm.resetForm();
   }
 }

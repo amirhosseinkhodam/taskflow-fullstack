@@ -23,15 +23,25 @@ describe('TaskFormService', () => {
     expect(form.get('assigneeEmail')).toBeTruthy();
   });
 
-  it('should reset form with given projectId', () => {
-    service.resetForm(3);
-    const value = service.form.value;
-    expect(value).toEqual({
+  it('should reset every field including the project select', () => {
+    service.patchForEdit('My Task', 3, 'Description', 'user@example.com');
+
+    service.resetForm();
+
+    expect(service.form.value).toEqual({
       title: '',
-      projectId: 3,
+      projectId: null,
       description: '',
       assigneeEmail: '',
     });
+  });
+
+  it('should treat a reset project select as invalid', () => {
+    service.patchForEdit('My Task', 3, 'Description');
+
+    service.resetForm();
+
+    expect(service.form.controls.projectId.invalid).toBe(true);
   });
 
   it('should patch form for edit', () => {

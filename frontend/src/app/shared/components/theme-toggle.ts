@@ -20,7 +20,7 @@ import { ThemeService } from '../services/theme';
         class="relative flex items-center w-16 h-9 rounded-full bg-gradient-to-br from-sky-300 to-sky-400 dark:from-slate-800 dark:to-slate-700 transition-colors duration-300 ease-in-out overflow-hidden"
       >
         <span
-          class="absolute flex items-center justify-center w-4.5 h-4.5 z-10 transition-all duration-300 ease-in-out top-2 left-1.5 text-amber-400 opacity-100 rotate-0 scale-100 dark:opacity-0 dark:rotate-90 dark:scale-50"
+          class="absolute flex items-center justify-center w-5 h-5 z-10 transition-all duration-300 ease-in-out top-2 left-1.5 text-amber-400 opacity-100 rotate-0 scale-100 dark:opacity-0 dark:rotate-90 dark:scale-50"
         >
           <hugeicons-icon
             [icon]="icons.Sun01Icon"
@@ -30,7 +30,7 @@ import { ThemeService } from '../services/theme';
           />
         </span>
         <span
-          class="absolute flex items-center justify-center w-4.5 h-4.5 z-10 transition-all duration-300 ease-in-out top-2 right-1.5 text-slate-200 opacity-0 -rotate-90 scale-50 dark:opacity-100 dark:rotate-0 dark:scale-100"
+          class="absolute flex items-center justify-center w-5 h-5 z-10 transition-all duration-300 ease-in-out top-2 right-1.5 text-slate-200 opacity-0 -rotate-90 scale-50 dark:opacity-100 dark:rotate-0 dark:scale-100"
         >
           <hugeicons-icon
             [icon]="icons.Moon02Icon"

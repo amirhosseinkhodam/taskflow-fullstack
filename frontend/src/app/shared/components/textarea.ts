@@ -99,7 +99,7 @@ export class TextareaComponent implements ControlValueAccessor {
   }
 
   readonly computedClasses = () => {
-    const base = `${CONTROL_BASE_CLASSES} ${controlFocusClasses(this.focusRing())} resize-vertical`;
+    const base = `${CONTROL_BASE_CLASSES} ${controlFocusClasses(this.focusRing())} resize-y`;
 
     const errorClass = this.error() ? 'ring-red-500 border-red-500' : '';
 

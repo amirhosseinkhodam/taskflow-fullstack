@@ -33,6 +33,16 @@ describe('ProjectListComponent', () => {
     fixture.detectChanges();
   }
 
+  it('owns no height or scroll sizing of its own', () => {
+    setInput('projects', mockProjects);
+
+    const classes: string =
+      fixture.nativeElement.querySelector('div').className;
+
+    expect(classes).not.toContain('h-112');
+    expect(classes).not.toContain('overflow-y-auto');
+  });
+
   it('should show "No projects" message when projects is empty', () => {
     setInput('projects', []);
 

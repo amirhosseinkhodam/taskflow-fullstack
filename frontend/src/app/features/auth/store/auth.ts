@@ -83,6 +83,7 @@ export const AuthStore = signalStore(
               tapResponse({
                 next: (response: AuthResponseModel) => {
                   localStorage.setItem('token', response.token);
+                  loginForm.resetForm();
                   patchState(store, {
                     token: response.token,
                     user: response.user,
@@ -117,6 +118,7 @@ export const AuthStore = signalStore(
               tapResponse({
                 next: (response: AuthResponseModel) => {
                   localStorage.setItem('token', response.token);
+                  registerForm.resetForm();
                   patchState(store, {
                     token: response.token,
                     user: response.user,
@@ -148,6 +150,8 @@ export const AuthStore = signalStore(
 
       const logout = () => {
         localStorage.removeItem('token');
+        loginForm.resetForm();
+        registerForm.resetForm();
         patchState(store, {
           token: null,
           user: null,

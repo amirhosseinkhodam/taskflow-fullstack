@@ -16,7 +16,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons';
         [size]="16"
         color="currentColor"
         [strokeWidth]="1.5"
-        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+        class="pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
       />
       <app-input
         type="search"
@@ -24,7 +24,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons';
         (ngModelChange)="searchChange.emit($event)"
         [placeholder]="'searchTasks' | translate"
         variant="default"
-        [cssClass]="'pl-9'"
+        [cssClass]="'ps-9'"
       />
     </div>
   `,

@@ -6,15 +6,15 @@ import {
   MatBottomSheetModule,
 } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { USER_ROLES } from '@shared/const/user-roles';
+import { ButtonComponent } from '../../../shared/components/button';
 import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
+import { PageHeaderComponent } from '../../../shared/components/page-header';
 import { PasswordBottomSheetComponent } from '../../../shared/components/password-bottom-sheet';
 import { PasswordDialogComponent } from '../../../shared/components/password-dialog';
-import { ButtonComponent } from '../../../shared/components/button';
-import { PageHeaderComponent } from '../../../shared/components/page-header';
-import { LanguageService } from '../../../shared/services/language';
 import { TranslatePipe } from '../../../shared/pipes/translate';
-import { USER_ROLES } from '@shared/const/user-roles';
+import { LanguageService } from '../../../shared/services/language';
 import { AuthStore } from '../../auth/store/auth';
 import type { UserModel } from '../models/admin';
 import { AdminStore } from '../store/admin';
@@ -58,22 +58,22 @@ import { AdminStore } from '../store/admin';
             >
               <tr>
                 <th
-                  class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  class="px-4 py-3 text-start text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
                   {{ 'email' | translate }}
                 </th>
                 <th
-                  class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell"
+                  class="px-4 py-3 text-start text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider hidden md:table-cell"
                 >
                   {{ 'name' | translate }}
                 </th>
                 <th
-                  class="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  class="px-4 py-3 text-start text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
                   {{ 'role' | translate }}
                 </th>
                 <th
-                  class="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                  class="px-4 py-3 text-start text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                 >
                   {{ 'actions' | translate }}
                 </th>
@@ -107,35 +107,12 @@ import { AdminStore } from '../store/admin';
                       {{ user.role | translate }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 text-right">
+                  <td class="px-4 py-3 text-end">
                     <div
-                      class="flex items-center justify-end gap-1 sm:gap-2 flex-wrap"
+                      class="flex items-center justify-start gap-1 sm:gap-2 flex-wrap"
                     >
                       <app-button
-                        variant="ghost"
-                        [cssClass]="
-                          user.role === USER_ROLES.USER
-                            ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:hover:bg-amber-900/50'
-                            : 'bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
-                        "
-                        [disabled]="
-                          user.id === currentUserId() || isSuperAdminUser(user)
-                        "
-                        (buttonClick)="toggleRole(user)"
-                      >
-                        <span class="hidden sm:inline">{{
-                          user.role === USER_ROLES.USER
-                            ? ('promoteToAdmin' | translate)
-                            : ('demoteToUser' | translate)
-                        }}</span>
-                        <span class="sm:hidden text-xs">{{
-                          user.role === USER_ROLES.USER
-                            ? ('promoteShort' | translate)
-                            : ('demoteShort' | translate)
-                        }}</span>
-                      </app-button>
-                      <app-button
-                        variant="ghost"
+                        variant="secondary"
                         [disabled]="isSuperAdminUser(user)"
                         (buttonClick)="openPasswordChange(user)"
                       >
@@ -160,6 +137,29 @@ import { AdminStore } from '../store/admin';
                           'delete' | translate
                         }}</span>
                       </app-button>
+                      <app-button
+                        variant="ghost"
+                        [cssClass]="
+                          user.role === USER_ROLES.USER
+                            ? '!bg-amber-100 !text-amber-800 hover:!bg-amber-200 dark:!bg-amber-900/30 dark:!text-amber-300 dark:hover:!bg-amber-900/50'
+                            : '!bg-slate-100 !text-slate-800 hover:!bg-slate-200 dark:!bg-slate-700 dark:!text-slate-300 dark:hover:!bg-slate-600'
+                        "
+                        [disabled]="
+                          user.id === currentUserId() || isSuperAdminUser(user)
+                        "
+                        (buttonClick)="toggleRole(user)"
+                      >
+                        <span class="hidden sm:inline">{{
+                          user.role === USER_ROLES.USER
+                            ? ('promoteToAdmin' | translate)
+                            : ('demoteToUser' | translate)
+                        }}</span>
+                        <span class="sm:hidden text-xs">{{
+                          user.role === USER_ROLES.USER
+                            ? ('promoteShort' | translate)
+                            : ('demoteShort' | translate)
+                        }}</span>
+                      </app-button>
                     </div>
                   </td>
                 </tr>
@@ -176,24 +176,6 @@ import { AdminStore } from '../store/admin';
             </tbody>
           </table>
         </div>
-
-        @if (store.message()) {
-          <div
-            class="mt-4 rounded-lg px-4 py-3 text-sm"
-            [ngClass]="{
-              'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300':
-                store.message() === 'passwordChanged' ||
-                store.message() === 'roleUpdated' ||
-                store.message() === 'userDeleted',
-              'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300':
-                store.message() !== 'passwordChanged' &&
-                store.message() !== 'roleUpdated' &&
-                store.message() !== 'userDeleted',
-            }"
-          >
-            {{ store.message() | translate }}
-          </div>
-        }
       </main>
     </div>
   `,

@@ -140,3 +140,60 @@ describe('ButtonComponent', () => {
     expect(host.clicked).toBe(false);
   });
 });
+
+describe('ButtonComponent styling', () => {
+  const classesOf = (
+    setup: (fixture: ComponentFixture<ButtonComponent>) => void = () => {},
+  ): string[] => {
+    const fixture = TestBed.createComponent(ButtonComponent);
+    setup(fixture);
+    return fixture.componentInstance.computedClasses().split(/\s+/);
+  };
+
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it.each([
+    ['sm', 'px-3', 'py-1.5', 'text-xs'],
+    ['md', 'px-4', 'py-2', 'text-sm'],
+    ['lg', 'px-6', 'py-3', 'text-base'],
+  ])(
+    'applies only the %s size padding and text scale',
+    (size, px, py, text) => {
+      const classes = classesOf((f) => f.componentRef.setInput('size', size));
+
+      expect(classes).toContain(px);
+      expect(classes).toContain(py);
+      expect(classes).toContain(text);
+      expect(classes.filter((c) => c.startsWith('px-'))).toEqual([px]);
+      expect(classes.filter((c) => c.startsWith('py-'))).toEqual([py]);
+    },
+  );
+
+  it('keeps a visible focus ring for keyboard users by default', () => {
+    const classes = classesOf();
+
+    expect(classes).toContain('focus-visible:outline-2');
+    expect(classes).toContain('focus-visible:outline-offset-2');
+  });
+
+  it('derives a hover shade that only applies on hover', () => {
+    const classes = classesOf((f) =>
+      f.componentRef.setInput('cssClass', 'bg-amber-100 dark:bg-amber-800'),
+    );
+
+    expect(classes).toContain('hover:bg-amber-200');
+    expect(classes).toContain('dark:hover:bg-amber-900');
+    expect(classes).not.toContain('!bg-amber-200');
+  });
+
+  it('does not override an explicitly supplied hover shade', () => {
+    const classes = classesOf((f) =>
+      f.componentRef.setInput('cssClass', 'bg-amber-100 hover:bg-amber-500'),
+    );
+
+    expect(classes).toContain('hover:bg-amber-500');
+    expect(classes).not.toContain('hover:bg-amber-200');
+  });
+});

@@ -20,7 +20,9 @@ import { TranslatePipe } from '../pipes/translate';
             notif.messageKey | translate
           }}</span>
           <button
-            class="ms-auto text-current opacity-60 hover:opacity-100 text-lg leading-none"
+            type="button"
+            class="ms-auto rounded text-current opacity-60 hover:opacity-100 text-lg leading-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+            [attr.aria-label]="'close' | translate"
             (click)="dismiss(); $event.stopPropagation()"
           >
             &times;

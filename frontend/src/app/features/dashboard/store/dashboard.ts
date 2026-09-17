@@ -105,7 +105,7 @@ export const DashboardStore = signalStore(
                   }),
                 error: () => {
                   patchState(store, { isLoading: false });
-                  notification.show('error', 'couldNotLoadProjects');
+                  notification.show('error', 'couldNotLoadTasks');
                 },
               }),
             ),
@@ -160,7 +160,7 @@ export const DashboardStore = signalStore(
                   notification.show('success', 'projectCreated');
                 },
                 error: () => {
-                  notification.show('error', 'couldNotLoadTasks');
+                  notification.show('error', 'couldNotCreateProject');
                 },
               }),
             ),

@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { patchState } from '@ngrx/signals';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AdminService } from '../../../../../src/app/features/admin/services/admin';
 import { AdminStore } from '../../../../../src/app/features/admin/store/admin';
+import { NotificationService } from '../../../../../src/app/shared/services/notification';
 
 const mockAdminService = {
   getUsers: jest.fn().mockReturnValue(of([])),
@@ -10,6 +11,8 @@ const mockAdminService = {
   updateUserRole: jest.fn(),
   changeUserPassword: jest.fn(),
 };
+
+const mockNotification = { show: jest.fn(), dismiss: jest.fn() };
 
 const mockUserAlice = {
   id: 1,
@@ -46,15 +49,27 @@ describe('AdminStore', () => {
       providers: [
         AdminStore,
         { provide: AdminService, useValue: mockAdminService },
+        { provide: NotificationService, useValue: mockNotification },
       ],
     });
 
     store = TestBed.inject(AdminStore);
   });
 
+  function freshStore(): InstanceType<typeof AdminStore> {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        AdminStore,
+        { provide: AdminService, useValue: mockAdminService },
+        { provide: NotificationService, useValue: mockNotification },
+      ],
+    });
+    return TestBed.inject(AdminStore);
+  }
+
   it('should have correct initial state', () => {
     expect(store.users()).toEqual([]);
-    expect(store.message()).toBe('');
     expect(store.isLoading()).toBe(false);
   });
 
@@ -77,18 +92,109 @@ describe('AdminStore', () => {
     const users = [mockUserAlice, mockUserBob];
     mockAdminService.getUsers.mockReturnValue(of(users));
 
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      providers: [
-        AdminStore,
-        { provide: AdminService, useValue: mockAdminService },
-      ],
+    const fresh = freshStore();
+
+    expect(fresh.users()).toEqual(users);
+    expect(fresh.userCount()).toBe(2);
+    expect(fresh.isLoading()).toBe(false);
+  });
+
+  describe('result reporting goes through notifications only', () => {
+    it('exposes no message state for the page to render', () => {
+      expect('message' in store).toBe(false);
     });
 
-    const freshStore = TestBed.inject(AdminStore);
+    it('notifies on a successful role update', () => {
+      const promoted = { ...mockUserAlice, role: 'admin' as const };
+      mockAdminService.updateUserRole.mockReturnValue(of(promoted));
+      patchState(store, { users: [mockUserAlice, mockUserBob] });
 
-    expect(freshStore.users()).toEqual(users);
-    expect(freshStore.userCount()).toBe(2);
-    expect(freshStore.isLoading()).toBe(false);
+      store.updateUserRole({ id: 1, role: 'admin' });
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'success',
+        'roleUpdated',
+      );
+      expect(store.users()[0].role).toBe('admin');
+    });
+
+    it('notifies on a failed role update', () => {
+      mockAdminService.updateUserRole.mockReturnValue(
+        throwError(() => new Error('boom')),
+      );
+
+      store.updateUserRole({ id: 1, role: 'admin' });
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'error',
+        'couldNotUpdateRole',
+      );
+    });
+
+    it('notifies on a successful user deletion', () => {
+      mockAdminService.deleteUser.mockReturnValue(of(undefined));
+      patchState(store, { users: [mockUserAlice, mockUserBob] });
+
+      store.deleteUser(1);
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'success',
+        'userDeleted',
+      );
+      expect(store.users()).toEqual([mockUserBob]);
+    });
+
+    it('notifies on a successful password change', () => {
+      mockAdminService.changeUserPassword.mockReturnValue(of(undefined));
+
+      store.changePassword({ userId: 1, newPassword: 'Str0ng!pass' });
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'success',
+        'passwordChanged',
+      );
+    });
+
+    it('surfaces the specific backend password error in the notification', () => {
+      mockAdminService.changeUserPassword.mockReturnValue(
+        throwError(() => ({
+          error: { message: 'Password is too common' },
+        })),
+      );
+
+      store.changePassword({ userId: 1, newPassword: 'password' });
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'error',
+        'passwordTooCommon',
+      );
+    });
+
+    it('falls back to a generic password error for unmapped messages', () => {
+      mockAdminService.changeUserPassword.mockReturnValue(
+        throwError(() => ({ error: { message: 'something unexpected' } })),
+      );
+
+      store.changePassword({ userId: 1, newPassword: 'x' });
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'error',
+        'couldNotChangePassword',
+      );
+    });
+
+    it('notifies when users cannot be loaded', () => {
+      mockAdminService.getUsers.mockReturnValue(
+        throwError(() => new Error('boom')),
+      );
+
+      const fresh = freshStore();
+
+      expect(mockNotification.show).toHaveBeenCalledWith(
+        'error',
+        'couldNotLoadUsers',
+      );
+      expect(fresh.isLoading()).toBe(false);
+    });
   });
 });

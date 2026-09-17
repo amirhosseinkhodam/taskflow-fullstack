@@ -26,6 +26,7 @@ const mockLoginFormService = {
       .mockReturnValue({ email: 'a@b.com', password: 'pass' }),
     reset: jest.fn(),
   },
+  resetForm: jest.fn(),
 };
 
 const mockRegisterFormService = {
@@ -36,6 +37,7 @@ const mockRegisterFormService = {
       .mockReturnValue({ email: 'a@b.com', password: 'pass' }),
     reset: jest.fn(),
   },
+  resetForm: jest.fn(),
 };
 
 const mockUser = {
@@ -135,6 +137,45 @@ describe('AuthStore', () => {
     expect(store.isLoading()).toBe(false);
     expect(localStorage.removeItem).toHaveBeenCalledWith('token');
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('logout should clear the login form so credentials do not persist', () => {
+    patchState(store, { token: 'jwt-token', user: { ...mockUser } });
+
+    store.logout();
+
+    expect(mockLoginFormService.resetForm).toHaveBeenCalled();
+    expect(mockRegisterFormService.resetForm).toHaveBeenCalled();
+  });
+
+  it('successful login should clear the credentials from the form', () => {
+    mockAuthService.login.mockReturnValue(
+      of({ token: 'new-token', user: { ...mockUser } }),
+    );
+
+    store.login();
+
+    expect(mockLoginFormService.resetForm).toHaveBeenCalled();
+  });
+
+  it('failed login should keep the form so the user can correct it', () => {
+    mockAuthService.login.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 401 })),
+    );
+
+    store.login();
+
+    expect(mockLoginFormService.resetForm).not.toHaveBeenCalled();
+  });
+
+  it('successful registration should clear the credentials from the form', () => {
+    mockAuthService.register.mockReturnValue(
+      of({ token: 'new-token', user: { ...mockUser } }),
+    );
+
+    store.register();
+
+    expect(mockRegisterFormService.resetForm).toHaveBeenCalled();
   });
 
   it('login should call authService.login', () => {

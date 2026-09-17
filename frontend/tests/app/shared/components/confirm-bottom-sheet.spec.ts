@@ -83,4 +83,58 @@ describe('ConfirmBottomSheetComponent', () => {
 
     expect(bottomSheetRefSpy.dismiss).toHaveBeenCalledWith(false);
   });
+
+  describe('text direction', () => {
+    function render() {
+      const fixture = TestBed.createComponent(ConfirmBottomSheetComponent);
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('is ltr for English', () => {
+      const fixture = render();
+
+      const wrapper = fixture.nativeElement.querySelector('div[dir]');
+      expect(wrapper.getAttribute('dir')).toBe('ltr');
+    });
+
+    it('is rtl for Persian', () => {
+      languageServiceSpy.currentLanguage.set('fa');
+      const fixture = render();
+
+      const wrapper = fixture.nativeElement.querySelector('div[dir]');
+      expect(wrapper.getAttribute('dir')).toBe('rtl');
+    });
+
+    it('wraps both the title and the description', () => {
+      languageServiceSpy.currentLanguage.set('fa');
+      const fixture = render();
+
+      const wrapper = fixture.nativeElement.querySelector('div[dir="rtl"]');
+      expect(wrapper.querySelector('h3')).toBeTruthy();
+      expect(wrapper.querySelector('p')).toBeTruthy();
+    });
+
+    it('flips when the language changes at runtime', () => {
+      const fixture = render();
+      expect(
+        fixture.nativeElement.querySelector('div[dir]').getAttribute('dir'),
+      ).toBe('ltr');
+
+      languageServiceSpy.currentLanguage.set('fa');
+      fixture.detectChanges();
+
+      expect(
+        fixture.nativeElement.querySelector('div[dir]').getAttribute('dir'),
+      ).toBe('rtl');
+    });
+
+    it('does not mutate the document direction', () => {
+      const before = document.documentElement.getAttribute('dir');
+      languageServiceSpy.currentLanguage.set('fa');
+      render();
+
+      expect(document.documentElement.getAttribute('dir')).toBe(before);
+    });
+  });
 });

@@ -6,18 +6,24 @@ import {
 } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
+import {
+  CONTROL_BASE_CLASSES,
+  CONTROL_VARIANT_CLASSES,
+  controlFocusClasses,
+} from '../../../shared/const/control-classes';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 
 @Component({
   selector: 'app-password-input',
   standalone: true,
-  imports: [ReactiveFormsModule, HugeiconsIconComponent],
+  imports: [ReactiveFormsModule, HugeiconsIconComponent, TranslatePipe],
   viewProviders: [
     { provide: ControlContainer, useExisting: FormGroupDirective },
   ],
   template: `
     <div class="relative mt-3">
       <input
-        class="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 pe-10 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+        [class]="inputClasses"
         [type]="showPassword() ? 'text' : 'password'"
         [formControlName]="controlName()"
         [placeholder]="placeholderValue()"
@@ -25,7 +31,11 @@ import { ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
       />
       <button
         type="button"
-        class="absolute inset-y-0 end-0 flex items-center pe-3 text-slate-400 dark:text-slate-500"
+        class="absolute inset-y-0 end-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+        [attr.aria-label]="
+          (showPassword() ? 'hidePassword' : 'showPassword') | translate
+        "
+        [attr.aria-pressed]="showPassword()"
         (click)="showPassword.set(!showPassword())"
       >
         @if (showPassword()) {
@@ -54,4 +64,11 @@ export class PasswordInputComponent {
   readonly showPassword = signal(false);
 
   readonly icons = { ViewIcon, ViewOffSlashIcon };
+
+  readonly inputClasses = [
+    CONTROL_BASE_CLASSES,
+    CONTROL_VARIANT_CLASSES.default,
+    controlFocusClasses(false),
+    'pe-10',
+  ].join(' ');
 }

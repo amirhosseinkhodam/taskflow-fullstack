@@ -29,7 +29,7 @@ import { ButtonComponent } from '../../../shared/components/button';
       (keydown.enter)="onConfirm()"
       variant="default"
     />
-    <div class="flex gap-2 justify-end pt-4">
+    <div class="flex gap-2 justify-center pt-4">
       <app-button variant="primary" (buttonClick)="onCancel()">{{
         'cancel' | translate
       }}</app-button>

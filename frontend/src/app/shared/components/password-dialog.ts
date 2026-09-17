@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import {
   MAT_DIALOG_DATA,
@@ -59,7 +59,7 @@ import type { PasswordDialogData } from '../models/password';
           </p>
         }
         @if (
-          passwordForm.form.get('newPassword')?.hasError('minLength') &&
+          passwordForm.form.get('newPassword')?.hasError('minlength') &&
           passwordForm.form.get('newPassword')?.touched
         ) {
           <p class="mb-4 text-xs text-red-600 dark:text-red-400">
@@ -68,7 +68,7 @@ import type { PasswordDialogData } from '../models/password';
         }
       </app-form>
     </mat-dialog-content>
-    <mat-dialog-actions align="end" class="gap-2">
+    <mat-dialog-actions align="center" class="gap-2">
       <app-button variant="primary" (buttonClick)="onCancel()">
         {{ 'cancel' | translate }}
       </app-button>
@@ -83,7 +83,7 @@ import type { PasswordDialogData } from '../models/password';
     </mat-dialog-actions>
   `,
 })
-export class PasswordDialogComponent {
+export class PasswordDialogComponent implements OnDestroy {
   readonly passwordForm = inject(PasswordFormService);
   readonly #dialogRef = inject(MatDialogRef<PasswordDialogComponent>);
   readonly requireCurrentPassword =
@@ -92,7 +92,6 @@ export class PasswordDialogComponent {
   onSave(): void {
     if (this.passwordForm.form.invalid) return;
     const value = this.passwordForm.form.getRawValue();
-    this.passwordForm.resetForm();
     this.#dialogRef.close({
       currentPassword: value.currentPassword ?? null,
       newPassword: value.newPassword,
@@ -100,7 +99,10 @@ export class PasswordDialogComponent {
   }
 
   onCancel(): void {
-    this.passwordForm.resetForm();
     this.#dialogRef.close(null);
+  }
+
+  ngOnDestroy(): void {
+    this.passwordForm.resetForm();
   }
 }

@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
+  MAT_BOTTOM_SHEET_DATA,
   MatBottomSheetModule,
   MatBottomSheetRef,
 } from '@angular/material/bottom-sheet';
@@ -60,14 +60,14 @@ import type { PasswordDialogData } from '../models/password';
         </p>
       }
       @if (
-        passwordForm.form.get('newPassword')?.hasError('minLength') &&
+        passwordForm.form.get('newPassword')?.hasError('minlength') &&
         passwordForm.form.get('newPassword')?.touched
       ) {
         <p class="mb-3 text-xs text-red-600 dark:text-red-400">
           {{ 'passwordTooShort' | translate }}
         </p>
       }
-      <div class="flex gap-2 justify-end pt-2">
+      <div class="flex gap-2 justify-center pt-2">
         <app-button variant="primary" (buttonClick)="onCancel()">
           {{ 'cancel' | translate }}
         </app-button>
@@ -83,18 +83,18 @@ import type { PasswordDialogData } from '../models/password';
     </app-form>
   `,
 })
-export class PasswordBottomSheetComponent {
+export class PasswordBottomSheetComponent implements OnDestroy {
   readonly passwordForm = inject(PasswordFormService);
   readonly #bottomSheetRef = inject(
     MatBottomSheetRef<PasswordBottomSheetComponent>,
   );
-  readonly requireCurrentPassword =
-    inject<PasswordDialogData>(MAT_DIALOG_DATA).requireCurrentPassword;
+  readonly requireCurrentPassword = inject<PasswordDialogData>(
+    MAT_BOTTOM_SHEET_DATA,
+  ).requireCurrentPassword;
 
   onSave(): void {
     if (this.passwordForm.form.invalid) return;
     const value = this.passwordForm.form.getRawValue();
-    this.passwordForm.resetForm();
     this.#bottomSheetRef.dismiss({
       currentPassword: value.currentPassword ?? null,
       newPassword: value.newPassword,
@@ -102,7 +102,10 @@ export class PasswordBottomSheetComponent {
   }
 
   onCancel(): void {
-    this.passwordForm.resetForm();
     this.#bottomSheetRef.dismiss(null);
+  }
+
+  ngOnDestroy(): void {
+    this.passwordForm.resetForm();
   }
 }

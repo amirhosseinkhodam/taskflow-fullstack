@@ -1,5 +1,14 @@
 import { inject, Injectable } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
+
+function projectSelected(control: AbstractControl): ValidationErrors | null {
+  return control.value > 0 ? null : { required: true };
+}
 
 @Injectable({ providedIn: 'root' })
 export class TaskFormService {
@@ -7,15 +16,15 @@ export class TaskFormService {
   readonly #form = this.#fb.nonNullable.group({
     title: ['', Validators.required],
     description: [''],
-    projectId: [0, Validators.required],
+    projectId: [null as number | null, projectSelected],
     assigneeEmail: ['', Validators.email],
   });
 
-  resetForm(projectId?: number) {
+  resetForm() {
     this.#form.reset({
       title: '',
       description: '',
-      projectId: projectId ?? 0,
+      projectId: null,
       assigneeEmail: '',
     });
   }

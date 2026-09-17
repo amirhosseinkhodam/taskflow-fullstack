@@ -29,7 +29,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate';
       <app-form
         [formGroup]="form"
         variant="inline"
-        [cssClass]="'w-full mt-4 gap-2 items-center'"
+        [cssClass]="'w-full mt-4 !gap-2 items-center'"
         (formSubmit)="createProject()"
       >
         <app-input
@@ -73,7 +73,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate';
             </div>
             <div class="flex items-center gap-1 shrink-0 ms-2">
               <button
-                class="rounded p-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors"
+                class="rounded p-1 text-slate-500 hover:text-amber-600 dark:text-slate-400 dark:hover:text-amber-400 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                 type="button"
                 [attr.aria-label]="'edit' | translate"
                 (click)="edit.emit(project)"
@@ -86,7 +86,7 @@ import { TranslatePipe } from '../../../shared/pipes/translate';
                 />
               </button>
               <button
-                class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors"
+                class="rounded p-1 text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                 type="button"
                 [attr.aria-label]="'delete' | translate"
                 (click)="delete.emit(project)"

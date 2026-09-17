@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import {
+  MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
-  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
-import { TranslatePipe } from '../../../shared/pipes/translate';
 import { ButtonComponent } from '../../../shared/components/button';
+import { TranslatePipe } from '../../../shared/pipes/translate';
 
 @Component({
   selector: 'app-project-delete-confirm',
@@ -21,7 +21,7 @@ import { ButtonComponent } from '../../../shared/components/button';
         </p>
       }
     </mat-dialog-content>
-    <mat-dialog-actions align="end" class="gap-2">
+    <mat-dialog-actions align="center" class="gap-2">
       <app-button variant="primary" (buttonClick)="onCancel()">{{
         'cancel' | translate
       }}</app-button>

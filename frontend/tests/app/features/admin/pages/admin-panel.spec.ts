@@ -22,7 +22,6 @@ describe('AdminPanelComponent', () => {
 
   const mockStore = {
     users: signal<UserModel[]>([]),
-    message: signal(''),
     isLoading: signal(false),
     userCount: signal(0),
     loadUsers: jest.fn(),
@@ -66,7 +65,6 @@ describe('AdminPanelComponent', () => {
       /* CDK HighContrastModeDetector teardown error */
     }
     mockStore.users.set([]);
-    mockStore.message.set('');
     mockStore.isLoading.set(false);
     mockStore.userCount.set(0);
     mockStore.loadUsers.mockClear();
@@ -151,6 +149,17 @@ describe('AdminPanelComponent', () => {
     expect(headerTexts).toContain('name');
     expect(headerTexts).toContain('role');
     expect(headerTexts).toContain('actions');
+  });
+
+  it('renders no static banner for API results', () => {
+    const main: HTMLElement = fixture.nativeElement.querySelector('main');
+    const banners = Array.from(
+      main.querySelectorAll('div') as ArrayLike<HTMLElement>,
+    ).filter((el) =>
+      /roleUpdated|userDeleted|passwordChanged/.test(el.textContent ?? ''),
+    );
+
+    expect(banners).toEqual([]);
   });
 
   it('should show noUsers message when users list is empty', () => {

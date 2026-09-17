@@ -1,10 +1,14 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Component, inject, input, output, signal } from '@angular/core';
-import { LanguageService } from '../../../shared/services/language';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
+import type { CommentModel } from '@shared/types/task';
+import { ButtonComponent } from '../../../shared/components/button';
+import { ConfirmBottomSheetComponent } from '../../../shared/components/confirm-bottom-sheet';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog';
+import { InputComponent } from '../../../shared/components/input';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date';
 import { TranslatePipe } from '../../../shared/pipes/translate';
-import { ButtonComponent } from '../../../shared/components/button';
-import { InputComponent } from '../../../shared/components/input';
-import type { CommentModel } from '@shared/types/task';
 
 @Component({
   selector: 'app-comment-list',
@@ -68,7 +72,7 @@ import type { CommentModel } from '@shared/types/task';
               } @else if (canEdit(comment)) {
                 <div class="mt-2 flex gap-2">
                   <app-button
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     (buttonClick)="startEdit(comment.id)"
                   >
@@ -96,10 +100,19 @@ export class CommentListComponent {
   readonly onDelete = output<number>();
   readonly onUpdate = output<{ id: number; content: string }>();
 
-  readonly #languageService = inject(LanguageService);
+  readonly #dialog = inject(MatDialog);
+  readonly #bottomSheet = inject(MatBottomSheet);
+  readonly #breakpointObserver = inject(BreakpointObserver);
 
   readonly editingCommentId = signal<number | null>(null);
   readonly editContent: Record<number, string> = {};
+  readonly isPhone = signal(false);
+
+  constructor() {
+    this.#breakpointObserver
+      .observe(['(max-width: 767px)'])
+      .subscribe((result) => this.isPhone.set(result.matches));
+  }
 
   isEditing(commentId: number): boolean {
     return this.editingCommentId() === commentId;
@@ -129,8 +142,20 @@ export class CommentListComponent {
   }
 
   confirmDelete(commentId: number): void {
-    if (confirm(this.#languageService.translate('confirmDeleteComment'))) {
+    const data = {
+      title: 'deleteComment',
+      message: 'confirmDeleteComment',
+    };
+
+    const confirmed$ = this.isPhone()
+      ? this.#bottomSheet
+          .open(ConfirmBottomSheetComponent, { data })
+          .afterDismissed()
+      : this.#dialog.open(ConfirmDialogComponent, { data }).afterClosed();
+
+    confirmed$.subscribe((confirmed) => {
+      if (!confirmed) return;
       this.onDelete.emit(commentId);
-    }
+    });
   }
 }

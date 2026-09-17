@@ -92,7 +92,8 @@ import { DashboardStore } from '../store/dashboard';
             } @else {
               <button
                 [matMenuTriggerFor]="mobileMenu"
-                class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-surface dark:shadow-none"
+                class="inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-surface dark:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+                [attr.aria-label]="'menu' | translate"
               >
                 <hugeicons-icon
                   [icon]="Menu01Icon"
@@ -125,8 +126,9 @@ import { DashboardStore } from '../store/dashboard';
         >
           <app-card
             variant="default"
-            class="flex flex-col h-112 overflow-auto"
+            class="flex flex-col"
             padding="md"
+            [cssClass]="'overflow-y-auto sm:h-112 max-h-112'"
           >
             <app-project-list
               class="flex-1 flex flex-col min-h-0"
@@ -148,13 +150,15 @@ import { DashboardStore } from '../store/dashboard';
           </app-card>
         </section>
       } @else {
-        <section class="mt-6 rounded-2xl bg-white dark:bg-slate-800 p-6 shadow">
-          <app-task-form
-            [projects]="store.projects()"
-            [editingTask]="store.editingTask()"
-            (submitTask)="store.saveTask($event)"
-            (cancelEdit)="store.cancelEdit()"
-          />
+        <section class="mt-6">
+          <app-card variant="default" padding="md">
+            <app-task-form
+              [projects]="store.projects()"
+              [editingTask]="store.editingTask()"
+              (submitTask)="store.saveTask($event)"
+              (cancelEdit)="store.cancelEdit()"
+            />
+          </app-card>
         </section>
       }
 
@@ -167,7 +171,7 @@ import { DashboardStore } from '../store/dashboard';
               {{ 'tasks' | translate }}
             </h2>
             <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-              <div class="w-full sm:w-auto min-w-[178px]">
+              <div class="w-full sm:w-auto min-w-[195px]">
                 <app-project-filter
                   [projects]="store.projects()"
                   [selectedProjectId]="store.filter().projectId ?? 0"

@@ -12,7 +12,10 @@ export const CONTROL_VARIANT_CLASSES = {
 
 export type ControlVariant = keyof typeof CONTROL_VARIANT_CLASSES;
 
+export const CONTROL_FOCUS_VISIBLE_CLASSES =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500';
+
 export const controlFocusClasses = (focusRing: boolean): string =>
   focusRing
     ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
-    : 'focus:outline-none';
+    : `focus:outline-none ${CONTROL_FOCUS_VISIBLE_CLASSES}`;

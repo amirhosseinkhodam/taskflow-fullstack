@@ -48,7 +48,7 @@ import { SelectComponent } from './select';
       <div class="flex items-start gap-3 w-full">
         <ng-content select="[dragHandle]" />
         <div class="flex items-start justify-between gap-4 flex-1 min-w-0">
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 flex-1 flex flex-col gap-1">
             <h3
               class="font-medium text-slate-900 dark:text-slate-100"
               [class.line-through]="task.status === 'done'"
@@ -60,16 +60,12 @@ import { SelectComponent } from './select';
             </p>
             <div class="flex flex-wrap gap-1.5 mt-1">
               @if (showCreatorBadge() && task.creatorName) {
-                <span
-                  class="inline-block rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 text-xs text-indigo-600 dark:text-indigo-300"
-                >
+                <span class="text-sm text-slate-500 dark:text-slate-400">
                   {{ 'createdBy' | translate }}: {{ task.creatorName }}
                 </span>
               }
               @if (showAssigneeBadge() && task.assigneeName) {
-                <span
-                  class="inline-block rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs text-green-600 dark:text-green-300"
-                >
+                <span class="text-sm text-slate-500 dark:text-slate-400">
                   {{ 'assignedTo' | translate }}: {{ task.assigneeName }}
                 </span>
               }

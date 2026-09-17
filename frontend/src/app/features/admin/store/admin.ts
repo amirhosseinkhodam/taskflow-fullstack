@@ -18,13 +18,11 @@ import type { UserRole } from '@shared/const/user-roles';
 
 interface AdminStateModel {
   users: UserModel[];
-  message: string;
   isLoading: boolean;
 }
 
 const initialState: AdminStateModel = {
   users: [],
-  message: '',
   isLoading: false,
 };
 
@@ -47,10 +45,7 @@ export const AdminStore = signalStore(
               tapResponse({
                 next: (users) => patchState(store, { users, isLoading: false }),
                 error: () => {
-                  patchState(store, {
-                    isLoading: false,
-                    message: 'couldNotLoadUsers',
-                  });
+                  patchState(store, { isLoading: false });
                   notification.show('error', 'couldNotLoadUsers');
                 },
               }),
@@ -67,11 +62,10 @@ export const AdminStore = signalStore(
                 next: () => {
                   patchState(store, {
                     users: store.users().filter((u) => u.id !== id),
-                    message: 'userDeleted',
                   });
+                  notification.show('success', 'userDeleted');
                 },
                 error: () => {
-                  patchState(store, { message: 'couldNotDeleteUser' });
                   notification.show('error', 'couldNotDeleteUser');
                 },
               }),
@@ -90,11 +84,10 @@ export const AdminStore = signalStore(
                     users: store
                       .users()
                       .map((u) => (u.id === updatedUser.id ? updatedUser : u)),
-                    message: 'roleUpdated',
                   });
+                  notification.show('success', 'roleUpdated');
                 },
                 error: () => {
-                  patchState(store, { message: 'couldNotUpdateRole' });
                   notification.show('error', 'couldNotUpdateRole');
                 },
               }),
@@ -109,13 +102,13 @@ export const AdminStore = signalStore(
             adminService.changeUserPassword(userId, newPassword).pipe(
               tapResponse({
                 next: () => {
-                  patchState(store, { message: 'passwordChanged' });
+                  notification.show('success', 'passwordChanged');
                 },
                 error: (err: { error?: { message?: string } }) => {
-                  patchState(store, {
-                    message: mapPasswordError(err.error?.message ?? ''),
-                  });
-                  notification.show('error', 'couldNotChangePassword');
+                  notification.show(
+                    'error',
+                    mapPasswordError(err.error?.message ?? ''),
+                  );
                 },
               }),
             ),

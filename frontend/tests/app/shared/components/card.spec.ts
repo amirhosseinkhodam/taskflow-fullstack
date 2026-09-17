@@ -48,6 +48,24 @@ describe('CardComponent', () => {
     expect(classes).toContain('shadow-card');
   });
 
+  it('does not impose a height or scroll behaviour of its own', () => {
+    const classes: string = fixture.debugElement.query(By.css('div'))
+      .nativeElement.className;
+
+    expect(classes).not.toContain('h-112');
+    expect(classes).not.toContain('overflow-y-auto');
+  });
+
+  it('forwards cssClass onto the inner content div, not the host', () => {
+    fixture.componentRef.setInput('cssClass', 'overflow-y-auto max-h-112');
+    fixture.detectChanges();
+
+    const divEl = fixture.debugElement.query(By.css('div')).nativeElement;
+    expect(divEl.className).toContain('overflow-y-auto');
+    expect(divEl.className).toContain('max-h-112');
+    expect(fixture.nativeElement.className).not.toContain('overflow-y-auto');
+  });
+
   it('projects content inside the div', async () => {
     await TestBed.resetTestingModule();
     await TestBed.configureTestingModule({

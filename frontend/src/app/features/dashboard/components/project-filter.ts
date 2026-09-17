@@ -11,7 +11,7 @@ import type { ProjectModel } from '@shared/types/project';
   template: `
     <app-select
       [options]="projectOptions()"
-      [value]="selectedProjectId()"
+      [value]="selectedValue()"
       (selectChange)="onSelectChange($event)"
       [placeholder]="'allProjects' | translate"
       [clearable]="true"
@@ -28,6 +28,8 @@ export class ProjectFilterComponent {
   readonly projectOptions = computed<SelectOption[]>(() =>
     this.projects().map((p) => ({ value: p.id, label: p.name })),
   );
+
+  readonly selectedValue = computed(() => this.selectedProjectId() || null);
 
   onSelectChange(value: number | string | null): void {
     this.projectChange.emit(Number(value ?? 0));

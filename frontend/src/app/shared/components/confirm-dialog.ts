@@ -16,7 +16,7 @@ import { ButtonComponent } from './button';
     <mat-dialog-content>
       {{ data.message | translate }}
     </mat-dialog-content>
-    <mat-dialog-actions align="end" class="gap-2">
+    <mat-dialog-actions align="center" class="gap-2">
       <app-button variant="primary" (buttonClick)="onCancel()">
         {{ 'cancel' | translate }}
       </app-button>

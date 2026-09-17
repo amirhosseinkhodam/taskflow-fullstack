@@ -1,4 +1,5 @@
 import { Component, input, output } from '@angular/core';
+import { CONTROL_FOCUS_VISIBLE_CLASSES } from '../const/control-classes';
 import { LoadingSpinnerComponent } from './loading-spinner';
 
 @Component({
@@ -14,7 +15,10 @@ import { LoadingSpinnerComponent } from './loading-spinner';
       (click)="onClick()"
       (keydown.enter)="onEnter($event)"
     >
-      <span class="flex gap-1" [class]="loading() ? 'invisible' : ''">
+      <span
+        class="flex items-center gap-1"
+        [class]="loading() ? 'invisible' : ''"
+      >
         <ng-content></ng-content>
       </span>
       @if (loading()) {
@@ -68,8 +72,8 @@ export class ButtonComponent {
   readonly computedClasses = () => {
     const focusClasses = this.focusRing()
       ? 'focus:ring-2 focus:ring-slate-500 focus:ring-offset-2'
-      : 'focus:outline-none';
-    const base = `inline-flex items-center justify-center relative rounded-lg px-4 py-2 text-sm font-medium transition-colors ${focusClasses} disabled:cursor-not-allowed disabled:opacity-50`;
+      : `focus:outline-none ${CONTROL_FOCUS_VISIBLE_CLASSES}`;
+    const base = `inline-flex items-center justify-center relative rounded-lg font-medium transition-colors ${focusClasses} disabled:cursor-not-allowed disabled:opacity-50`;
 
     const sizes = {
       sm: 'px-3 py-1.5 text-xs min-h-9',
@@ -241,19 +245,19 @@ export class ButtonComponent {
     const hoverClasses: string[] = [];
 
     for (const cls of classes) {
-      const bgMatch = cls.match(/^(bg-)([\w]+)-(\d+)$/);
+      const bgMatch = cls.match(/^bg-([a-z]+)-(\d+)$/);
       if (bgMatch) {
-        const [, prefix, color, shade] = bgMatch;
-        const next = this.#nextShade(shade);
-        hoverClasses.push(`!${prefix}${color}-${next}`);
+        const [, color, shade] = bgMatch;
+        if (classes.some((c) => c.startsWith('hover:bg-'))) continue;
+        hoverClasses.push(`hover:bg-${color}-${this.#nextShade(shade)}`);
         continue;
       }
 
-      const darkBgMatch = cls.match(/^(dark:bg-)([\w]+)-(\d+)$/);
+      const darkBgMatch = cls.match(/^dark:bg-([a-z]+)-(\d+)$/);
       if (darkBgMatch) {
-        const [, prefix, color, shade] = darkBgMatch;
-        const next = this.#nextShade(shade);
-        hoverClasses.push(`!dark:${prefix}${color}-${next}`);
+        const [, color, shade] = darkBgMatch;
+        if (classes.some((c) => c.startsWith('dark:hover:bg-'))) continue;
+        hoverClasses.push(`dark:hover:bg-${color}-${this.#nextShade(shade)}`);
       }
     }
 

@@ -66,7 +66,17 @@ describe('control classes', () => {
 
   describe('controlFocusClasses', () => {
     it('suppresses the native outline by default', () => {
-      expect(controlFocusClasses(false)).toBe('focus:outline-none');
+      expect(controlFocusClasses(false)).toContain('focus:outline-none');
+    });
+
+    it('still shows a visible ring for keyboard users by default', () => {
+      expect(controlFocusClasses(false)).toContain('focus-visible:outline-2');
+      expect(controlFocusClasses(false)).toContain(
+        'focus-visible:outline-offset-2',
+      );
+      expect(controlFocusClasses(false)).toContain(
+        'focus-visible:outline-blue-500',
+      );
     });
 
     it('opts into the shared offset ring when requested', () => {
